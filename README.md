@@ -26,7 +26,7 @@
 6. В Cursor напишите агенту, например:  
    *«Вот ссылка на Figma: … Сверстай экран X по `DESIGN.md`, стек как в шаблоне.»*
 
-7. Деплой: см. **`DEPLOY.md`** или `npm run deploy` (после `npx vercel login`).
+7. Деплой: см. **`DEPLOY.md`** — автодеплой через **Git push** (подключи репо в Vercel) или разово **`npm run deploy`** (после `npx vercel login`).
 
 ## Что уже настроено
 

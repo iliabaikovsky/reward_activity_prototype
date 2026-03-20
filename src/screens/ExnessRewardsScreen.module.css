@@ -704,3 +704,10 @@
   height: 28px;
   flex-shrink: 0;
 }
+
+/* Запас под контент — в основном padding-bottom на .device-frame-scroll (токен в styles.css) */
+@media (max-width: 480px) {
+  .bottomSafe {
+    height: 8px;
+  }
+}

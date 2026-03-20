@@ -24,7 +24,8 @@ export function LifecycleSimulatorPanel({ steps, stepIndex, onStepIndexChange }:
   ].join('\n')
 
   useLayoutEffect(() => {
-    const mq = window.matchMedia('(min-width: 480px)')
+    /* ≥481px: раскрыта справка; ≤480px блок скрыт в CSS */
+    const mq = window.matchMedia('(min-width: 481px)')
     const sync = () => {
       const el = detailsRef.current
       if (el) el.open = mq.matches

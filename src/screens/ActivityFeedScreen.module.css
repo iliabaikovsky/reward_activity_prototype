@@ -286,6 +286,12 @@
   flex-shrink: 0;
 }
 
+@media (max-width: 480px) {
+  .bottomSafe {
+    height: 8px;
+  }
+}
+
 .emptyState {
   margin: 0;
   padding: 32px 0 24px;

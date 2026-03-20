@@ -82,11 +82,13 @@ function App() {
             />
           ) : null}
         </DeviceFrameProvider>
-        <LifecycleSimulatorPanel
-          steps={LIFECYCLE_STEPS}
-          stepIndex={lifecycleStepIndex}
-          onStepIndexChange={setLifecycleStepIndex}
-        />
+        <div className="demo-workbench-simulator">
+          <LifecycleSimulatorPanel
+            steps={LIFECYCLE_STEPS}
+            stepIndex={lifecycleStepIndex}
+            onStepIndexChange={setLifecycleStepIndex}
+          />
+        </div>
       </div>
     </main>
   )

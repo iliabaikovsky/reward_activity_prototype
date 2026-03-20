@@ -197,11 +197,12 @@
 }
 
 /* —— Узкий экран: плавающий виджет + полный экран телефона (styles.css) —— */
-@media (max-width: 479px) {
+@media (max-width: 480px) {
   .panel {
     position: fixed;
     z-index: 35;
-    bottom: max(12px, env(safe-area-inset-bottom, 0px));
+    /* Синхронно со styles.css :root — выше панели табов мобильного браузера */
+    bottom: var(--mobile-panel-bottom, max(12px, env(safe-area-inset-bottom, 0px)));
     left: 12px;
     right: 12px;
     width: auto;
@@ -209,14 +210,12 @@
     pointer-events: none;
   }
 
-  .glassRail,
-  .glassDetails {
+  .glassRail {
     pointer-events: auto;
   }
 
-  .glassDetails[open] .glassDetailsBody {
-    max-height: min(48vh, 380px);
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
+  /* Справка / селект шагов — только на широком экране */
+  .glassDetails {
+    display: none;
   }
 }
