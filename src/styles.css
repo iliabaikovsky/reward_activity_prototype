@@ -199,17 +199,17 @@ body {
 @media (max-width: 480px) {
   :root {
     /*
-     * Rail близко к низу: 12px + safe-area + небольшой запас под табы Chrome/Safari (не 72px — иначе огромная дыра).
-     * Спейсер скролла чуть щедрее: чтобы текст уходил выше rail даже когда safe-area = 0.
-     * --mobile-panel-bottom — низ fixed-панели (LifecycleSimulatorPanel).
+     * Раздельно: fixed rail близко к низу; спейсер скролла — с большим запасом (табы браузера, safe=0).
+     * --mobile-panel-bottom → LifecycleSimulatorPanel (только позиция rail).
+     * --mobile-scroll-extra-below-rail → только ::after / scroll-padding, rail не двигает.
      */
-    --mobile-browser-chrome-nudge: 20px;
-    --mobile-panel-bottom: calc(
-      12px + constant(safe-area-inset-bottom) + var(--mobile-browser-chrome-nudge)
+    --mobile-rail-visible-height: 56px;
+    --mobile-scroll-extra-below-rail: 96px;
+    --mobile-panel-bottom: calc(12px + constant(safe-area-inset-bottom));
+    --mobile-panel-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    --mobile-lifecycle-simulator-pad: calc(
+      var(--mobile-rail-visible-height) + var(--mobile-panel-bottom) + var(--mobile-scroll-extra-below-rail)
     );
-    --mobile-panel-bottom: calc(12px + env(safe-area-inset-bottom, 0px) + var(--mobile-browser-chrome-nudge));
-    /* rail ~56px + отступ панели от низа экрана + буфер для скролла */
-    --mobile-lifecycle-simulator-pad: calc(56px + var(--mobile-panel-bottom) + 36px);
   }
   html,
   body,
