@@ -1,0 +1,231 @@
+/* Токены — сверь с Figma Variables (Reward activity, CE-3142). */
+:root {
+  --text-primary: #141d22;
+  --text-secondary: rgba(20, 29, 34, 0.62);
+  --text-tertiary: rgba(20, 29, 34, 0.45);
+  --background-default: #ffffff;
+  --background-surface: #eef1f3;
+  --background-hover: rgba(20, 29, 34, 0.06);
+  --background-pressed: rgba(20, 29, 34, 0.1);
+  --border-subtle: rgba(20, 29, 34, 0.08);
+  --points-positive: #0d7a4f;
+  --points-negative: #b42318;
+  --icon-fg: #3d4f5c;
+  --tint-earn-bg: #e6f4ed;
+  --tint-earn-fg: #0d7a4f;
+  --tint-redeem-bg: #fdecec;
+  --tint-redeem-fg: #b42318;
+  --tint-expire-bg: #f2f0e8;
+  --tint-expire-fg: #7a6a40;
+  --tint-adjust-bg: #e8eef8;
+  --tint-adjust-fg: #2f5f9e;
+  --shadow-segment: 0 1px 3px rgba(20, 29, 34, 0.08);
+  --radius-md: 8px;
+  --space-200: 16px;
+  --space-300: 24px;
+  --font-sans:
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+
+  /* Exness Rewards (Figma CE-3142) */
+  --reward-paper: #ffffff;
+  --reward-text-primary: #141d22;
+  --reward-text-secondary: rgba(20, 29, 34, 0.6);
+  --reward-text-on-dark: #edf0f2;
+  --reward-text-secondary-dark: rgba(237, 240, 242, 0.6);
+  --reward-border: rgba(20, 29, 34, 0.08);
+  --reward-steel: #f5f5f5;
+  --reward-exness-yellow: #ffde02;
+  --reward-exness-contrast: #000000;
+  --reward-info-content: #44a2fa;
+  --reward-info-ultralight: rgba(21, 139, 249, 0.16);
+  --reward-neutral-ultralight: rgba(108, 133, 149, 0.08);
+  --activity-amount-positive: #0d7a4f;
+
+  /* Bottom sheet chips (Figma CE-3142 modals) */
+  --modal-warning-bg: rgba(255, 152, 0, 0.16);
+  --modal-warning-content: #b45309;
+  --modal-success-bg: rgba(13, 122, 79, 0.12);
+  --modal-success-content: #0d7a4f;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--text-primary);
+  background: var(--background-default);
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  background: var(--background-surface);
+}
+
+.app-shell--device {
+  align-items: flex-start;
+  justify-content: center;
+  padding: 16px 12px;
+  box-sizing: border-box;
+}
+
+/* Ряд: телефон + панель симулятора жизненного цикла */
+.demo-workbench {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 20px;
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+/* Имитация iPhone 13 mini / X: 375×812 */
+.device-frame {
+  width: 375px;
+  max-width: 100%;
+  height: 812px;
+  max-height: min(812px, calc(100dvh - 32px));
+  flex-shrink: 0;
+  background: var(--reward-paper);
+  border-radius: 40px;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.06),
+    0 16px 48px rgba(7, 10, 12, 0.18);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.device-frame-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.device-home-indicator {
+  flex-shrink: 0;
+  height: 34px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 10px;
+  background: var(--reward-paper);
+}
+
+.device-home-indicator::after {
+  content: '';
+  width: 134px;
+  height: 5px;
+  border-radius: 100px;
+  background: rgba(0, 0, 0, 0.18);
+}
+
+/*
+ * Мобилка (<480px): полный экран по ширине и высоте, без скругления рамки.
+ * Блок после базовых правил .device-frame — иначе height:812px и border-radius перебивают.
+ */
+@media (max-width: 479px) {
+  html,
+  body,
+  #root {
+    height: 100%;
+    min-height: 100dvh;
+  }
+
+  .app-shell--device {
+    flex-direction: column;
+    padding: 0;
+    align-items: stretch;
+    width: 100%;
+    min-height: 100dvh;
+    min-height: 100vh;
+    height: 100%;
+    box-sizing: border-box;
+  }
+
+  .demo-workbench {
+    flex-direction: column;
+    flex: 1 1 auto;
+    align-self: stretch;
+    width: 100%;
+    max-width: none;
+    min-height: 0;
+    height: 100%;
+    min-height: 100dvh;
+    gap: 0;
+    margin: 0;
+  }
+
+  .device-frame {
+    width: 100% !important;
+    max-width: none !important;
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    height: 100% !important;
+    max-height: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .device-frame-scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    padding-bottom: 100px; /* плавающий симулятор */
+  }
+
+  .device-home-indicator {
+    display: none;
+  }
+}
+
+.app-container {
+  width: 100%;
+  max-width: 375px;
+  min-height: 100vh;
+  padding: var(--space-300) var(--space-200);
+  background: var(--background-default);
+}
+
+.title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: var(--space-200);
+}
+
+.muted {
+  color: var(--text-secondary);
+  font-size: 0.9375rem;
+}
+
+code {
+  font-size: 0.875em;
+  padding: 0.125em 0.375em;
+  border-radius: var(--radius-md);
+  background: var(--background-surface);
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}

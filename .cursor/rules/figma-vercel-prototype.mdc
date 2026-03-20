@@ -1,0 +1,27 @@
+---
+description: Прототип по Figma — Vite, React, TS, Vercel; работа через Figma MCP
+alwaysApply: true
+---
+
+# Figma → Vercel prototype (этот шаблон)
+
+## Контекст
+
+- Стек: **React 18**, **TypeScript**, **Vite**, деплой **Vercel** (`vercel.json`, `dist`, SPA rewrites).
+- Пользователь даёт **ссылку на Figma** и/или заполняет **`DESIGN.md`**.
+
+## Figma
+
+- Из URL извлекай **fileKey** и **node-id** (`node-id=1-2` → `1:2`).
+- Используй **Figma MCP** (design context / скриншот) для верстки.
+- Сгенерированный из Figma код — **референс**: адаптируй под структуру репо (`src/components`, `src/screens`), не копируй бездумно.
+
+## Код
+
+- Компоненты по смыслу дробить; стили — CSS-модули или общий `styles.css` + токены в `:root` (как в дизайне).
+- Сборку проверяет пользователь **в скопированном проекте** после `npm install`: **`npm run build`** должен проходить. В самом шаблоне в workshop зависимости не обязательны.
+- Обновляй **`DESIGN.md`**, если зафиксировали новые node-id или экраны.
+
+## Деплой
+
+- Инструкции в **`DEPLOY.md`**. Не коммить `.vercel` (в `.gitignore`).

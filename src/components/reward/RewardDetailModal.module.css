@@ -1,0 +1,370 @@
+/* Bottom sheet — Figma 42104:17559 / 17588 / 17168 / 17387 */
+
+.root {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  pointer-events: auto;
+}
+
+.backdrop {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: rgba(0, 0, 0, 0.48);
+  cursor: pointer;
+}
+
+.panel {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-height: 94%;
+  background: var(--reward-paper);
+  border-radius: 10px 10px 0 0;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+}
+
+/* Второй слой: только список ордеров (поверх пачки) */
+.ordersLayer {
+  position: absolute;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  pointer-events: auto;
+}
+
+.ordersBackdrop {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: rgba(0, 0, 0, 0.55);
+  cursor: pointer;
+}
+
+.ordersPanel {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-height: 92%;
+  background: var(--reward-paper);
+  border-radius: 10px 10px 0 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.2);
+}
+
+.ordersListScroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0 16px 32px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.ordersBlock {
+  margin-top: 8px;
+  padding-bottom: 8px;
+  border-top: 1px solid var(--reward-border);
+}
+
+.ordersNavRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  margin: 0;
+  padding: 16px 0 8px;
+  border: none;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  color: inherit;
+  cursor: pointer;
+  border-radius: 8px;
+}
+
+.ordersNavRow:focus-visible {
+  outline: 2px solid var(--reward-info-content);
+  outline-offset: 2px;
+}
+
+.header {
+  flex-shrink: 0;
+  display: grid;
+  grid-template-columns: 44px 1fr 44px;
+  align-items: center;
+  min-height: 42px;
+  padding: 8px 8px 4px;
+}
+
+.closeBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--reward-text-primary);
+  cursor: pointer;
+}
+
+.navTitle {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+  text-align: center;
+  color: var(--reward-text-primary);
+}
+
+.headerSpacer {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+}
+
+.scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0 16px 32px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding-top: 16px;
+}
+
+.heroIcon {
+  width: 48px;
+  height: 48px;
+  border-radius: 1000px;
+  background: var(--reward-steel);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--reward-text-primary);
+}
+
+.heroAmount {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 32px;
+  text-align: center;
+  color: var(--reward-text-primary);
+}
+
+.heroAmountNegative {
+  color: var(--points-negative);
+}
+
+.chip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 1000px;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 400;
+}
+
+.chipWarning {
+  color: var(--modal-warning-content);
+  background: var(--modal-warning-bg);
+}
+
+.chipSuccess {
+  color: var(--modal-success-content);
+  background: var(--modal-success-bg);
+}
+
+.chipNeutral {
+  color: var(--reward-text-secondary);
+  background: var(--reward-neutral-ultralight);
+}
+
+.chipNegative {
+  color: var(--points-negative);
+  background: var(--tint-redeem-bg);
+}
+
+.details {
+  padding-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.detailRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 48px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--reward-border);
+}
+
+.detailRow:last-of-type {
+  border-bottom: none;
+}
+
+.detailLabel {
+  margin: 0;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--reward-text-primary);
+  flex: 1;
+  min-width: 0;
+}
+
+.detailValue {
+  margin: 0;
+  max-width: 58%;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--reward-text-secondary);
+  text-align: right;
+  white-space: normal;
+  word-break: break-word;
+}
+
+/* Секция Orders — Figma 42104:17559, 42104:17168 */
+.ordersTitle {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 28px;
+  color: var(--reward-text-primary);
+  flex: 1;
+  min-width: 0;
+}
+
+.ordersChevron {
+  flex-shrink: 0;
+  color: var(--reward-text-secondary);
+  opacity: 0.7;
+}
+
+.orderRowBtn {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+  margin: 0;
+  padding: 16px 0;
+  border: none;
+  border-bottom: 1px solid var(--reward-border);
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  color: inherit;
+  cursor: pointer;
+  border-radius: 0;
+}
+
+.orderRowBtn:last-child {
+  border-bottom: none;
+}
+
+.orderRowBtn:focus-visible {
+  outline: 2px solid var(--reward-info-content);
+  outline-offset: 2px;
+}
+
+.orderIcon {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: 1000px;
+  background: var(--reward-steel);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--reward-text-primary);
+}
+
+.orderBody {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.orderHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.orderTitle {
+  margin: 0;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--reward-text-primary);
+}
+
+.orderAmount {
+  margin: 0;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--reward-text-primary);
+  white-space: nowrap;
+}
+
+.orderAmountNegative {
+  color: var(--points-negative);
+}
+
+.orderDesc {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.orderMeta {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--reward-text-secondary);
+}
+
+.orderMeta p {
+  margin: 0;
+}
+
+.orderDate {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--reward-text-secondary);
+  text-align: right;
+  white-space: nowrap;
+}
