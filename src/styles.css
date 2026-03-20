@@ -199,17 +199,17 @@ body {
 @media (max-width: 480px) {
   :root {
     /*
-     * В мобильном браузере (не PWA) env(safe-area-inset-bottom) часто 0 — панель табов Safari/Chrome
-     * перекрывает контент. Поднимаем fixed rail и увеличиваем спейсер скролла на --mobile-browser-chrome-bottom.
-     * --mobile-panel-bottom — отступ низа fixed-панели от низа viewport (см. LifecycleSimulatorPanel).
+     * Rail близко к низу: 12px + safe-area + небольшой запас под табы Chrome/Safari (не 72px — иначе огромная дыра).
+     * Спейсер скролла чуть щедрее: чтобы текст уходил выше rail даже когда safe-area = 0.
+     * --mobile-panel-bottom — низ fixed-панели (LifecycleSimulatorPanel).
      */
-    --mobile-browser-chrome-bottom: 72px;
+    --mobile-browser-chrome-nudge: 20px;
     --mobile-panel-bottom: calc(
-      12px + constant(safe-area-inset-bottom) + var(--mobile-browser-chrome-bottom)
+      12px + constant(safe-area-inset-bottom) + var(--mobile-browser-chrome-nudge)
     );
-    --mobile-panel-bottom: calc(12px + env(safe-area-inset-bottom, 0px) + var(--mobile-browser-chrome-bottom));
-    /* rail ~56px + низ панели от viewport + буфер под скролл */
-    --mobile-lifecycle-simulator-pad: calc(56px + var(--mobile-panel-bottom) + 28px);
+    --mobile-panel-bottom: calc(12px + env(safe-area-inset-bottom, 0px) + var(--mobile-browser-chrome-nudge));
+    /* rail ~56px + отступ панели от низа экрана + буфер для скролла */
+    --mobile-lifecycle-simulator-pad: calc(56px + var(--mobile-panel-bottom) + 36px);
   }
   html,
   body,
