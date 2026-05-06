@@ -345,8 +345,8 @@ export function ExnessRewardsScreen({
       title: 'Spread rebates',
       amount: '+2.45 USD',
       line1: 'Closest payout',
-      line2: 'Place for text',
-      date: 'Place for date',
+      line2: 'From 22 trading days',
+      date: 'on May 7',
     },
     {
       id: 'pin-spread-usd',
@@ -354,8 +354,8 @@ export function ExnessRewardsScreen({
       title: 'Spread rebates',
       amount: '+1.20 EXD',
       line1: 'Closest payout',
-      line2: 'Place for text',
-      date: 'Place for date',
+      line2: 'From 22 trading days',
+      date: 'on May 7',
     },
   ]
 
@@ -418,8 +418,8 @@ export function ExnessRewardsScreen({
       title: 'Spread rebates',
       amount: '+2.45 USD',
       line1: 'Closest payout',
-      line2: 'Place for text',
-      date: 'Place for date',
+      line2: 'From 22 trading days',
+      date: 'on May 7',
     },
     {
       id: 'v4-spread-exd',
@@ -427,8 +427,8 @@ export function ExnessRewardsScreen({
       title: 'Spread rebates',
       amount: '+1.20 EXD',
       line1: 'Closest payout',
-      line2: 'Place for text',
-      date: 'Place for date',
+      line2: 'From 22 trading days',
+      date: 'on May 7',
     },
   ]
 
