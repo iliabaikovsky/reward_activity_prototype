@@ -253,9 +253,21 @@ export function ExnessRewardsScreen({
 
   const showUpcomingBlock = spreadVariant !== 'v2' && (upcomingItems.length > 0 || spreadVariant === 'v1')
 
-  const flexiblePinnedRows = [
-    { id: 'pin-loyalty', title: 'Weekly loyalty', amount: '+4.20 EXD', hint: 'Loyalty program' },
-    { id: 'pin-cashback', title: 'Weekly cashback', amount: '+5.00 USD', hint: 'Cashback program' },
+  const flexiblePreviewRows = [
+    {
+      id: 'pin-cashback',
+      title: 'Cashback',
+      amount: '+5.00 USD',
+      hint: 'For trading on Mar 22',
+      pinned: true,
+    },
+    {
+      id: 'pin-loyalty',
+      title: 'Loyalty rewards',
+      amount: '+1.00 EXD',
+      hint: 'For trading on Mar 18-22',
+      pinned: true,
+    },
     {
       id: 'pin-spread-exd',
       title: 'Spread rebate · next EXD payout',
@@ -272,7 +284,19 @@ export function ExnessRewardsScreen({
   ]
 
   const flexibleAllRows = [
-    ...flexiblePinnedRows,
+    ...flexiblePreviewRows,
+    {
+      id: 'all-loyalty-next',
+      title: 'Loyalty rewards',
+      amount: '+2.20 EXD',
+      hint: 'For trading on Mar 23-26',
+    },
+    {
+      id: 'all-cashback-next',
+      title: 'Cashback',
+      amount: '+4.10 USD',
+      hint: 'For trading on Mar 24',
+    },
     {
       id: 'all-spread-agg',
       title: 'Spread rebate · all pending',
@@ -449,28 +473,30 @@ export function ExnessRewardsScreen({
         {spreadVariant === 'v2' ? (
           <>
             <div className={styles.sectionSpacer} aria-hidden />
-            <SectionTitle title="Upcoming (flexible prototype)" showChevron={false} />
+            <SectionTitle
+              title="Upcoming (flexible prototype)"
+              showChevron
+              onClick={() => setShowFlexibleUpcomingAll((v) => !v)}
+            />
             <div className={styles.flexUpcomingCard}>
-              <p className={styles.flexLabel}>Pinned rows</p>
-              {flexiblePinnedRows.map((row) => (
+              <p className={styles.flexLabel}>Preview list (2 pinned + 2 regular)</p>
+              {flexiblePreviewRows.map((row) => (
                 <div
                   key={row.id}
-                  className={`${styles.flexRow} ${row.warn ? styles.flexRowWarn : ''}`}
+                  className={`${styles.flexRow} ${row.warn ? styles.flexRowWarn : ''} ${
+                    row.pinned ? styles.flexRowPinned : ''
+                  }`}
                 >
                   <div>
-                    <p className={styles.flexRowTitle}>{row.title}</p>
+                    <p className={styles.flexRowTitle}>
+                      {row.pinned ? <span className={styles.flexPinBadge}>Pinned</span> : null}
+                      {row.title}
+                    </p>
                     <p className={styles.flexRowHint}>{row.hint}</p>
                   </div>
                   <p className={styles.flexRowAmount}>{row.amount}</p>
                 </div>
               ))}
-              <button
-                type="button"
-                className={styles.flexExpandBtn}
-                onClick={() => setShowFlexibleUpcomingAll((v) => !v)}
-              >
-                {showFlexibleUpcomingAll ? 'Hide full upcoming list' : 'View all upcoming items'}
-              </button>
 
               {showFlexibleUpcomingAll ? (
                 <div className={styles.flexAll}>

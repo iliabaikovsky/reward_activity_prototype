@@ -601,6 +601,13 @@
   border-bottom: none;
 }
 
+.flexRowPinned {
+  background: #f8fafc;
+  border-radius: 8px;
+  padding: 8px 10px;
+  border-bottom: none;
+}
+
 .flexRowWarn .flexRowTitle {
   color: #8d5c00;
 }
@@ -610,6 +617,9 @@
   font-size: 14px;
   line-height: 20px;
   color: var(--reward-text-primary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .flexRowHint {
@@ -625,6 +635,19 @@
   font-size: 14px;
   line-height: 20px;
   color: var(--reward-text-primary);
+}
+
+.flexPinBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 6px;
+  border-radius: 100px;
+  background: #e7eef8;
+  color: #41566f;
+  font-size: 10px;
+  line-height: 14px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
 }
 
 .flexExpandBtn {
