@@ -223,7 +223,7 @@ export function ExnessRewardsScreen({
   upcomingItems,
   activityPreviewItems,
 }: ExnessRewardsScreenProps) {
-  const [showFlexibleUpcomingAll, setShowFlexibleUpcomingAll] = useState(false)
+  const [v2FullUpcomingOpen, setV2FullUpcomingOpen] = useState(false)
   const [v4AccountSelected, setV4AccountSelected] = useState(false)
   const availableExdAmount = parseFloat(
     availableRewardsExd.replace(/,/g, '').trim().split(/\s+/)[0] ?? '0',
@@ -264,7 +264,7 @@ export function ExnessRewardsScreen({
   const v1NextExdPayout = `+${(184.2 / 60).toFixed(2)} EXD`
 
   useEffect(() => {
-    if (spreadVariant !== 'v2') setShowFlexibleUpcomingAll(false)
+    if (spreadVariant !== 'v2') setV2FullUpcomingOpen(false)
   }, [spreadVariant])
 
   const v1UpcomingRows: LifecycleUpcomingItem[] = useMemo(
@@ -549,13 +549,36 @@ export function ExnessRewardsScreen({
           </div>
         </div>
 
-        {spreadVariant === 'v2' ? (
+        {spreadVariant === 'v2' && v2FullUpcomingOpen ? (
+          <>
+            <div className={styles.sectionSpacer} aria-hidden />
+            <div className={styles.v2InnerHeader}>
+              <button
+                type="button"
+                className={styles.v2InnerBack}
+                onClick={() => setV2FullUpcomingOpen(false)}
+                aria-label="Back"
+              >
+                <IconChevronLeft size={22} stroke={2} aria-hidden />
+              </button>
+              <p className={styles.v2InnerTitle}>Upcoming</p>
+            </div>
+            <div className={styles.v2AllPage}>
+              <p className={styles.v2PinnedHeader}>All upcoming</p>
+              {flexibleAllRows.map((row) => (
+                <V2UpcomingRow key={row.id} row={row} />
+              ))}
+            </div>
+          </>
+        ) : null}
+
+        {spreadVariant === 'v2' && !v2FullUpcomingOpen ? (
           <>
             <div className={styles.sectionSpacer} aria-hidden />
             <SectionTitle
               title="Upcoming"
               showChevron
-              onClick={() => setShowFlexibleUpcomingAll((v) => !v)}
+              onClick={() => setV2FullUpcomingOpen(true)}
             />
             <div className={styles.v2List}>
               <p className={styles.v2PinnedHeader}>Pinned</p>
@@ -583,15 +606,6 @@ export function ExnessRewardsScreen({
                   ) : null}
                 </div>
               ))}
-
-              {showFlexibleUpcomingAll ? (
-                <div className={styles.v2All}>
-                  <p className={styles.v2PinnedHeader}>All upcoming</p>
-                  {flexibleAllRows.map((row) => (
-                    <V2UpcomingRow key={row.id} row={row} />
-                  ))}
-                </div>
-              ) : null}
             </div>
           </>
         ) : null}

@@ -522,6 +522,36 @@
   flex-direction: column;
 }
 
+.v2InnerHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 12px;
+}
+
+.v2InnerBack {
+  width: 36px;
+  height: 36px;
+  border-radius: 100px;
+  border: 1px solid var(--reward-border);
+  background: #fff;
+  color: var(--reward-text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+.v2InnerTitle {
+  margin: 0;
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: 600;
+  color: var(--reward-text-primary);
+}
+
 .v2PinnedHeader {
   margin: 0 0 4px;
   font-size: 11px;
@@ -697,6 +727,11 @@
   margin-top: 12px;
   padding-top: 10px;
   border-top: 1px dashed var(--reward-border);
+}
+
+.v2AllPage {
+  border-top: 1px dashed var(--reward-border);
+  padding-top: 10px;
 }
 
 .v4Section {
