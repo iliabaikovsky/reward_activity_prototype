@@ -1,4 +1,4 @@
-import { useMemo, type ReactNode } from 'react'
+import { useMemo, useState, type ReactNode } from 'react'
 import {
   IconArrowRight,
   IconArrowsRightLeft,
@@ -23,6 +23,19 @@ import styles from './ExnessRewardsScreen.module.css'
 const HIDE_TRANSACTION_BADGES = true
 
 const TIER_EXD_GOAL = 1000
+type SpreadPrototypeVariant = 'v1' | 'v2' | 'v3'
+
+const SPREAD_DEMO = {
+  pendingCount: 60,
+  pendingExd: '+184.20 EXD',
+  pendingUsd: '+192.45 USD',
+  nextPayoutDate: '7 May 2026',
+  paidExdCount: 5,
+  paidExdAmount: '+20.98 EXD',
+  onHoldUsdCount: 5,
+  onHoldUsdAmount: '+21.40 USD',
+  totalWithOnHoldUsd: '+213.85 USD',
+}
 
 /** Парсит сумму из строки вида "+3.20 EXD" */
 function parseExdFromAmountLabel(amount: string): number {
@@ -169,6 +182,8 @@ export function ExnessRewardsScreen({
   upcomingItems,
   activityPreviewItems,
 }: ExnessRewardsScreenProps) {
+  const [spreadVariant, setSpreadVariant] = useState<SpreadPrototypeVariant>('v1')
+  const [showFlexibleUpcomingAll, setShowFlexibleUpcomingAll] = useState(false)
   const availableExdAmount = parseFloat(
     availableRewardsExd.replace(/,/g, '').trim().split(/\s+/)[0] ?? '0',
   )
@@ -203,6 +218,74 @@ export function ExnessRewardsScreen({
         minimumFractionDigits: 0,
         maximumFractionDigits: 2,
       })
+
+  const spreadRowsV1: LifecycleUpcomingItem[] = useMemo(
+    () => [
+      {
+        id: 'spread-v1-exd',
+        icon: 'crown',
+        title: 'Spread rebate · EXD upcoming',
+        amount: SPREAD_DEMO.pendingExd,
+        lines: [
+          `${SPREAD_DEMO.pendingCount} payouts pending`,
+          `Next payout: ${SPREAD_DEMO.nextPayoutDate}`,
+          `${SPREAD_DEMO.paidExdCount} payouts already credited in EXD`,
+        ],
+        date: 'Daily',
+        rewardModal: 'loyalty-upcoming',
+      },
+      {
+        id: 'spread-v1-usd',
+        icon: 'dollar',
+        title: 'Spread rebate · USD upcoming',
+        amount: SPREAD_DEMO.pendingUsd,
+        lines: [
+          `${SPREAD_DEMO.pendingCount} payouts pending`,
+          `Next payout: ${SPREAD_DEMO.nextPayoutDate}`,
+          `${SPREAD_DEMO.onHoldUsdCount} payouts on hold — select account`,
+        ],
+        date: 'Daily',
+        rewardModal: 'cashback-upcoming',
+      },
+    ],
+    [],
+  )
+
+  const showUpcomingBlock = spreadVariant !== 'v2' && (upcomingItems.length > 0 || spreadVariant === 'v1')
+
+  const flexiblePinnedRows = [
+    { id: 'pin-loyalty', title: 'Weekly loyalty', amount: '+4.20 EXD', hint: 'Loyalty program' },
+    { id: 'pin-cashback', title: 'Weekly cashback', amount: '+5.00 USD', hint: 'Cashback program' },
+    {
+      id: 'pin-spread-exd',
+      title: 'Spread rebate · next EXD payout',
+      amount: '+3.90 EXD',
+      hint: `Next: ${SPREAD_DEMO.nextPayoutDate}`,
+    },
+    {
+      id: 'pin-spread-usd',
+      title: 'Spread rebate · USD on hold',
+      amount: SPREAD_DEMO.onHoldUsdAmount,
+      hint: 'Select account to release',
+      warn: true,
+    },
+  ]
+
+  const flexibleAllRows = [
+    ...flexiblePinnedRows,
+    {
+      id: 'all-spread-agg',
+      title: 'Spread rebate · all pending',
+      amount: `${SPREAD_DEMO.pendingExd} / ${SPREAD_DEMO.pendingUsd}`,
+      hint: `${SPREAD_DEMO.pendingCount} payouts pending in total`,
+    },
+    {
+      id: 'all-spread-paid',
+      title: 'Spread rebate · EXD already paid',
+      amount: SPREAD_DEMO.paidExdAmount,
+      hint: `${SPREAD_DEMO.paidExdCount} mature payouts processed`,
+    },
+  ]
 
   return (
     <div className={styles.screen} data-node-id="42104:10683">
@@ -278,6 +361,47 @@ export function ExnessRewardsScreen({
       </div>
 
       <div className={styles.body}>
+        <section className={styles.protoControls} aria-label="Spread rebate variant switcher">
+          <div>
+            <p className={styles.protoTitle}>Spread rebate prototypes</p>
+            <p className={styles.protoSubtitle}>
+              Same demo state: 60 pending payouts, EXD credited, USD on hold
+            </p>
+          </div>
+          <div className={styles.protoToggle}>
+            <button
+              type="button"
+              className={`${styles.protoToggleBtn} ${spreadVariant === 'v1' ? styles.protoToggleBtnActive : ''}`}
+              onClick={() => {
+                setSpreadVariant('v1')
+                setShowFlexibleUpcomingAll(false)
+              }}
+            >
+              V1 · In Upcoming
+            </button>
+            <button
+              type="button"
+              className={`${styles.protoToggleBtn} ${spreadVariant === 'v2' ? styles.protoToggleBtnActive : ''}`}
+              onClick={() => {
+                setSpreadVariant('v2')
+                setShowFlexibleUpcomingAll(false)
+              }}
+            >
+              V2 · Flexible Upcoming
+            </button>
+            <button
+              type="button"
+              className={`${styles.protoToggleBtn} ${spreadVariant === 'v3' ? styles.protoToggleBtnActive : ''}`}
+              onClick={() => {
+                setSpreadVariant('v3')
+                setShowFlexibleUpcomingAll(false)
+              }}
+            >
+              V3 · Separate Widget
+            </button>
+          </div>
+        </section>
+
         <div className={styles.walletsSection}>
           <div className={styles.walletsScroll} role="region" aria-label="Reward wallets">
             <article className={styles.walletCard}>
@@ -312,17 +436,61 @@ export function ExnessRewardsScreen({
         <SectionTitle title="How to earn rewards" />
         <div className={styles.banner}>
           <div className={styles.bannerText}>
-            <p className={styles.bannerTitle}>Trade and level up</p>
+            <p className={styles.bannerTitle}>Get 1% back from every trade</p>
             <p className={styles.bannerDesc}>
-              Trade, earn Exness Dollars, and level up your status
+              Get 1% in USD and 1% in EXD from daily spread. Payout arrives in 60 days.
             </p>
           </div>
           <div className={styles.bannerArt} aria-hidden>
-            🪙
+            💸
           </div>
         </div>
 
-        {upcomingItems.length > 0 ? (
+        {spreadVariant === 'v2' ? (
+          <>
+            <div className={styles.sectionSpacer} aria-hidden />
+            <SectionTitle title="Upcoming (flexible prototype)" showChevron={false} />
+            <div className={styles.flexUpcomingCard}>
+              <p className={styles.flexLabel}>Pinned rows</p>
+              {flexiblePinnedRows.map((row) => (
+                <div
+                  key={row.id}
+                  className={`${styles.flexRow} ${row.warn ? styles.flexRowWarn : ''}`}
+                >
+                  <div>
+                    <p className={styles.flexRowTitle}>{row.title}</p>
+                    <p className={styles.flexRowHint}>{row.hint}</p>
+                  </div>
+                  <p className={styles.flexRowAmount}>{row.amount}</p>
+                </div>
+              ))}
+              <button
+                type="button"
+                className={styles.flexExpandBtn}
+                onClick={() => setShowFlexibleUpcomingAll((v) => !v)}
+              >
+                {showFlexibleUpcomingAll ? 'Hide full upcoming list' : 'View all upcoming items'}
+              </button>
+
+              {showFlexibleUpcomingAll ? (
+                <div className={styles.flexAll}>
+                  <p className={styles.flexLabel}>All upcoming (prototype drill-in)</p>
+                  {flexibleAllRows.map((row) => (
+                    <div key={row.id} className={styles.flexRow}>
+                      <div>
+                        <p className={styles.flexRowTitle}>{row.title}</p>
+                        <p className={styles.flexRowHint}>{row.hint}</p>
+                      </div>
+                      <p className={styles.flexRowAmount}>{row.amount}</p>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+          </>
+        ) : null}
+
+        {showUpcomingBlock ? (
           <>
             <div className={styles.sectionSpacer} aria-hidden />
             <SectionTitle title="Upcoming" showChevron={false} />
@@ -340,6 +508,59 @@ export function ExnessRewardsScreen({
                 }
               />
             ))}
+            {spreadVariant === 'v1'
+              ? spreadRowsV1.map((row) => (
+                  <TransactionRow
+                    key={row.id}
+                    icon={<RowIconTabler kind={row.icon} />}
+                    title={row.title}
+                    amount={row.amount}
+                    lines={row.lines}
+                    date={row.date}
+                  />
+                ))
+              : null}
+          </>
+        ) : null}
+
+        {spreadVariant === 'v3' ? (
+          <>
+            <div className={styles.sectionSpacer} aria-hidden />
+            <SectionTitle title="Spread rebate" showChevron={false} />
+            <div className={styles.spreadWidget}>
+              <div className={styles.spreadWidgetHead}>
+                <p className={styles.spreadWidgetMeta}>60-day payout pipeline</p>
+                <p className={styles.spreadWidgetNext}>Next: {SPREAD_DEMO.nextPayoutDate}</p>
+              </div>
+              <div className={styles.spreadWidgetTotals}>
+                <div>
+                  <p className={styles.spreadWidgetLabel}>Upcoming EXD</p>
+                  <p className={styles.spreadWidgetValue}>{SPREAD_DEMO.pendingExd}</p>
+                </div>
+                <div>
+                  <p className={styles.spreadWidgetLabel}>Upcoming USD</p>
+                  <p className={styles.spreadWidgetValue}>{SPREAD_DEMO.pendingUsd}</p>
+                </div>
+              </div>
+              <p className={styles.spreadWidgetHint}>
+                {SPREAD_DEMO.pendingCount} payouts pending in total
+              </p>
+              <div className={styles.spreadWidgetWarn}>
+                <p className={styles.spreadWidgetWarnTitle}>USD account is not selected</p>
+                <p className={styles.spreadWidgetWarnHint}>
+                  {SPREAD_DEMO.onHoldUsdAmount} from {SPREAD_DEMO.onHoldUsdCount} mature payouts is on
+                  hold. EXD already credited: {SPREAD_DEMO.paidExdAmount}.
+                </p>
+              </div>
+              <div className={styles.spreadWidgetFooter}>
+                <button type="button" className={styles.spreadWidgetCta}>
+                  Select USD account
+                </button>
+                <p className={styles.spreadWidgetTotalUsd}>
+                  Total future USD incl. on-hold: {SPREAD_DEMO.totalWithOnHoldUsd}
+                </p>
+              </div>
+            </div>
           </>
         ) : null}
 
