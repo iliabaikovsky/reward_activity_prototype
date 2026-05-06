@@ -259,39 +259,60 @@ export function ExnessRewardsScreen({
         maximumFractionDigits: 2,
       })
 
-  const spreadRowsV1: LifecycleUpcomingItem[] = useMemo(
+  const v1NextUsdPayout = `+${(192.45 / 60).toFixed(2)} USD`
+  const v1NextExdPayout = `+${(184.2 / 60).toFixed(2)} EXD`
+
+  const v1UpcomingRows: LifecycleUpcomingItem[] = useMemo(
     () => [
       {
-        id: 'spread-v1-exd',
+        id: 'v1-loyalty-cashback',
+        icon: 'dollar',
+        title: 'Loyalty cashback',
+        amount: '+0.64 USD',
+        lines: ['For daily trading'],
+        date: 'Tomorrow',
+        rewardModal: 'cashback-upcoming',
+      },
+      {
+        id: 'v1-loyalty-rewards',
         icon: 'crown',
-        title: 'Spread rebate · EXD total',
-        amount: SPREAD_DEMO.pendingExd,
-        lines: [
-          `${SPREAD_DEMO.pendingCount} future payouts`,
-          'Only trading days with activity',
-          `${SPREAD_DEMO.paidExdCount} payouts already credited in EXD`,
-        ],
-        date: SPREAD_DEMO.nextPayoutDate,
+        title: 'Loyalty rewards',
+        amount: '+3.70 EXD',
+        lines: ['For weekly trading'],
+        date: 'on Jan 17',
         rewardModal: 'loyalty-upcoming',
       },
       {
-        id: 'spread-v1-usd',
+        id: 'v1-cash-rebates',
         icon: 'dollar',
-        title: 'Spread rebate · USD total',
+        title: 'Cash rebates',
         amount: SPREAD_DEMO.pendingUsd,
         lines: [
-          `${SPREAD_DEMO.pendingCount} future payouts`,
-          'Only trading days with activity',
-          `${SPREAD_DEMO.onHoldUsdCount} payouts on hold — select account`,
+          `${SPREAD_DEMO.pendingCount} pending payouts`,
+          `Next ${v1NextUsdPayout} on ${SPREAD_DEMO.nextPayoutDate}`,
         ],
-        date: SPREAD_DEMO.nextPayoutDate,
+        date: 'In queue',
         rewardModal: 'cashback-upcoming',
+      },
+      {
+        id: 'v1-reward-rebates',
+        icon: 'crown',
+        title: 'Reward rebates',
+        amount: SPREAD_DEMO.pendingExd,
+        lines: [
+          `${SPREAD_DEMO.pendingCount} pending payouts`,
+          `Next ${v1NextExdPayout} on ${SPREAD_DEMO.nextPayoutDate}`,
+        ],
+        date: 'In queue',
+        rewardModal: 'loyalty-upcoming',
       },
     ],
     [],
   )
 
-  const showUpcomingBlock = spreadVariant !== 'v2' && (upcomingItems.length > 0 || spreadVariant === 'v1')
+  const showUpcomingBlock =
+    spreadVariant !== 'v2' &&
+    (spreadVariant === 'v1' || upcomingItems.length > 0)
 
   const flexiblePreviewRows: V2UpcomingRowData[] = [
     {
@@ -624,8 +645,8 @@ export function ExnessRewardsScreen({
         {showUpcomingBlock ? (
           <>
             <div className={styles.sectionSpacer} aria-hidden />
-            <SectionTitle title="Upcoming" showChevron={false} />
-            {upcomingItems.map((row) => (
+            <SectionTitle title="Upcoming" showChevron={spreadVariant === 'v1'} />
+            {(spreadVariant === 'v1' ? v1UpcomingRows : upcomingItems).map((row) => (
               <TransactionRow
                 key={row.id}
                 icon={<RowIconTabler kind={row.icon} />}
@@ -639,18 +660,6 @@ export function ExnessRewardsScreen({
                 }
               />
             ))}
-            {spreadVariant === 'v1'
-              ? spreadRowsV1.map((row) => (
-                  <TransactionRow
-                    key={row.id}
-                    icon={<RowIconTabler kind={row.icon} />}
-                    title={row.title}
-                    amount={row.amount}
-                    lines={row.lines}
-                    date={row.date}
-                  />
-                ))
-              : null}
           </>
         ) : null}
 
