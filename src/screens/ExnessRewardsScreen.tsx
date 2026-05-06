@@ -25,7 +25,7 @@ import styles from './ExnessRewardsScreen.module.css'
 const HIDE_TRANSACTION_BADGES = true
 
 const TIER_EXD_GOAL = 1000
-type SpreadPrototypeVariant = 'v1' | 'v2' | 'v3'
+type SpreadPrototypeVariant = 'v1' | 'v2' | 'v3' | 'v4'
 
 const SPREAD_DEMO = {
   pendingCount: 60,
@@ -367,6 +367,43 @@ export function ExnessRewardsScreen({
     },
   ]
 
+  const v4UpcomingRows: V2UpcomingRowData[] = [
+    {
+      id: 'v4-cashback',
+      icon: 'dollar',
+      title: 'Cashback',
+      amount: '+0.64 USD',
+      line1: 'For daily trading',
+      date: 'Tomorrow',
+    },
+    {
+      id: 'v4-loyalty',
+      icon: 'crown',
+      title: 'Loyalty rewards',
+      amount: '+3.70 EXD',
+      line1: 'For weekly trading',
+      date: 'on Jan 17',
+    },
+    {
+      id: 'v4-spread-usd',
+      icon: 'dollar',
+      title: 'Spread rebates',
+      amount: '+2.45 USD',
+      line1: 'Closest payout',
+      line2: 'Place for text',
+      date: 'Place for date',
+    },
+    {
+      id: 'v4-spread-exd',
+      icon: 'crown',
+      title: 'Spread rebates',
+      amount: '+1.20 EXD',
+      line1: 'Closest payout',
+      line2: 'Place for text',
+      date: 'Place for date',
+    },
+  ]
+
   return (
     <div className={styles.screen} data-node-id="42104:10683">
       <div className={styles.hero}>
@@ -478,6 +515,16 @@ export function ExnessRewardsScreen({
               }}
             >
               V3 · Separate Widget
+            </button>
+            <button
+              type="button"
+              className={`${styles.protoToggleBtn} ${spreadVariant === 'v4' ? styles.protoToggleBtnActive : ''}`}
+              onClick={() => {
+                setSpreadVariant('v4')
+                setShowFlexibleUpcomingAll(false)
+              }}
+            >
+              V4 · Hybrid section
             </button>
           </div>
         </section>
@@ -643,6 +690,52 @@ export function ExnessRewardsScreen({
                   Total future USD incl. on-hold: {SPREAD_DEMO.totalWithOnHoldUsd}
                 </p>
               </div>
+            </div>
+          </>
+        ) : null}
+
+        {spreadVariant === 'v4' ? (
+          <>
+            <div className={styles.sectionSpacer} aria-hidden />
+            <SectionTitle title="Spread rebates" showChevron />
+            <div className={styles.v4Section}>
+              <div className={styles.v4Alert}>
+                <div className={styles.v4AlertIcon}>
+                  <IconAlertTriangle size={20} stroke={2} aria-hidden />
+                </div>
+                <div className={styles.v4AlertBody}>
+                  <p className={styles.v4AlertTitle}>Select account for USD</p>
+                  <p className={styles.v4AlertDesc}>
+                    {SPREAD_DEMO.onHoldUsdAmount} is waiting for account selection.
+                  </p>
+                  <button type="button" className={styles.v4AlertBtn}>
+                    Select account
+                  </button>
+                </div>
+              </div>
+              <div className={styles.v4Summary}>
+                <div className={styles.v4SummaryTop}>
+                  <div>
+                    <p className={styles.v4SummaryLabel}>Upcoming USD</p>
+                    <p className={styles.v4SummaryValue}>{SPREAD_DEMO.pendingUsd}</p>
+                  </div>
+                  <div>
+                    <p className={styles.v4SummaryLabel}>Upcoming EXD</p>
+                    <p className={styles.v4SummaryValue}>{SPREAD_DEMO.pendingExd}</p>
+                  </div>
+                </div>
+                <p className={styles.v4SummaryInfo}>
+                  {SPREAD_DEMO.pendingCount} payouts pending. Closest payout: {SPREAD_DEMO.nextPayoutDate}
+                </p>
+              </div>
+            </div>
+
+            <div className={styles.sectionSpacer} aria-hidden />
+            <SectionTitle title="Upcoming" showChevron />
+            <div className={styles.v4UpcomingList}>
+              {v4UpcomingRows.map((row) => (
+                <V2UpcomingRow key={row.id} row={row} />
+              ))}
             </div>
           </>
         ) : null}
