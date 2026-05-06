@@ -317,6 +317,7 @@ export function ExnessRewardsScreen({
 
   const showUpcomingBlock =
     spreadVariant !== 'v2' &&
+    spreadVariant !== 'v4' &&
     (spreadVariant === 'v1' || upcomingItems.length > 0)
 
   const flexiblePreviewRows: V2UpcomingRowData[] = [
