@@ -223,6 +223,7 @@ export function ExnessRewardsScreen({
 }: ExnessRewardsScreenProps) {
   const [spreadVariant, setSpreadVariant] = useState<SpreadPrototypeVariant>('v1')
   const [showFlexibleUpcomingAll, setShowFlexibleUpcomingAll] = useState(false)
+  const [v4AccountSelected, setV4AccountSelected] = useState(false)
   const availableExdAmount = parseFloat(
     availableRewardsExd.replace(/,/g, '').trim().split(/\s+/)[0] ?? '0',
   )
@@ -699,33 +700,57 @@ export function ExnessRewardsScreen({
             <div className={styles.sectionSpacer} aria-hidden />
             <SectionTitle title="Spread rebates" showChevron />
             <div className={styles.v4Section}>
-              <div className={styles.v4Alert}>
-                <div className={styles.v4AlertIcon}>
-                  <IconAlertTriangle size={20} stroke={2} aria-hidden />
-                </div>
-                <div className={styles.v4AlertBody}>
-                  <p className={styles.v4AlertTitle}>Select account for USD</p>
-                  <p className={styles.v4AlertDesc}>
-                    {SPREAD_DEMO.onHoldUsdAmount} is waiting for account selection.
-                  </p>
-                  <button type="button" className={styles.v4AlertBtn}>
-                    Select account
-                  </button>
-                </div>
+              <div className={styles.v4StateSwitch} role="group" aria-label="USD destination state">
+                <button
+                  type="button"
+                  className={`${styles.v4StateBtn} ${!v4AccountSelected ? styles.v4StateBtnActive : ''}`}
+                  onClick={() => setV4AccountSelected(false)}
+                >
+                  Account not selected
+                </button>
+                <button
+                  type="button"
+                  className={`${styles.v4StateBtn} ${v4AccountSelected ? styles.v4StateBtnActive : ''}`}
+                  onClick={() => setV4AccountSelected(true)}
+                >
+                  Account selected
+                </button>
               </div>
+
+              {!v4AccountSelected ? (
+                <div className={styles.v4Alert}>
+                  <div className={styles.v4AlertIcon}>
+                    <IconAlertTriangle size={20} stroke={2} aria-hidden />
+                  </div>
+                  <div className={styles.v4AlertBody}>
+                    <p className={styles.v4AlertTitle}>Select account for USD</p>
+                    <p className={styles.v4AlertDesc}>
+                      {SPREAD_DEMO.onHoldUsdAmount} is waiting for account selection.
+                    </p>
+                    <button type="button" className={styles.v4AlertBtn}>
+                      Select account
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className={styles.v4AccountInfo}>
+                  <p className={styles.v4AccountLabel}>USD destination account</p>
+                  <p className={styles.v4AccountValue}>MT5 · #12345678</p>
+                </div>
+              )}
               <div className={styles.v4Summary}>
                 <div className={styles.v4SummaryTop}>
                   <div>
-                    <p className={styles.v4SummaryLabel}>Upcoming USD</p>
+                    <p className={styles.v4SummaryLabel}>Accumulated USD</p>
                     <p className={styles.v4SummaryValue}>{SPREAD_DEMO.pendingUsd}</p>
                   </div>
                   <div>
-                    <p className={styles.v4SummaryLabel}>Upcoming EXD</p>
+                    <p className={styles.v4SummaryLabel}>Accumulated EXD</p>
                     <p className={styles.v4SummaryValue}>{SPREAD_DEMO.pendingExd}</p>
                   </div>
                 </div>
                 <p className={styles.v4SummaryInfo}>
-                  {SPREAD_DEMO.pendingCount} payouts pending. Closest payout: {SPREAD_DEMO.nextPayoutDate}
+                  {SPREAD_DEMO.pendingCount} future payouts, nearest on {SPREAD_DEMO.nextPayoutDate}
                 </p>
               </div>
             </div>

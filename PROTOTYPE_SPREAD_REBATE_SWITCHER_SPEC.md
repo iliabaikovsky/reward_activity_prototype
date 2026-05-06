@@ -82,8 +82,10 @@
 
 Поведение:
 - Вверху отдельная секция `Spread rebates` (стили из Figma node `48944:86622`):
-  - alert `Select account for USD` + CTA `Select account`,
-  - агрегатная карточка `Upcoming USD / Upcoming EXD` + короткая info-строка.
+  - переключатель состояния: `Account not selected / Account selected`,
+  - в состоянии без аккаунта: alert `Select account for USD` + CTA `Select account`,
+  - в состоянии с аккаунтом: карточка destination (`MT5 · #12345678`),
+  - агрегатная карточка `Accumulated USD / Accumulated EXD` + строка `N future payouts, nearest on ...`.
 - Ниже отдельная секция `Upcoming`, где показывается обычный список выплат (cashback, loyalty и последние строки spread rebates).
 - Таким образом смешиваем:
   - отдельный продуктовый блок программы (как V3),

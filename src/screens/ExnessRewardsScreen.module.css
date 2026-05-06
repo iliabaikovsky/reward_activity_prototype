@@ -756,6 +756,28 @@
   gap: 8px;
 }
 
+.v4StateSwitch {
+  display: flex;
+  gap: 8px;
+}
+
+.v4StateBtn {
+  margin: 0;
+  border: 1px solid var(--reward-border);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--reward-text-primary);
+  padding: 7px 10px;
+  font-size: 12px;
+  line-height: 16px;
+  cursor: pointer;
+}
+
+.v4StateBtnActive {
+  border-color: #141d22;
+  background: #eef4fa;
+}
+
 .v4Alert {
   border-radius: 8px;
   border: 1px solid rgba(255, 211, 93, 0.2);
@@ -804,6 +826,28 @@
   font-size: 14px;
   line-height: 20px;
   cursor: pointer;
+}
+
+.v4AccountInfo {
+  border-radius: 8px;
+  border: 1px solid var(--reward-border);
+  background: #fff;
+  padding: 12px;
+}
+
+.v4AccountLabel {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--reward-text-secondary);
+}
+
+.v4AccountValue {
+  margin: 2px 0 0;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+  color: var(--reward-text-primary);
 }
 
 .v4Summary {
