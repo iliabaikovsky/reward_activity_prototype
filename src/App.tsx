@@ -11,8 +11,9 @@ import { DeviceFrameProvider } from './context/DeviceFrameContext'
 import { ActivityFeedScreen } from './screens/ActivityFeedScreen'
 import type { ActivityDatePreset, ActivityTypeFilter } from './screens/activityFeedTypes'
 import { ExnessRewardsScreen } from './screens/ExnessRewardsScreen'
+import { SpreadRebateLedgerScreen } from './screens/SpreadRebateLedgerScreen'
 
-type Route = 'rewards' | 'activity'
+type Route = 'rewards' | 'activity' | 'rebateLedger'
 type SpreadPrototypeVariant = 'v1' | 'v2' | 'v3' | 'v4'
 
 function App() {
@@ -54,12 +55,19 @@ function App() {
       <div className="demo-workbench">
         <DeviceFrameProvider>
           <div className="device-frame-scroll" ref={scrollRef}>
-            {route === 'rewards' ? (
+            {route === 'rebateLedger' ? (
+              <SpreadRebateLedgerScreen
+                onBack={() => setRoute('rewards')}
+                rebateDemo={rebateScenario.rebate}
+                rebateScenarioId={rebateScenario.id}
+              />
+            ) : route === 'rewards' ? (
               <ExnessRewardsScreen
                 spreadVariant={spreadVariant}
                 rebateScenarioId={rebateScenario.id}
                 rebateDemo={rebateScenario.rebate}
                 onOpenActivityFeed={(opts) => openActivity(opts)}
+                onOpenRebateLedger={() => setRoute('rebateLedger')}
                 onOpenRewardModal={(v, id) => setRewardModal({ variant: v, feedItemId: id })}
                 availableRewardsExd={lifecycle.availableRewardsExd}
                 tradingWalletLabel={lifecycle.tradingWalletLabel}

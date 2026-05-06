@@ -162,6 +162,28 @@ export const REBATE_SIMULATOR_STEPS: RebateSimulatorStep[] = [
 /** Стартовый шаг — как «сделка + cashback pending» (зрелый ворон, без счёта, alert). */
 export const REBATE_SIMULATOR_DEFAULT_INDEX = 2
 
+/** Абсолютное значение суммы из строки вида "+96.50 USD" или "+0.00 EXD". */
+export function parseSignedAmount(amount: string): number {
+  const m = amount.replace(/,/g, '').match(/[+-]?[\d.]+/)
+  if (!m) return 0
+  const n = parseFloat(m[0])
+  return Number.isFinite(n) ? Math.abs(n) : 0
+}
+
+/** Есть ли ненулевые будущие выплаты по spread rebate (для строк в Upcoming). */
+export function hasRebatePendingPayouts(rebate: RebateDemoState): boolean {
+  if (rebate.pendingCount <= 0) return false
+  const usd = parseSignedAmount(rebate.pendingUsd)
+  const exd = parseSignedAmount(rebate.pendingExd)
+  return usd > 0 || exd > 0
+}
+
+/** Суммы EXD уже зачисленные по зрелым выплатам (для строки в списке). */
+export function hasRebatePaidExd(rebate: RebateDemoState): boolean {
+  if (rebate.paidExdCount <= 0) return false
+  return parseSignedAmount(rebate.paidExdAmount) > 0
+}
+
 /** Средний «кусок» следующей выплаты для копирайта в списках (V1/V2). */
 export function rebateNextChunk(
   totalLabel: string,

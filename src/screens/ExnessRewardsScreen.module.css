@@ -573,6 +573,27 @@
   background: linear-gradient(180deg, rgba(245, 248, 252, 0.7) 0%, rgba(245, 248, 252, 0.2) 100%);
 }
 
+/* Кликабельная строка Upcoming (spread rebate → леджер) */
+.v2RowBtn {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  padding: 16px 0;
+  margin: 0;
+  width: 100%;
+  border: none;
+  border-bottom: 1px solid var(--reward-border);
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+}
+
+.v2RowBtnPinned {
+  background: linear-gradient(180deg, rgba(245, 248, 252, 0.7) 0%, rgba(245, 248, 252, 0.2) 100%);
+}
+
 .v2RowIcon {
   flex-shrink: 0;
   width: 48px;
@@ -980,6 +1001,25 @@
   gap: 4px;
 }
 
+.spreadWidgetTap {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  color: inherit;
+  outline: none;
+}
+
+.spreadWidgetTap:focus-visible {
+  border-radius: 10px;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.35);
+}
+
 .spreadWidget {
   border-radius: 8px;
   border: 1px solid var(--reward-border);
@@ -1070,6 +1110,7 @@
 
 .spreadWidgetCta {
   align-self: flex-start;
+  display: inline-block;
   margin: 0;
   padding: 9px 14px;
   border-radius: 6px;
@@ -1079,7 +1120,7 @@
   font-size: 13px;
   line-height: 18px;
   font-family: inherit;
-  cursor: pointer;
+  cursor: default;
 }
 
 .spreadWidgetTotalUsd {

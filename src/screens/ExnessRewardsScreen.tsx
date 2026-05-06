@@ -20,7 +20,12 @@ import type {
 } from '../rewardLifecycle/lifecycleSteps'
 import type { ActivityTypeFilter } from './activityFeedTypes'
 import type { RebateDemoState } from '../rewardLifecycle/rebateSimulatorSteps'
-import { rebateNextChunk } from '../rewardLifecycle/rebateSimulatorSteps'
+import {
+  hasRebatePaidExd,
+  hasRebatePendingPayouts,
+  parseSignedAmount,
+  rebateNextChunk,
+} from '../rewardLifecycle/rebateSimulatorSteps'
 import styles from './ExnessRewardsScreen.module.css'
 
 /** Временно скрываем бейдж в разметке (элемент в DOM остаётся). Поставь false, чтобы снова показать. */
@@ -87,6 +92,8 @@ type V2UpcomingRowData = {
   line2?: string
   date: string
   pinned?: boolean
+  /** Открыть леджер spread rebate (прототип). */
+  opensRebateLedger?: boolean
 }
 
 function TransactionRow({
@@ -140,9 +147,15 @@ function TransactionRow({
   return <div className={styles.tx}>{inner}</div>
 }
 
-function V2UpcomingRow({ row }: { row: V2UpcomingRowData }) {
-  return (
-    <div className={`${styles.v2Row} ${row.pinned ? styles.v2RowPinned : ''}`}>
+function V2UpcomingRow({
+  row,
+  onOpenRebateLedger,
+}: {
+  row: V2UpcomingRowData
+  onOpenRebateLedger?: () => void
+}) {
+  const body = (
+    <>
       <div className={styles.v2RowIcon}>
         <RowIconTabler kind={row.icon} />
       </div>
@@ -162,8 +175,22 @@ function V2UpcomingRow({ row }: { row: V2UpcomingRowData }) {
           <p className={styles.v2RowDate}>{row.date}</p>
         </div>
       </div>
-    </div>
+    </>
   )
+
+  if (row.opensRebateLedger && onOpenRebateLedger) {
+    return (
+      <button
+        type="button"
+        className={`${styles.v2RowBtn} ${row.pinned ? styles.v2RowBtnPinned : ''}`}
+        onClick={onOpenRebateLedger}
+      >
+        {body}
+      </button>
+    )
+  }
+
+  return <div className={`${styles.v2Row} ${row.pinned ? styles.v2RowPinned : ''}`}>{body}</div>
 }
 
 function RowIconTabler({ kind }: { kind: LifecycleActivityIcon }) {
@@ -191,6 +218,7 @@ type ExnessRewardsScreenProps = {
   rebateDemo: RebateDemoState
   /** `category: 'cashback'` — с Lifetime cashback; без opts — с Activity feed */
   onOpenActivityFeed?: (opts?: { category?: ActivityTypeFilter }) => void
+  onOpenRebateLedger?: () => void
   onOpenRewardModal?: (variant: RewardModalVariant, feedItemId?: string) => void
   availableRewardsExd: string
   tradingWalletLabel: string
@@ -208,6 +236,7 @@ export function ExnessRewardsScreen({
   rebateScenarioId,
   rebateDemo,
   onOpenActivityFeed,
+  onOpenRebateLedger,
   onOpenRewardModal,
   availableRewardsExd,
   tradingWalletLabel,
@@ -264,6 +293,9 @@ export function ExnessRewardsScreen({
     [rebateDemo.pendingExd, rebateDemo.pendingCount],
   )
 
+  const hasRebate = hasRebatePendingPayouts(rebateDemo)
+  const hasRebatePaid = hasRebatePaidExd(rebateDemo)
+
   useEffect(() => {
     if (spreadVariant !== 'v2') {
       setV2FullUpcomingOpen(false)
@@ -275,8 +307,8 @@ export function ExnessRewardsScreen({
     setV2AlertDismissed(false)
   }, [rebateScenarioId])
 
-  const v1UpcomingRows: LifecycleUpcomingItem[] = useMemo(
-    () => [
+  const v1UpcomingRows: LifecycleUpcomingItem[] = useMemo(() => {
+    const base: LifecycleUpcomingItem[] = [
       {
         id: 'v1-loyalty-cashback',
         icon: 'dollar',
@@ -295,41 +327,42 @@ export function ExnessRewardsScreen({
         date: 'on Jan 17',
         rewardModal: 'loyalty-upcoming',
       },
-      {
+    ]
+    const extra: LifecycleUpcomingItem[] = []
+    if (rebateDemo.pendingCount > 0 && parseSignedAmount(rebateDemo.pendingUsd) > 0) {
+      extra.push({
         id: 'v1-cash-rebates',
         icon: 'dollar',
         title: 'Cash rebates',
         amount: rebateDemo.pendingUsd,
         lines: [
           `${rebateDemo.pendingCount} pending payouts`,
-          rebateDemo.pendingCount > 0
-            ? rebateDemo.nextPayoutDate === 'Tomorrow'
-              ? `Next ${v1NextUsdPayout} tomorrow`
-              : `Next ${v1NextUsdPayout} on ${rebateDemo.nextPayoutDate}`
-            : 'No pending payouts',
+          rebateDemo.nextPayoutDate === 'Tomorrow'
+            ? `Next ${v1NextUsdPayout} tomorrow`
+            : `Next ${v1NextUsdPayout} on ${rebateDemo.nextPayoutDate}`,
         ],
         date: 'In queue',
         rewardModal: 'cashback-upcoming',
-      },
-      {
+      })
+    }
+    if (rebateDemo.pendingCount > 0 && parseSignedAmount(rebateDemo.pendingExd) > 0) {
+      extra.push({
         id: 'v1-reward-rebates',
         icon: 'crown',
         title: 'Reward rebates',
         amount: rebateDemo.pendingExd,
         lines: [
           `${rebateDemo.pendingCount} pending payouts`,
-          rebateDemo.pendingCount > 0
-            ? rebateDemo.nextPayoutDate === 'Tomorrow'
-              ? `Next ${v1NextExdPayout} tomorrow`
-              : `Next ${v1NextExdPayout} on ${rebateDemo.nextPayoutDate}`
-            : 'No pending payouts',
+          rebateDemo.nextPayoutDate === 'Tomorrow'
+            ? `Next ${v1NextExdPayout} tomorrow`
+            : `Next ${v1NextExdPayout} on ${rebateDemo.nextPayoutDate}`,
         ],
         date: 'In queue',
         rewardModal: 'loyalty-upcoming',
-      },
-    ],
-    [rebateDemo, v1NextUsdPayout, v1NextExdPayout],
-  )
+      })
+    }
+    return [...base, ...extra]
+  }, [rebateDemo, v1NextUsdPayout, v1NextExdPayout])
 
   const showUpcomingBlock =
     spreadVariant !== 'v2' &&
@@ -351,7 +384,7 @@ export function ExnessRewardsScreen({
         ? 'Tomorrow'
         : `on ${rebateDemo.nextPayoutDate}`
 
-  const flexiblePreviewRows: V2UpcomingRowData[] = useMemo(
+  const v2PinnedRows: V2UpcomingRowData[] = useMemo(
     () => [
       {
         id: 'pin-cashback',
@@ -371,6 +404,13 @@ export function ExnessRewardsScreen({
         date: 'on Jan 17',
         pinned: true,
       },
+    ],
+    [],
+  )
+
+  const v2SpreadPreviewRows: V2UpcomingRowData[] = useMemo(() => {
+    if (!hasRebate) return []
+    return [
       {
         id: 'pin-spread-exd',
         icon: 'dollar',
@@ -379,6 +419,7 @@ export function ExnessRewardsScreen({
         line1: 'Closest payout',
         line2: `From ${rebateDemo.pendingCount} payout slots`,
         date: spreadDateLabel,
+        opensRebateLedger: true,
       },
       {
         id: 'pin-spread-usd',
@@ -388,14 +429,18 @@ export function ExnessRewardsScreen({
         line1: 'Closest payout',
         line2: `From ${rebateDemo.pendingCount} payout slots`,
         date: spreadDateLabel,
+        opensRebateLedger: true,
       },
-    ],
-    [rebateDemo.pendingCount, spreadDateLabel, spreadPreviewExd, spreadPreviewUsd],
+    ]
+  }, [hasRebate, rebateDemo.pendingCount, spreadDateLabel, spreadPreviewExd, spreadPreviewUsd])
+
+  const flexiblePreviewRows: V2UpcomingRowData[] = useMemo(
+    () => [...v2PinnedRows, ...v2SpreadPreviewRows],
+    [v2PinnedRows, v2SpreadPreviewRows],
   )
 
-  const flexibleAllRows: V2UpcomingRowData[] = useMemo(
-    () => [
-      ...flexiblePreviewRows,
+  const flexibleAllRows: V2UpcomingRowData[] = useMemo(() => {
+    const tail: V2UpcomingRowData[] = [
       {
         id: 'all-loyalty-next',
         icon: 'crown',
@@ -412,28 +457,34 @@ export function ExnessRewardsScreen({
         line1: 'For daily trading',
         date: 'on Jan 25',
       },
-      {
+    ]
+    if (hasRebate) {
+      tail.push({
         id: 'all-spread-agg',
         icon: 'dollar',
         title: 'Spread rebate · all pending',
         amount: `${rebateDemo.pendingExd} / ${rebateDemo.pendingUsd}`,
         line1: `${rebateDemo.pendingCount} payouts pending in total`,
         date: 'Daily',
-      },
-      {
+        opensRebateLedger: true,
+      })
+    }
+    if (hasRebatePaid) {
+      tail.push({
         id: 'all-spread-paid',
         icon: 'crown',
         title: 'Spread rebate · EXD already paid',
         amount: rebateDemo.paidExdAmount,
         line1: `${rebateDemo.paidExdCount} mature payouts processed`,
         date: 'Done',
-      },
-    ],
-    [flexiblePreviewRows, rebateDemo],
-  )
+        opensRebateLedger: true,
+      })
+    }
+    return [...flexiblePreviewRows, ...tail]
+  }, [flexiblePreviewRows, hasRebate, hasRebatePaid, rebateDemo])
 
-  const v4UpcomingRows: V2UpcomingRowData[] = useMemo(
-    () => [
+  const v4UpcomingRows: V2UpcomingRowData[] = useMemo(() => {
+    const base: V2UpcomingRowData[] = [
       {
         id: 'v4-cashback',
         icon: 'dollar',
@@ -450,6 +501,10 @@ export function ExnessRewardsScreen({
         line1: 'For weekly trading',
         date: 'on Jan 17',
       },
+    ]
+    if (!hasRebate) return base
+    return [
+      ...base,
       {
         id: 'v4-spread-usd',
         icon: 'dollar',
@@ -458,6 +513,7 @@ export function ExnessRewardsScreen({
         line1: 'Closest payout',
         line2: `From ${rebateDemo.pendingCount} payout slots`,
         date: spreadDateLabel,
+        opensRebateLedger: true,
       },
       {
         id: 'v4-spread-exd',
@@ -467,10 +523,13 @@ export function ExnessRewardsScreen({
         line1: 'Closest payout',
         line2: `From ${rebateDemo.pendingCount} payout slots`,
         date: spreadDateLabel,
+        opensRebateLedger: true,
       },
-    ],
-    [rebateDemo.pendingCount, spreadDateLabel, spreadPreviewExd, spreadPreviewUsd],
-  )
+    ]
+  }, [hasRebate, rebateDemo.pendingCount, spreadDateLabel, spreadPreviewExd, spreadPreviewUsd])
+
+  const showV4SpreadSection =
+    hasRebate || rebateDemo.showAccountAlert || rebateDemo.usdAccountSelected
 
   return (
     <div className={styles.screen} data-node-id="42104:10683">
@@ -607,7 +666,11 @@ export function ExnessRewardsScreen({
             <div className={styles.v2AllPage}>
               <p className={styles.v2PinnedHeader}>All upcoming</p>
               {flexibleAllRows.map((row) => (
-                <V2UpcomingRow key={row.id} row={row} />
+                <V2UpcomingRow
+                  key={row.id}
+                  row={row}
+                  onOpenRebateLedger={onOpenRebateLedger}
+                />
               ))}
             </div>
           </>
@@ -623,34 +686,35 @@ export function ExnessRewardsScreen({
             />
             <div className={styles.v2List}>
               <p className={styles.v2PinnedHeader}>Pinned</p>
-              {flexiblePreviewRows.map((row, i) => (
-                <div key={row.id}>
-                  <V2UpcomingRow row={row} />
-                  {i === 2 && rebateDemo.showAccountAlert && !v2AlertDismissed ? (
-                    <div className={styles.v2Alert}>
-                      <div className={styles.v2AlertIcon}>
-                        <IconAlertTriangle size={20} stroke={2} aria-hidden />
-                      </div>
-                      <div className={styles.v2AlertBody}>
-                        <p className={styles.v2AlertTitle}>Select account for USD</p>
-                        <p className={styles.v2AlertDesc}>
-                          {rebateDemo.onHoldUsdAmount} is waiting until account is selected.
-                        </p>
-                        <button type="button" className={styles.v2AlertBtn}>
-                          Select account
-                        </button>
-                      </div>
-                      <button
-                        type="button"
-                        className={styles.v2AlertClose}
-                        aria-label="Dismiss"
-                        onClick={() => setV2AlertDismissed(true)}
-                      >
-                        <IconX size={18} stroke={2} aria-hidden />
-                      </button>
-                    </div>
-                  ) : null}
+              {v2PinnedRows.map((row) => (
+                <V2UpcomingRow key={row.id} row={row} onOpenRebateLedger={onOpenRebateLedger} />
+              ))}
+              {rebateDemo.showAccountAlert && !v2AlertDismissed ? (
+                <div className={styles.v2Alert}>
+                  <div className={styles.v2AlertIcon}>
+                    <IconAlertTriangle size={20} stroke={2} aria-hidden />
+                  </div>
+                  <div className={styles.v2AlertBody}>
+                    <p className={styles.v2AlertTitle}>Select account for USD</p>
+                    <p className={styles.v2AlertDesc}>
+                      {rebateDemo.onHoldUsdAmount} is waiting until account is selected.
+                    </p>
+                    <button type="button" className={styles.v2AlertBtn}>
+                      Select account
+                    </button>
+                  </div>
+                  <button
+                    type="button"
+                    className={styles.v2AlertClose}
+                    aria-label="Dismiss"
+                    onClick={() => setV2AlertDismissed(true)}
+                  >
+                    <IconX size={18} stroke={2} aria-hidden />
+                  </button>
                 </div>
+              ) : null}
+              {v2SpreadPreviewRows.map((row) => (
+                <V2UpcomingRow key={row.id} row={row} onOpenRebateLedger={onOpenRebateLedger} />
               ))}
             </div>
           </>
@@ -670,106 +734,176 @@ export function ExnessRewardsScreen({
                 date={row.date}
                 badge={row.badge}
                 onOpenDetail={
-                  onOpenRewardModal ? () => onOpenRewardModal(row.rewardModal) : undefined
+                  onOpenRebateLedger &&
+                  (row.id === 'v1-cash-rebates' || row.id === 'v1-reward-rebates')
+                    ? () => onOpenRebateLedger()
+                    : onOpenRewardModal
+                      ? () => onOpenRewardModal(row.rewardModal)
+                      : undefined
                 }
               />
             ))}
           </>
         ) : null}
 
-        {spreadVariant === 'v3' ? (
+        {spreadVariant === 'v3' && (hasRebate || rebateDemo.showAccountAlert) ? (
           <>
             <div className={styles.sectionSpacer} aria-hidden />
             <SectionTitle title="Spread rebate" showChevron={false} />
-            <div className={styles.spreadWidget}>
-              <div className={styles.spreadWidgetHead}>
-                <p className={styles.spreadWidgetMeta}>60-day payout pipeline</p>
-                <p className={styles.spreadWidgetNext}>Next: {rebateDemo.nextPayoutDate}</p>
-              </div>
-              <div className={styles.spreadWidgetTotals}>
-                <div>
-                  <p className={styles.spreadWidgetLabel}>Upcoming EXD</p>
-                  <p className={styles.spreadWidgetValue}>{rebateDemo.pendingExd}</p>
+            {hasRebate ? (
+              <div
+                className={styles.spreadWidgetTap}
+                role="button"
+                tabIndex={0}
+                aria-label="Open spread rebate payout slots"
+                onClick={() => onOpenRebateLedger?.()}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    onOpenRebateLedger?.()
+                  }
+                }}
+              >
+                <div className={styles.spreadWidget}>
+                  <div className={styles.spreadWidgetHead}>
+                    <p className={styles.spreadWidgetMeta}>60-day payout pipeline</p>
+                    <p className={styles.spreadWidgetNext}>Next: {rebateDemo.nextPayoutDate}</p>
+                  </div>
+                  <div className={styles.spreadWidgetTotals}>
+                    <div>
+                      <p className={styles.spreadWidgetLabel}>Upcoming EXD</p>
+                      <p className={styles.spreadWidgetValue}>{rebateDemo.pendingExd}</p>
+                    </div>
+                    <div>
+                      <p className={styles.spreadWidgetLabel}>Upcoming USD</p>
+                      <p className={styles.spreadWidgetValue}>{rebateDemo.pendingUsd}</p>
+                    </div>
+                  </div>
+                  <p className={styles.spreadWidgetHint}>
+                    {rebateDemo.pendingCount} payouts pending in total
+                  </p>
+                  {rebateDemo.showAccountAlert ? (
+                    <div className={styles.spreadWidgetWarn}>
+                      <p className={styles.spreadWidgetWarnTitle}>USD account is not selected</p>
+                      <p className={styles.spreadWidgetWarnHint}>
+                        {rebateDemo.onHoldUsdAmount} from {rebateDemo.onHoldUsdCount} mature payouts is
+                        on hold. EXD already credited: {rebateDemo.paidExdAmount}.
+                      </p>
+                    </div>
+                  ) : null}
+                  <div className={styles.spreadWidgetFooter}>
+                    {rebateDemo.showAccountAlert ? (
+                      <span className={styles.spreadWidgetCta}>Select USD account</span>
+                    ) : null}
+                    <p className={styles.spreadWidgetTotalUsd}>
+                      Total future USD incl. on-hold: {rebateDemo.totalWithOnHoldUsd}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <p className={styles.spreadWidgetLabel}>Upcoming USD</p>
-                  <p className={styles.spreadWidgetValue}>{rebateDemo.pendingUsd}</p>
-                </div>
               </div>
-              <p className={styles.spreadWidgetHint}>
-                {rebateDemo.pendingCount} payouts pending in total
-              </p>
-              {rebateDemo.showAccountAlert ? (
-                <div className={styles.spreadWidgetWarn}>
-                  <p className={styles.spreadWidgetWarnTitle}>USD account is not selected</p>
-                  <p className={styles.spreadWidgetWarnHint}>
-                    {rebateDemo.onHoldUsdAmount} from {rebateDemo.onHoldUsdCount} mature payouts is on
-                    hold. EXD already credited: {rebateDemo.paidExdAmount}.
+            ) : (
+              <div className={styles.spreadWidget}>
+                <div className={styles.spreadWidgetHead}>
+                  <p className={styles.spreadWidgetMeta}>60-day payout pipeline</p>
+                  <p className={styles.spreadWidgetNext}>Next: {rebateDemo.nextPayoutDate}</p>
+                </div>
+                <div className={styles.spreadWidgetTotals}>
+                  <div>
+                    <p className={styles.spreadWidgetLabel}>Upcoming EXD</p>
+                    <p className={styles.spreadWidgetValue}>{rebateDemo.pendingExd}</p>
+                  </div>
+                  <div>
+                    <p className={styles.spreadWidgetLabel}>Upcoming USD</p>
+                    <p className={styles.spreadWidgetValue}>{rebateDemo.pendingUsd}</p>
+                  </div>
+                </div>
+                <p className={styles.spreadWidgetHint}>
+                  {rebateDemo.pendingCount} payouts pending in total
+                </p>
+                {rebateDemo.showAccountAlert ? (
+                  <div className={styles.spreadWidgetWarn}>
+                    <p className={styles.spreadWidgetWarnTitle}>USD account is not selected</p>
+                    <p className={styles.spreadWidgetWarnHint}>
+                      {rebateDemo.onHoldUsdAmount} from {rebateDemo.onHoldUsdCount} mature payouts is
+                      on hold. EXD already credited: {rebateDemo.paidExdAmount}.
+                    </p>
+                  </div>
+                ) : null}
+                <div className={styles.spreadWidgetFooter}>
+                  {rebateDemo.showAccountAlert ? (
+                    <button type="button" className={styles.spreadWidgetCta}>
+                      Select USD account
+                    </button>
+                  ) : null}
+                  <p className={styles.spreadWidgetTotalUsd}>
+                    Total future USD incl. on-hold: {rebateDemo.totalWithOnHoldUsd}
                   </p>
                 </div>
-              ) : null}
-              <div className={styles.spreadWidgetFooter}>
-                {rebateDemo.showAccountAlert ? (
-                  <button type="button" className={styles.spreadWidgetCta}>
-                    Select USD account
-                  </button>
-                ) : null}
-                <p className={styles.spreadWidgetTotalUsd}>
-                  Total future USD incl. on-hold: {rebateDemo.totalWithOnHoldUsd}
-                </p>
               </div>
-            </div>
+            )}
           </>
         ) : null}
 
         {spreadVariant === 'v4' ? (
           <>
-            <div className={styles.sectionSpacer} aria-hidden />
-            <SectionTitle title="Spread rebates" showChevron />
-            <div className={styles.v4Section}>
-              {rebateDemo.usdAccountSelected ? (
-                <div className={styles.v4AccountInfo}>
-                  <p className={styles.v4AccountLabel}>USD destination account</p>
-                  <p className={styles.v4AccountValue}>MT5 · #12345678</p>
-                </div>
-              ) : rebateDemo.showAccountAlert ? (
-                <div className={styles.v4Alert}>
-                  <div className={styles.v4AlertIcon}>
-                    <IconAlertTriangle size={20} stroke={2} aria-hidden />
-                  </div>
-                  <div className={styles.v4AlertBody}>
-                    <p className={styles.v4AlertTitle}>Select account for USD</p>
-                    <p className={styles.v4AlertDesc}>
-                      {rebateDemo.onHoldUsdAmount} is waiting for account selection.
+            {showV4SpreadSection ? (
+              <>
+                <div className={styles.sectionSpacer} aria-hidden />
+                <SectionTitle
+                  title="Spread rebates"
+                  showChevron={hasRebate}
+                  onClick={hasRebate ? () => onOpenRebateLedger?.() : undefined}
+                />
+                <div className={styles.v4Section}>
+                  {rebateDemo.usdAccountSelected ? (
+                    <div className={styles.v4AccountInfo}>
+                      <p className={styles.v4AccountLabel}>USD destination account</p>
+                      <p className={styles.v4AccountValue}>MT5 · #12345678</p>
+                    </div>
+                  ) : rebateDemo.showAccountAlert ? (
+                    <div className={styles.v4Alert}>
+                      <div className={styles.v4AlertIcon}>
+                        <IconAlertTriangle size={20} stroke={2} aria-hidden />
+                      </div>
+                      <div className={styles.v4AlertBody}>
+                        <p className={styles.v4AlertTitle}>Select account for USD</p>
+                        <p className={styles.v4AlertDesc}>
+                          {rebateDemo.onHoldUsdAmount} is waiting for account selection.
+                        </p>
+                        <button type="button" className={styles.v4AlertBtn}>
+                          Select account
+                        </button>
+                      </div>
+                    </div>
+                  ) : null}
+                  <div className={styles.v4Summary}>
+                    <div className={styles.v4SummaryTop}>
+                      <div>
+                        <p className={styles.v4SummaryLabel}>Accumulated USD</p>
+                        <p className={styles.v4SummaryValue}>{rebateDemo.pendingUsd}</p>
+                      </div>
+                      <div>
+                        <p className={styles.v4SummaryLabel}>Accumulated EXD</p>
+                        <p className={styles.v4SummaryValue}>{rebateDemo.pendingExd}</p>
+                      </div>
+                    </div>
+                    <p className={styles.v4SummaryInfo}>
+                      {rebateDemo.pendingCount} future payouts, nearest on {rebateDemo.nextPayoutDate}
                     </p>
-                    <button type="button" className={styles.v4AlertBtn}>
-                      Select account
-                    </button>
                   </div>
                 </div>
-              ) : null}
-              <div className={styles.v4Summary}>
-                <div className={styles.v4SummaryTop}>
-                  <div>
-                    <p className={styles.v4SummaryLabel}>Accumulated USD</p>
-                    <p className={styles.v4SummaryValue}>{rebateDemo.pendingUsd}</p>
-                  </div>
-                  <div>
-                    <p className={styles.v4SummaryLabel}>Accumulated EXD</p>
-                    <p className={styles.v4SummaryValue}>{rebateDemo.pendingExd}</p>
-                  </div>
-                </div>
-                <p className={styles.v4SummaryInfo}>
-                  {rebateDemo.pendingCount} future payouts, nearest on {rebateDemo.nextPayoutDate}
-                </p>
-              </div>
-            </div>
+              </>
+            ) : null}
 
             <div className={styles.sectionSpacer} aria-hidden />
             <SectionTitle title="Upcoming" showChevron />
             <div className={styles.v4UpcomingList}>
               {v4UpcomingRows.map((row) => (
-                <V2UpcomingRow key={row.id} row={row} />
+                <V2UpcomingRow
+                  key={row.id}
+                  row={row}
+                  onOpenRebateLedger={onOpenRebateLedger}
+                />
               ))}
             </div>
           </>
