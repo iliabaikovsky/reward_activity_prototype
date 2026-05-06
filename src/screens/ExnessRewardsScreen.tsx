@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useState, type Dispatch, type ReactNode, type SetStateAction } from 'react'
 import {
   IconAlertTriangle,
   IconArrowRight,
@@ -109,6 +109,119 @@ function V2UpcomingSectionTitle({
       </span>
       <IconChevronRight className={styles.chevronIcon} size={24} stroke={2} aria-hidden />
     </button>
+  )
+}
+
+/** Полный drill-in Upcoming (Figma 48965:89084 / 89743) — общий для V2 и V4. */
+function FlexibleUpcomingDrillIn({
+  onBack,
+  rebateDemo,
+  drillFilter,
+  setDrillFilter,
+  groupsAll,
+  groupsFiltered,
+  filteredUsdTotalLabel,
+  onOpenRebateLedger,
+}: {
+  onBack: () => void
+  rebateDemo: RebateDemoState
+  drillFilter: V2DrillFilter
+  setDrillFilter: Dispatch<SetStateAction<V2DrillFilter>>
+  groupsAll: V2DrillGroup[]
+  groupsFiltered: V2DrillGroup[]
+  filteredUsdTotalLabel: string
+  onOpenRebateLedger?: () => void
+}) {
+  return (
+    <>
+      <div className={styles.sectionSpacer} aria-hidden />
+      <div className={styles.v2DrillShell}>
+        <div className={styles.v2DrillTop}>
+          <button type="button" className={styles.v2InnerBack} onClick={onBack} aria-label="Back">
+            <IconChevronLeft size={22} stroke={2} aria-hidden />
+          </button>
+        </div>
+        <p className={styles.v2ExpandedTitle}>Upcoming</p>
+        <div className={styles.v2ChipRow}>
+          <button
+            type="button"
+            className={`${styles.v2Chip} ${drillFilter === 'rebates-usd' ? styles.v2ChipActive : ''}`}
+            disabled={!hasRebatePendingPayouts(rebateDemo)}
+            onClick={() => {
+              if (!hasRebatePendingPayouts(rebateDemo)) return
+              setDrillFilter((f) => (f === 'all' ? 'rebates-usd' : 'all'))
+            }}
+          >
+            {drillFilter === 'all' ? 'Program type' : 'Rebates'}
+            <IconChevronDown className={styles.v2ChipChevron} size={16} stroke={2} aria-hidden />
+          </button>
+          <button
+            type="button"
+            className={`${styles.v2Chip} ${drillFilter === 'rebates-usd' ? styles.v2ChipActive : ''}`}
+            disabled={!hasRebatePendingPayouts(rebateDemo)}
+            onClick={() => {
+              if (!hasRebatePendingPayouts(rebateDemo)) return
+              setDrillFilter((f) => (f === 'all' ? 'rebates-usd' : 'all'))
+            }}
+          >
+            {drillFilter === 'all' ? 'Equity type' : 'USD'}
+            <IconChevronDown className={styles.v2ChipChevron} size={16} stroke={2} aria-hidden />
+          </button>
+        </div>
+        {drillFilter === 'rebates-usd' && hasRebatePendingPayouts(rebateDemo) ? (
+          <div className={styles.v2TotalBar}>
+            <span className={styles.v2TotalBarLabel}>Total upcoming USD rebates:</span>
+            <span className={styles.v2TotalBarAmount}>{filteredUsdTotalLabel}</span>
+          </div>
+        ) : null}
+        <div className={styles.v2AllPage}>
+          {(drillFilter === 'rebates-usd' ? groupsFiltered : groupsAll).map((group) => (
+            <div key={group.id} className={styles.v2DrillGroup}>
+              <p className={styles.v2DateHeading}>{group.heading}</p>
+              {group.rows.map((row) => (
+                <V2UpcomingRow key={row.id} row={row} onOpenRebateLedger={onOpenRebateLedger} />
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+    </>
+  )
+}
+
+function SpreadPrototypeVariantStrip({
+  spreadVariant,
+  onSpreadVariantChange,
+}: {
+  spreadVariant: SpreadPrototypeVariant
+  onSpreadVariantChange: (v: SpreadPrototypeVariant) => void
+}) {
+  const variants: { id: SpreadPrototypeVariant; short: string; hint: string }[] = [
+    { id: 'v1', short: 'V1', hint: 'In Upcoming' },
+    { id: 'v2', short: 'V2', hint: 'Flexible Upcoming' },
+    { id: 'v3', short: 'V3', hint: 'Separate widget' },
+    { id: 'v4', short: 'V4', hint: 'Hybrid section' },
+  ]
+  return (
+    <div
+      className={styles.prototypeVariantStrip}
+      role="group"
+      aria-label="Spread rebate layout prototype"
+    >
+      {variants.map(({ id, short, hint }) => (
+        <button
+          key={id}
+          type="button"
+          title={hint}
+          className={`${styles.prototypeVariantChip} ${
+            spreadVariant === id ? styles.prototypeVariantChipActive : ''
+          }`}
+          onClick={() => onSpreadVariantChange(id)}
+        >
+          {short}
+        </button>
+      ))}
+    </div>
   )
 }
 
@@ -270,6 +383,8 @@ function RowIconTabler({ kind }: { kind: LifecycleActivityIcon }) {
 
 type ExnessRewardsScreenProps = {
   spreadVariant: SpreadPrototypeVariant
+  /** Переключение V1–V4 внутри макета телефона (дублирует панель сбоку). */
+  onSpreadVariantChange?: (variant: SpreadPrototypeVariant) => void
   /** Сброс dismiss V2 alert при смене сценария симулятора. */
   rebateScenarioId: string
   rebateDemo: RebateDemoState
@@ -290,6 +405,7 @@ type ExnessRewardsScreenProps = {
 
 export function ExnessRewardsScreen({
   spreadVariant,
+  onSpreadVariantChange,
   rebateScenarioId,
   rebateDemo,
   onOpenActivityFeed,
@@ -304,7 +420,7 @@ export function ExnessRewardsScreen({
   upcomingItems,
   activityPreviewItems,
 }: ExnessRewardsScreenProps) {
-  const [v2FullUpcomingOpen, setV2FullUpcomingOpen] = useState(false)
+  const [flexUpcomingDrillOpen, setFlexUpcomingDrillOpen] = useState(false)
   const [v2DrillFilter, setV2DrillFilter] = useState<V2DrillFilter>('all')
   const [v2AlertDismissed, setV2AlertDismissed] = useState(false)
   const availableExdAmount = parseFloat(
@@ -355,16 +471,16 @@ export function ExnessRewardsScreen({
   const hasRebate = hasRebatePendingPayouts(rebateDemo)
 
   useEffect(() => {
+    setFlexUpcomingDrillOpen(false)
+    setV2DrillFilter('all')
     if (spreadVariant !== 'v2') {
-      setV2FullUpcomingOpen(false)
-      setV2DrillFilter('all')
       setV2AlertDismissed(false)
     }
   }, [spreadVariant])
 
   useEffect(() => {
-    if (!v2FullUpcomingOpen) setV2DrillFilter('all')
-  }, [v2FullUpcomingOpen])
+    if (!flexUpcomingDrillOpen) setV2DrillFilter('all')
+  }, [flexUpcomingDrillOpen])
 
   useEffect(() => {
     if (!hasRebatePendingPayouts(rebateDemo) && v2DrillFilter === 'rebates-usd') {
@@ -796,6 +912,12 @@ export function ExnessRewardsScreen({
       </div>
 
       <div className={styles.body}>
+        {onSpreadVariantChange ? (
+          <SpreadPrototypeVariantStrip
+            spreadVariant={spreadVariant}
+            onSpreadVariantChange={onSpreadVariantChange}
+          />
+        ) : null}
         <div className={styles.walletsSection}>
           <div className={styles.walletsScroll} role="region" aria-label="Reward wallets">
             <article className={styles.walletCard}>
@@ -840,79 +962,25 @@ export function ExnessRewardsScreen({
           </div>
         </div>
 
-        {spreadVariant === 'v2' && v2FullUpcomingOpen ? (
-          <>
-            <div className={styles.sectionSpacer} aria-hidden />
-            <div className={styles.v2DrillShell}>
-              <div className={styles.v2DrillTop}>
-                <button
-                  type="button"
-                  className={styles.v2InnerBack}
-                  onClick={() => setV2FullUpcomingOpen(false)}
-                  aria-label="Back"
-                >
-                  <IconChevronLeft size={22} stroke={2} aria-hidden />
-                </button>
-              </div>
-              <p className={styles.v2ExpandedTitle}>Upcoming</p>
-              <div className={styles.v2ChipRow}>
-                <button
-                  type="button"
-                  className={`${styles.v2Chip} ${v2DrillFilter === 'rebates-usd' ? styles.v2ChipActive : ''}`}
-                  disabled={!hasRebatePendingPayouts(rebateDemo)}
-                  onClick={() => {
-                    if (!hasRebatePendingPayouts(rebateDemo)) return
-                    setV2DrillFilter((f) => (f === 'all' ? 'rebates-usd' : 'all'))
-                  }}
-                >
-                  {v2DrillFilter === 'all' ? 'Program type' : 'Rebates'}
-                  <IconChevronDown className={styles.v2ChipChevron} size={16} stroke={2} aria-hidden />
-                </button>
-                <button
-                  type="button"
-                  className={`${styles.v2Chip} ${v2DrillFilter === 'rebates-usd' ? styles.v2ChipActive : ''}`}
-                  disabled={!hasRebatePendingPayouts(rebateDemo)}
-                  onClick={() => {
-                    if (!hasRebatePendingPayouts(rebateDemo)) return
-                    setV2DrillFilter((f) => (f === 'all' ? 'rebates-usd' : 'all'))
-                  }}
-                >
-                  {v2DrillFilter === 'all' ? 'Equity type' : 'USD'}
-                  <IconChevronDown className={styles.v2ChipChevron} size={16} stroke={2} aria-hidden />
-                </button>
-              </div>
-              {v2DrillFilter === 'rebates-usd' && hasRebatePendingPayouts(rebateDemo) ? (
-                <div className={styles.v2TotalBar}>
-                  <span className={styles.v2TotalBarLabel}>Total upcoming USD rebates:</span>
-                  <span className={styles.v2TotalBarAmount}>{v2FilteredUsdTotalLabel}</span>
-                </div>
-              ) : null}
-              <div className={styles.v2AllPage}>
-                {(v2DrillFilter === 'rebates-usd' ? v2DrillGroupsFiltered : v2DrillGroupsAll).map(
-                  (group) => (
-                    <div key={group.id} className={styles.v2DrillGroup}>
-                      <p className={styles.v2DateHeading}>{group.heading}</p>
-                      {group.rows.map((row) => (
-                        <V2UpcomingRow
-                          key={row.id}
-                          row={row}
-                          onOpenRebateLedger={onOpenRebateLedger}
-                        />
-                      ))}
-                    </div>
-                  ),
-                )}
-              </div>
-            </div>
-          </>
+        {spreadVariant === 'v2' && flexUpcomingDrillOpen ? (
+          <FlexibleUpcomingDrillIn
+            onBack={() => setFlexUpcomingDrillOpen(false)}
+            rebateDemo={rebateDemo}
+            drillFilter={v2DrillFilter}
+            setDrillFilter={setV2DrillFilter}
+            groupsAll={v2DrillGroupsAll}
+            groupsFiltered={v2DrillGroupsFiltered}
+            filteredUsdTotalLabel={v2FilteredUsdTotalLabel}
+            onOpenRebateLedger={onOpenRebateLedger}
+          />
         ) : null}
 
-        {spreadVariant === 'v2' && !v2FullUpcomingOpen ? (
+        {spreadVariant === 'v2' && !flexUpcomingDrillOpen ? (
           <>
             <div className={styles.sectionSpacer} aria-hidden />
             <V2UpcomingSectionTitle
               badgeCount={v2BadgeCount}
-              onOpenAll={() => setV2FullUpcomingOpen(true)}
+              onOpenAll={() => setFlexUpcomingDrillOpen(true)}
             />
             <div className={styles.v2List}>
               {v2PinnedRows.map((row) => (
@@ -1128,16 +1196,34 @@ export function ExnessRewardsScreen({
             ) : null}
 
             <div className={styles.sectionSpacer} aria-hidden />
-            <SectionTitle title="Upcoming" showChevron />
-            <div className={styles.v4UpcomingList}>
-              {v4UpcomingRows.map((row) => (
-                <V2UpcomingRow
-                  key={row.id}
-                  row={row}
-                  onOpenRebateLedger={onOpenRebateLedger}
+            {flexUpcomingDrillOpen ? (
+              <FlexibleUpcomingDrillIn
+                onBack={() => setFlexUpcomingDrillOpen(false)}
+                rebateDemo={rebateDemo}
+                drillFilter={v2DrillFilter}
+                setDrillFilter={setV2DrillFilter}
+                groupsAll={v2DrillGroupsAll}
+                groupsFiltered={v2DrillGroupsFiltered}
+                filteredUsdTotalLabel={v2FilteredUsdTotalLabel}
+                onOpenRebateLedger={onOpenRebateLedger}
+              />
+            ) : (
+              <>
+                <V2UpcomingSectionTitle
+                  badgeCount={v4UpcomingRows.length}
+                  onOpenAll={() => setFlexUpcomingDrillOpen(true)}
                 />
-              ))}
-            </div>
+                <div className={styles.v4UpcomingList}>
+                  {v4UpcomingRows.map((row) => (
+                    <V2UpcomingRow
+                      key={row.id}
+                      row={row}
+                      onOpenRebateLedger={onOpenRebateLedger}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
           </>
         ) : null}
 

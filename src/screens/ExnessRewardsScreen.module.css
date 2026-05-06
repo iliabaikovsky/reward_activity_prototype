@@ -522,6 +522,37 @@
   flex-direction: column;
 }
 
+/* Внутри телефона: быстрый выбор V1–V4 (синхрон с панелью справа). */
+.prototypeVariantStrip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 0 0 12px;
+  margin: 0 0 4px;
+  border-bottom: 1px solid var(--reward-border);
+}
+
+.prototypeVariantChip {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 8px 6px;
+  border-radius: 8px;
+  border: 1px solid var(--reward-border);
+  background: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+  color: var(--reward-text-secondary);
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.prototypeVariantChipActive {
+  border-color: var(--reward-text-primary);
+  background: var(--reward-steel);
+  color: var(--reward-text-primary);
+}
+
 /* V2 · Figma Long-Term Rebates CE-3188 (48965:88125 / 89084 / 89743) */
 .v2SectionTitleRow {
   display: flex;

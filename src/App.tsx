@@ -64,6 +64,7 @@ function App() {
             ) : route === 'rewards' ? (
               <ExnessRewardsScreen
                 spreadVariant={spreadVariant}
+                onSpreadVariantChange={setSpreadVariant}
                 rebateScenarioId={rebateScenario.id}
                 rebateDemo={rebateScenario.rebate}
                 onOpenActivityFeed={(opts) => openActivity(opts)}
