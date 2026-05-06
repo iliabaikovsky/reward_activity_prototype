@@ -1,10 +1,10 @@
 import { useLayoutEffect, useRef } from 'react'
 import { IconChevronLeft, IconChevronRight } from '@tabler/icons-react'
-import type { LifecycleStep } from './lifecycleSteps'
+import type { RebateSimulatorStep } from './rebateSimulatorSteps'
 import styles from './LifecycleSimulatorPanel.module.css'
 
 type Props = {
-  steps: LifecycleStep[]
+  steps: RebateSimulatorStep[]
   stepIndex: number
   onStepIndexChange: (index: number) => void
   spreadVariant: 'v1' | 'v2' | 'v3' | 'v4'
@@ -21,18 +21,17 @@ export function LifecycleSimulatorPanel({
   const step = steps[stepIndex]
   const last = steps.length - 1
   const detailsRef = useRef<HTMLDetailsElement>(null)
+  const life = step.lifecycle
+  const r = step.rebate
 
   const snapshot = [
-    `Available: ${step.availableRewardsExd}`,
-    `Trading wallet: ${step.tradingWalletValue} (${step.tradingWalletLabel})`,
-    `Lifetime cashback: ${step.lifetimeCashbackUsd}`,
-    `Upcoming: ${step.upcoming.length} row(s)`,
-    `Activity (home): ${step.activityPreview.length} row(s)`,
-    `Feed groups: ${step.feedGroups.length}`,
+    `Spread pending: ${r.pendingCount} · USD ${r.pendingUsd} · EXD ${r.pendingExd}`,
+    `Next: ${r.nextPayoutDate} · On-hold USD: ${r.onHoldUsdAmount} (${r.onHoldUsdCount})`,
+    `Available: ${life.availableRewardsExd} · Trading: ${life.tradingWalletValue}`,
+    `Lifetime cashback: ${life.lifetimeCashbackUsd} · Feed groups: ${life.feedGroups.length}`,
   ].join('\n')
 
   useLayoutEffect(() => {
-    /* ≥481px: раскрыта справка; ≤480px блок скрыт в CSS */
     const mq = window.matchMedia('(min-width: 481px)')
     const sync = () => {
       const el = detailsRef.current
@@ -44,8 +43,7 @@ export function LifecycleSimulatorPanel({
   }, [])
 
   return (
-    <aside className={styles.panel} aria-label="Lifecycle simulator">
-      {/* Figma 42137:26421 — liquid glass rail */}
+    <aside className={styles.panel} aria-label="Spread rebate simulator">
       <div className={styles.glassRail}>
         <button
           type="button"
@@ -74,17 +72,17 @@ export function LifecycleSimulatorPanel({
       <details ref={detailsRef} className={styles.glassDetails}>
         <summary className={styles.glassDetailsSummary}>Справка и снимок состояния</summary>
         <div className={styles.glassDetailsBody}>
-          <h2 className={styles.title}>Симулятор жизненного цикла</h2>
+          <h2 className={styles.title}>Симулятор spread rebate</h2>
           <p className={styles.sub}>
-            Соответствие шагов — файл <strong>REWARD_LIFECYCLE.md</strong> в корне репо. Суммы в списках
-            и ленте совпадают со сценарием; bottom sheet при клике — демо-пресеты прототипа.
+            Пять этапов для прототипа программы (T+60, USD/EXD, on-hold). Экран Rewards и лента
+            синхронизированы с выбранным шагом; варианты V1–V4 только меняют вёрстку.
           </p>
 
-          <label className={styles.stepMeta} htmlFor="lifecycle-step-select">
+          <label className={styles.stepMeta} htmlFor="rebate-step-select">
             Шаг {stepIndex + 1} / {steps.length}
           </label>
           <select
-            id="lifecycle-step-select"
+            id="rebate-step-select"
             className={styles.select}
             value={stepIndex}
             onChange={(e) => onStepIndexChange(Number(e.target.value))}
@@ -130,9 +128,6 @@ export function LifecycleSimulatorPanel({
               </button>
             </div>
           </div>
-
-          <p className={styles.stepLabel}>{step.label}</p>
-          <p className={styles.stepMeta}>{step.docRef}</p>
 
           <p className={styles.stepMeta}>Снимок состояния</p>
           <pre className={styles.snapshot}>{snapshot}</pre>

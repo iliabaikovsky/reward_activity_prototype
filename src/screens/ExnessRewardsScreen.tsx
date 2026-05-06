@@ -19,6 +19,8 @@ import type {
   LifecycleUpcomingItem,
 } from '../rewardLifecycle/lifecycleSteps'
 import type { ActivityTypeFilter } from './activityFeedTypes'
+import type { RebateDemoState } from '../rewardLifecycle/rebateSimulatorSteps'
+import { rebateNextChunk } from '../rewardLifecycle/rebateSimulatorSteps'
 import styles from './ExnessRewardsScreen.module.css'
 
 /** Временно скрываем бейдж в разметке (элемент в DOM остаётся). Поставь false, чтобы снова показать. */
@@ -26,18 +28,6 @@ const HIDE_TRANSACTION_BADGES = true
 
 const TIER_EXD_GOAL = 1000
 type SpreadPrototypeVariant = 'v1' | 'v2' | 'v3' | 'v4'
-
-const SPREAD_DEMO = {
-  pendingCount: 60,
-  pendingExd: '+184.20 EXD',
-  pendingUsd: '+192.45 USD',
-  nextPayoutDate: '7 May 2026',
-  paidExdCount: 5,
-  paidExdAmount: '+20.98 EXD',
-  onHoldUsdCount: 5,
-  onHoldUsdAmount: '+21.40 USD',
-  totalWithOnHoldUsd: '+213.85 USD',
-}
 
 /** Парсит сумму из строки вида "+3.20 EXD" */
 function parseExdFromAmountLabel(amount: string): number {
@@ -196,6 +186,9 @@ function RowIconTabler({ kind }: { kind: LifecycleActivityIcon }) {
 
 type ExnessRewardsScreenProps = {
   spreadVariant: SpreadPrototypeVariant
+  /** Сброс dismiss V2 alert при смене сценария симулятора. */
+  rebateScenarioId: string
+  rebateDemo: RebateDemoState
   /** `category: 'cashback'` — с Lifetime cashback; без opts — с Activity feed */
   onOpenActivityFeed?: (opts?: { category?: ActivityTypeFilter }) => void
   onOpenRewardModal?: (variant: RewardModalVariant, feedItemId?: string) => void
@@ -212,6 +205,8 @@ type ExnessRewardsScreenProps = {
 
 export function ExnessRewardsScreen({
   spreadVariant,
+  rebateScenarioId,
+  rebateDemo,
   onOpenActivityFeed,
   onOpenRewardModal,
   availableRewardsExd,
@@ -225,7 +220,6 @@ export function ExnessRewardsScreen({
 }: ExnessRewardsScreenProps) {
   const [v2FullUpcomingOpen, setV2FullUpcomingOpen] = useState(false)
   const [v2AlertDismissed, setV2AlertDismissed] = useState(false)
-  const [v4AccountSelected, setV4AccountSelected] = useState(false)
   const availableExdAmount = parseFloat(
     availableRewardsExd.replace(/,/g, '').trim().split(/\s+/)[0] ?? '0',
   )
@@ -261,8 +255,14 @@ export function ExnessRewardsScreen({
         maximumFractionDigits: 2,
       })
 
-  const v1NextUsdPayout = `+${(192.45 / 60).toFixed(2)} USD`
-  const v1NextExdPayout = `+${(184.2 / 60).toFixed(2)} EXD`
+  const v1NextUsdPayout = useMemo(
+    () => rebateNextChunk(rebateDemo.pendingUsd, rebateDemo.pendingCount, 'USD'),
+    [rebateDemo.pendingUsd, rebateDemo.pendingCount],
+  )
+  const v1NextExdPayout = useMemo(
+    () => rebateNextChunk(rebateDemo.pendingExd, rebateDemo.pendingCount, 'EXD'),
+    [rebateDemo.pendingExd, rebateDemo.pendingCount],
+  )
 
   useEffect(() => {
     if (spreadVariant !== 'v2') {
@@ -270,6 +270,10 @@ export function ExnessRewardsScreen({
       setV2AlertDismissed(false)
     }
   }, [spreadVariant])
+
+  useEffect(() => {
+    setV2AlertDismissed(false)
+  }, [rebateScenarioId])
 
   const v1UpcomingRows: LifecycleUpcomingItem[] = useMemo(
     () => [
@@ -295,10 +299,14 @@ export function ExnessRewardsScreen({
         id: 'v1-cash-rebates',
         icon: 'dollar',
         title: 'Cash rebates',
-        amount: SPREAD_DEMO.pendingUsd,
+        amount: rebateDemo.pendingUsd,
         lines: [
-          `${SPREAD_DEMO.pendingCount} pending payouts`,
-          `Next ${v1NextUsdPayout} on ${SPREAD_DEMO.nextPayoutDate}`,
+          `${rebateDemo.pendingCount} pending payouts`,
+          rebateDemo.pendingCount > 0
+            ? rebateDemo.nextPayoutDate === 'Tomorrow'
+              ? `Next ${v1NextUsdPayout} tomorrow`
+              : `Next ${v1NextUsdPayout} on ${rebateDemo.nextPayoutDate}`
+            : 'No pending payouts',
         ],
         date: 'In queue',
         rewardModal: 'cashback-upcoming',
@@ -307,16 +315,20 @@ export function ExnessRewardsScreen({
         id: 'v1-reward-rebates',
         icon: 'crown',
         title: 'Reward rebates',
-        amount: SPREAD_DEMO.pendingExd,
+        amount: rebateDemo.pendingExd,
         lines: [
-          `${SPREAD_DEMO.pendingCount} pending payouts`,
-          `Next ${v1NextExdPayout} on ${SPREAD_DEMO.nextPayoutDate}`,
+          `${rebateDemo.pendingCount} pending payouts`,
+          rebateDemo.pendingCount > 0
+            ? rebateDemo.nextPayoutDate === 'Tomorrow'
+              ? `Next ${v1NextExdPayout} tomorrow`
+              : `Next ${v1NextExdPayout} on ${rebateDemo.nextPayoutDate}`
+            : 'No pending payouts',
         ],
         date: 'In queue',
         rewardModal: 'loyalty-upcoming',
       },
     ],
-    [],
+    [rebateDemo, v1NextUsdPayout, v1NextExdPayout],
   )
 
   const showUpcomingBlock =
@@ -324,117 +336,141 @@ export function ExnessRewardsScreen({
     spreadVariant !== 'v4' &&
     (spreadVariant === 'v1' || upcomingItems.length > 0)
 
-  const flexiblePreviewRows: V2UpcomingRowData[] = [
-    {
-      id: 'pin-cashback',
-      icon: 'dollar',
-      title: 'Cashback',
-      amount: '+0.64 USD',
-      line1: 'For daily trading',
-      date: 'Tomorrow',
-      pinned: true,
-    },
-    {
-      id: 'pin-loyalty',
-      icon: 'crown',
-      title: 'Loyalty rewards',
-      amount: '+3.70 EXD',
-      line1: 'For weekly trading',
-      date: 'on Jan 17',
-      pinned: true,
-    },
-    {
-      id: 'pin-spread-exd',
-      icon: 'dollar',
-      title: 'Spread rebates',
-      amount: '+2.45 USD',
-      line1: 'Closest payout',
-      line2: 'From 22 trading days',
-      date: 'on May 7',
-    },
-    {
-      id: 'pin-spread-usd',
-      icon: 'crown',
-      title: 'Spread rebates',
-      amount: '+1.20 EXD',
-      line1: 'Closest payout',
-      line2: 'From 22 trading days',
-      date: 'on May 7',
-    },
-  ]
+  const spreadPreviewUsd = useMemo(
+    () => rebateNextChunk(rebateDemo.pendingUsd, rebateDemo.pendingCount, 'USD'),
+    [rebateDemo.pendingUsd, rebateDemo.pendingCount],
+  )
+  const spreadPreviewExd = useMemo(
+    () => rebateNextChunk(rebateDemo.pendingExd, rebateDemo.pendingCount, 'EXD'),
+    [rebateDemo.pendingExd, rebateDemo.pendingCount],
+  )
+  const spreadDateLabel =
+    rebateDemo.nextPayoutDate === '—'
+      ? '—'
+      : rebateDemo.nextPayoutDate === 'Tomorrow'
+        ? 'Tomorrow'
+        : `on ${rebateDemo.nextPayoutDate}`
 
-  const flexibleAllRows: V2UpcomingRowData[] = [
-    ...flexiblePreviewRows,
-    {
-      id: 'all-loyalty-next',
-      icon: 'crown',
-      title: 'Loyalty rewards',
-      amount: '+2.20 EXD',
-      line1: 'For weekly trading',
-      date: 'on Jan 24',
-    },
-    {
-      id: 'all-cashback-next',
-      icon: 'dollar',
-      title: 'Cashback',
-      amount: '+4.10 USD',
-      line1: 'For daily trading',
-      date: 'on Jan 25',
-    },
-    {
-      id: 'all-spread-agg',
-      icon: 'dollar',
-      title: 'Spread rebate · all pending',
-      amount: `${SPREAD_DEMO.pendingExd} / ${SPREAD_DEMO.pendingUsd}`,
-      line1: `${SPREAD_DEMO.pendingCount} payouts pending in total`,
-      date: 'Daily',
-    },
-    {
-      id: 'all-spread-paid',
-      icon: 'crown',
-      title: 'Spread rebate · EXD already paid',
-      amount: SPREAD_DEMO.paidExdAmount,
-      line1: `${SPREAD_DEMO.paidExdCount} mature payouts processed`,
-      date: 'Done',
-    },
-  ]
+  const flexiblePreviewRows: V2UpcomingRowData[] = useMemo(
+    () => [
+      {
+        id: 'pin-cashback',
+        icon: 'dollar',
+        title: 'Cashback',
+        amount: '+0.64 USD',
+        line1: 'For daily trading',
+        date: 'Tomorrow',
+        pinned: true,
+      },
+      {
+        id: 'pin-loyalty',
+        icon: 'crown',
+        title: 'Loyalty rewards',
+        amount: '+3.70 EXD',
+        line1: 'For weekly trading',
+        date: 'on Jan 17',
+        pinned: true,
+      },
+      {
+        id: 'pin-spread-exd',
+        icon: 'dollar',
+        title: 'Spread rebates',
+        amount: spreadPreviewUsd,
+        line1: 'Closest payout',
+        line2: `From ${rebateDemo.pendingCount} payout slots`,
+        date: spreadDateLabel,
+      },
+      {
+        id: 'pin-spread-usd',
+        icon: 'crown',
+        title: 'Spread rebates',
+        amount: spreadPreviewExd,
+        line1: 'Closest payout',
+        line2: `From ${rebateDemo.pendingCount} payout slots`,
+        date: spreadDateLabel,
+      },
+    ],
+    [rebateDemo.pendingCount, spreadDateLabel, spreadPreviewExd, spreadPreviewUsd],
+  )
 
-  const v4UpcomingRows: V2UpcomingRowData[] = [
-    {
-      id: 'v4-cashback',
-      icon: 'dollar',
-      title: 'Cashback',
-      amount: '+0.64 USD',
-      line1: 'For daily trading',
-      date: 'Tomorrow',
-    },
-    {
-      id: 'v4-loyalty',
-      icon: 'crown',
-      title: 'Loyalty rewards',
-      amount: '+3.70 EXD',
-      line1: 'For weekly trading',
-      date: 'on Jan 17',
-    },
-    {
-      id: 'v4-spread-usd',
-      icon: 'dollar',
-      title: 'Spread rebates',
-      amount: '+2.45 USD',
-      line1: 'Closest payout',
-      line2: 'From 22 trading days',
-      date: 'on May 7',
-    },
-    {
-      id: 'v4-spread-exd',
-      icon: 'crown',
-      title: 'Spread rebates',
-      amount: '+1.20 EXD',
-      line1: 'Closest payout',
-      line2: 'From 22 trading days',
-      date: 'on May 7',
-    },
-  ]
+  const flexibleAllRows: V2UpcomingRowData[] = useMemo(
+    () => [
+      ...flexiblePreviewRows,
+      {
+        id: 'all-loyalty-next',
+        icon: 'crown',
+        title: 'Loyalty rewards',
+        amount: '+2.20 EXD',
+        line1: 'For weekly trading',
+        date: 'on Jan 24',
+      },
+      {
+        id: 'all-cashback-next',
+        icon: 'dollar',
+        title: 'Cashback',
+        amount: '+4.10 USD',
+        line1: 'For daily trading',
+        date: 'on Jan 25',
+      },
+      {
+        id: 'all-spread-agg',
+        icon: 'dollar',
+        title: 'Spread rebate · all pending',
+        amount: `${rebateDemo.pendingExd} / ${rebateDemo.pendingUsd}`,
+        line1: `${rebateDemo.pendingCount} payouts pending in total`,
+        date: 'Daily',
+      },
+      {
+        id: 'all-spread-paid',
+        icon: 'crown',
+        title: 'Spread rebate · EXD already paid',
+        amount: rebateDemo.paidExdAmount,
+        line1: `${rebateDemo.paidExdCount} mature payouts processed`,
+        date: 'Done',
+      },
+    ],
+    [flexiblePreviewRows, rebateDemo],
+  )
+
+  const v4UpcomingRows: V2UpcomingRowData[] = useMemo(
+    () => [
+      {
+        id: 'v4-cashback',
+        icon: 'dollar',
+        title: 'Cashback',
+        amount: '+0.64 USD',
+        line1: 'For daily trading',
+        date: 'Tomorrow',
+      },
+      {
+        id: 'v4-loyalty',
+        icon: 'crown',
+        title: 'Loyalty rewards',
+        amount: '+3.70 EXD',
+        line1: 'For weekly trading',
+        date: 'on Jan 17',
+      },
+      {
+        id: 'v4-spread-usd',
+        icon: 'dollar',
+        title: 'Spread rebates',
+        amount: spreadPreviewUsd,
+        line1: 'Closest payout',
+        line2: `From ${rebateDemo.pendingCount} payout slots`,
+        date: spreadDateLabel,
+      },
+      {
+        id: 'v4-spread-exd',
+        icon: 'crown',
+        title: 'Spread rebates',
+        amount: spreadPreviewExd,
+        line1: 'Closest payout',
+        line2: `From ${rebateDemo.pendingCount} payout slots`,
+        date: spreadDateLabel,
+      },
+    ],
+    [rebateDemo.pendingCount, spreadDateLabel, spreadPreviewExd, spreadPreviewUsd],
+  )
 
   return (
     <div className={styles.screen} data-node-id="42104:10683">
@@ -590,7 +626,7 @@ export function ExnessRewardsScreen({
               {flexiblePreviewRows.map((row, i) => (
                 <div key={row.id}>
                   <V2UpcomingRow row={row} />
-                  {i === 2 && !v2AlertDismissed ? (
+                  {i === 2 && rebateDemo.showAccountAlert && !v2AlertDismissed ? (
                     <div className={styles.v2Alert}>
                       <div className={styles.v2AlertIcon}>
                         <IconAlertTriangle size={20} stroke={2} aria-hidden />
@@ -598,7 +634,7 @@ export function ExnessRewardsScreen({
                       <div className={styles.v2AlertBody}>
                         <p className={styles.v2AlertTitle}>Select account for USD</p>
                         <p className={styles.v2AlertDesc}>
-                          {SPREAD_DEMO.onHoldUsdAmount} is waiting until account is selected.
+                          {rebateDemo.onHoldUsdAmount} is waiting until account is selected.
                         </p>
                         <button type="button" className={styles.v2AlertBtn}>
                           Select account
@@ -648,34 +684,38 @@ export function ExnessRewardsScreen({
             <div className={styles.spreadWidget}>
               <div className={styles.spreadWidgetHead}>
                 <p className={styles.spreadWidgetMeta}>60-day payout pipeline</p>
-                <p className={styles.spreadWidgetNext}>Next: {SPREAD_DEMO.nextPayoutDate}</p>
+                <p className={styles.spreadWidgetNext}>Next: {rebateDemo.nextPayoutDate}</p>
               </div>
               <div className={styles.spreadWidgetTotals}>
                 <div>
                   <p className={styles.spreadWidgetLabel}>Upcoming EXD</p>
-                  <p className={styles.spreadWidgetValue}>{SPREAD_DEMO.pendingExd}</p>
+                  <p className={styles.spreadWidgetValue}>{rebateDemo.pendingExd}</p>
                 </div>
                 <div>
                   <p className={styles.spreadWidgetLabel}>Upcoming USD</p>
-                  <p className={styles.spreadWidgetValue}>{SPREAD_DEMO.pendingUsd}</p>
+                  <p className={styles.spreadWidgetValue}>{rebateDemo.pendingUsd}</p>
                 </div>
               </div>
               <p className={styles.spreadWidgetHint}>
-                {SPREAD_DEMO.pendingCount} payouts pending in total
+                {rebateDemo.pendingCount} payouts pending in total
               </p>
-              <div className={styles.spreadWidgetWarn}>
-                <p className={styles.spreadWidgetWarnTitle}>USD account is not selected</p>
-                <p className={styles.spreadWidgetWarnHint}>
-                  {SPREAD_DEMO.onHoldUsdAmount} from {SPREAD_DEMO.onHoldUsdCount} mature payouts is on
-                  hold. EXD already credited: {SPREAD_DEMO.paidExdAmount}.
-                </p>
-              </div>
+              {rebateDemo.showAccountAlert ? (
+                <div className={styles.spreadWidgetWarn}>
+                  <p className={styles.spreadWidgetWarnTitle}>USD account is not selected</p>
+                  <p className={styles.spreadWidgetWarnHint}>
+                    {rebateDemo.onHoldUsdAmount} from {rebateDemo.onHoldUsdCount} mature payouts is on
+                    hold. EXD already credited: {rebateDemo.paidExdAmount}.
+                  </p>
+                </div>
+              ) : null}
               <div className={styles.spreadWidgetFooter}>
-                <button type="button" className={styles.spreadWidgetCta}>
-                  Select USD account
-                </button>
+                {rebateDemo.showAccountAlert ? (
+                  <button type="button" className={styles.spreadWidgetCta}>
+                    Select USD account
+                  </button>
+                ) : null}
                 <p className={styles.spreadWidgetTotalUsd}>
-                  Total future USD incl. on-hold: {SPREAD_DEMO.totalWithOnHoldUsd}
+                  Total future USD incl. on-hold: {rebateDemo.totalWithOnHoldUsd}
                 </p>
               </div>
             </div>
@@ -687,24 +727,12 @@ export function ExnessRewardsScreen({
             <div className={styles.sectionSpacer} aria-hidden />
             <SectionTitle title="Spread rebates" showChevron />
             <div className={styles.v4Section}>
-              <div className={styles.v4StateSwitch} role="group" aria-label="USD destination state">
-                <button
-                  type="button"
-                  className={`${styles.v4StateBtn} ${!v4AccountSelected ? styles.v4StateBtnActive : ''}`}
-                  onClick={() => setV4AccountSelected(false)}
-                >
-                  Account not selected
-                </button>
-                <button
-                  type="button"
-                  className={`${styles.v4StateBtn} ${v4AccountSelected ? styles.v4StateBtnActive : ''}`}
-                  onClick={() => setV4AccountSelected(true)}
-                >
-                  Account selected
-                </button>
-              </div>
-
-              {!v4AccountSelected ? (
+              {rebateDemo.usdAccountSelected ? (
+                <div className={styles.v4AccountInfo}>
+                  <p className={styles.v4AccountLabel}>USD destination account</p>
+                  <p className={styles.v4AccountValue}>MT5 · #12345678</p>
+                </div>
+              ) : rebateDemo.showAccountAlert ? (
                 <div className={styles.v4Alert}>
                   <div className={styles.v4AlertIcon}>
                     <IconAlertTriangle size={20} stroke={2} aria-hidden />
@@ -712,32 +740,27 @@ export function ExnessRewardsScreen({
                   <div className={styles.v4AlertBody}>
                     <p className={styles.v4AlertTitle}>Select account for USD</p>
                     <p className={styles.v4AlertDesc}>
-                      {SPREAD_DEMO.onHoldUsdAmount} is waiting for account selection.
+                      {rebateDemo.onHoldUsdAmount} is waiting for account selection.
                     </p>
                     <button type="button" className={styles.v4AlertBtn}>
                       Select account
                     </button>
                   </div>
                 </div>
-              ) : (
-                <div className={styles.v4AccountInfo}>
-                  <p className={styles.v4AccountLabel}>USD destination account</p>
-                  <p className={styles.v4AccountValue}>MT5 · #12345678</p>
-                </div>
-              )}
+              ) : null}
               <div className={styles.v4Summary}>
                 <div className={styles.v4SummaryTop}>
                   <div>
                     <p className={styles.v4SummaryLabel}>Accumulated USD</p>
-                    <p className={styles.v4SummaryValue}>{SPREAD_DEMO.pendingUsd}</p>
+                    <p className={styles.v4SummaryValue}>{rebateDemo.pendingUsd}</p>
                   </div>
                   <div>
                     <p className={styles.v4SummaryLabel}>Accumulated EXD</p>
-                    <p className={styles.v4SummaryValue}>{SPREAD_DEMO.pendingExd}</p>
+                    <p className={styles.v4SummaryValue}>{rebateDemo.pendingExd}</p>
                   </div>
                 </div>
                 <p className={styles.v4SummaryInfo}>
-                  {SPREAD_DEMO.pendingCount} future payouts, nearest on {SPREAD_DEMO.nextPayoutDate}
+                  {rebateDemo.pendingCount} future payouts, nearest on {rebateDemo.nextPayoutDate}
                 </p>
               </div>
             </div>
