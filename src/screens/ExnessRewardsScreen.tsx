@@ -122,6 +122,7 @@ function FlexibleUpcomingDrillIn({
   groupsFiltered,
   filteredUsdTotalLabel,
   onOpenRebateLedger,
+  fullPage = false,
 }: {
   onBack: () => void
   rebateDemo: RebateDemoState
@@ -131,11 +132,14 @@ function FlexibleUpcomingDrillIn({
   groupsFiltered: V2DrillGroup[]
   filteredUsdTotalLabel: string
   onOpenRebateLedger?: () => void
+  /** Отдельный экран без hero и прочих секций (Figma drill-in). */
+  fullPage?: boolean
 }) {
+  const shellClass = fullPage ? `${styles.v2DrillShell} ${styles.v2DrillShellFullPage}` : styles.v2DrillShell
   return (
     <>
-      <div className={styles.sectionSpacer} aria-hidden />
-      <div className={styles.v2DrillShell}>
+      {!fullPage ? <div className={styles.sectionSpacer} aria-hidden /> : null}
+      <div className={shellClass}>
         <div className={styles.v2DrillTop}>
           <button type="button" className={styles.v2InnerBack} onClick={onBack} aria-label="Back">
             <IconChevronLeft size={22} stroke={2} aria-hidden />
@@ -838,6 +842,29 @@ export function ExnessRewardsScreen({
     rebateDemo.showAccountAlert ||
     rebateDemo.usdAccountSelected
 
+  const flexibleDrillFullPage =
+    flexUpcomingDrillOpen && (spreadVariant === 'v2' || spreadVariant === 'v4')
+
+  if (flexibleDrillFullPage) {
+    return (
+      <div className={`${styles.screen} ${styles.screenDrillOnly}`} data-node-id="42104:10683">
+        <div className={styles.flexDrillPageRoot}>
+          <FlexibleUpcomingDrillIn
+            fullPage
+            onBack={() => setFlexUpcomingDrillOpen(false)}
+            rebateDemo={rebateDemo}
+            drillFilter={v2DrillFilter}
+            setDrillFilter={setV2DrillFilter}
+            groupsAll={v2DrillGroupsAll}
+            groupsFiltered={v2DrillGroupsFiltered}
+            filteredUsdTotalLabel={v2FilteredUsdTotalLabel}
+            onOpenRebateLedger={onOpenRebateLedger}
+          />
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className={styles.screen} data-node-id="42104:10683">
       <div className={styles.hero}>
@@ -961,19 +988,6 @@ export function ExnessRewardsScreen({
             💸
           </div>
         </div>
-
-        {spreadVariant === 'v2' && flexUpcomingDrillOpen ? (
-          <FlexibleUpcomingDrillIn
-            onBack={() => setFlexUpcomingDrillOpen(false)}
-            rebateDemo={rebateDemo}
-            drillFilter={v2DrillFilter}
-            setDrillFilter={setV2DrillFilter}
-            groupsAll={v2DrillGroupsAll}
-            groupsFiltered={v2DrillGroupsFiltered}
-            filteredUsdTotalLabel={v2FilteredUsdTotalLabel}
-            onOpenRebateLedger={onOpenRebateLedger}
-          />
-        ) : null}
 
         {spreadVariant === 'v2' && !flexUpcomingDrillOpen ? (
           <>
@@ -1196,34 +1210,19 @@ export function ExnessRewardsScreen({
             ) : null}
 
             <div className={styles.sectionSpacer} aria-hidden />
-            {flexUpcomingDrillOpen ? (
-              <FlexibleUpcomingDrillIn
-                onBack={() => setFlexUpcomingDrillOpen(false)}
-                rebateDemo={rebateDemo}
-                drillFilter={v2DrillFilter}
-                setDrillFilter={setV2DrillFilter}
-                groupsAll={v2DrillGroupsAll}
-                groupsFiltered={v2DrillGroupsFiltered}
-                filteredUsdTotalLabel={v2FilteredUsdTotalLabel}
-                onOpenRebateLedger={onOpenRebateLedger}
-              />
-            ) : (
-              <>
-                <V2UpcomingSectionTitle
-                  badgeCount={v4UpcomingRows.length}
-                  onOpenAll={() => setFlexUpcomingDrillOpen(true)}
+            <V2UpcomingSectionTitle
+              badgeCount={v4UpcomingRows.length}
+              onOpenAll={() => setFlexUpcomingDrillOpen(true)}
+            />
+            <div className={styles.v4UpcomingList}>
+              {v4UpcomingRows.map((row) => (
+                <V2UpcomingRow
+                  key={row.id}
+                  row={row}
+                  onOpenRebateLedger={onOpenRebateLedger}
                 />
-                <div className={styles.v4UpcomingList}>
-                  {v4UpcomingRows.map((row) => (
-                    <V2UpcomingRow
-                      key={row.id}
-                      row={row}
-                      onOpenRebateLedger={onOpenRebateLedger}
-                    />
-                  ))}
-                </div>
-              </>
-            )}
+              ))}
+            </div>
           </>
         ) : null}
 
