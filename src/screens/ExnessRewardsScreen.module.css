@@ -645,11 +645,28 @@
   color: var(--reward-text-primary);
 }
 
+.v2ChipRowsStack {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.v2FilterSectionLabel {
+  margin: 4px 0 0;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--reward-text-secondary);
+}
+
 .v2ChipRow {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-bottom: 12px;
+  margin-bottom: 0;
 }
 
 .v2Chip {

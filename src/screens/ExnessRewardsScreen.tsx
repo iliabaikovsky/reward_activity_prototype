@@ -3,7 +3,6 @@ import {
   IconAlertTriangle,
   IconArrowRight,
   IconArrowsRightLeft,
-  IconChevronDown,
   IconChevronLeft,
   IconChevronRight,
   IconCrown,
@@ -22,7 +21,6 @@ import type {
 import type { ActivityTypeFilter } from './activityFeedTypes'
 import type { RebateDemoState } from '../rewardLifecycle/rebateSimulatorSteps'
 import {
-  hasRebatePaidExd,
   hasRebatePendingPayouts,
   parseSignedAmount,
   rebateNextChunk,
@@ -89,13 +87,15 @@ function SectionTitle({
   return <div className={`${styles.sectionTitleRow} ${styles.sectionTitleRowStatic}`}>{inner}</div>
 }
 
-/** Заголовок секции Upcoming для V2 — Figma 48965:88125 (H3 + count badge + chevron). */
+/** Заголовок секции Upcoming для V2 — Figma 48965:88125 (H3 + count badge; шеврон опционален). */
 function V2UpcomingSectionTitle({
   badgeCount,
   onOpenAll,
+  showChevron = true,
 }: {
   badgeCount: number
   onOpenAll: () => void
+  showChevron?: boolean
 }) {
   return (
     <button type="button" className={styles.v2SectionTitleRow} onClick={onOpenAll}>
@@ -107,7 +107,9 @@ function V2UpcomingSectionTitle({
           {badgeCount}
         </span>
       </span>
-      <IconChevronRight className={styles.chevronIcon} size={24} stroke={2} aria-hidden />
+      {showChevron ? (
+        <IconChevronRight className={styles.chevronIcon} size={24} stroke={2} aria-hidden />
+      ) : null}
     </button>
   )
 }
@@ -116,26 +118,31 @@ function V2UpcomingSectionTitle({
 function FlexibleUpcomingDrillIn({
   onBack,
   rebateDemo,
-  drillFilter,
-  setDrillFilter,
-  groupsAll,
-  groupsFiltered,
-  filteredUsdTotalLabel,
+  drillProgram,
+  drillEquity,
+  setDrillProgram,
+  setDrillEquity,
+  drillGroups,
+  usdTotalLabel,
+  showUsdTotalBar,
   onOpenRebateLedger,
   fullPage = false,
 }: {
   onBack: () => void
   rebateDemo: RebateDemoState
-  drillFilter: V2DrillFilter
-  setDrillFilter: Dispatch<SetStateAction<V2DrillFilter>>
-  groupsAll: V2DrillGroup[]
-  groupsFiltered: V2DrillGroup[]
-  filteredUsdTotalLabel: string
+  drillProgram: V2DrillProgramFilter
+  drillEquity: V2DrillEquityFilter
+  setDrillProgram: Dispatch<SetStateAction<V2DrillProgramFilter>>
+  setDrillEquity: Dispatch<SetStateAction<V2DrillEquityFilter>>
+  drillGroups: V2DrillGroup[]
+  usdTotalLabel: string
+  showUsdTotalBar: boolean
   onOpenRebateLedger?: () => void
   /** Отдельный экран без hero и прочих секций (Figma drill-in). */
   fullPage?: boolean
 }) {
   const shellClass = fullPage ? `${styles.v2DrillShell} ${styles.v2DrillShellFullPage}` : styles.v2DrillShell
+  const hasRebate = hasRebatePendingPayouts(rebateDemo)
   return (
     <>
       {!fullPage ? <div className={styles.sectionSpacer} aria-hidden /> : null}
@@ -146,40 +153,50 @@ function FlexibleUpcomingDrillIn({
           </button>
         </div>
         <p className={styles.v2ExpandedTitle}>Upcoming</p>
-        <div className={styles.v2ChipRow}>
-          <button
-            type="button"
-            className={`${styles.v2Chip} ${drillFilter === 'rebates-usd' ? styles.v2ChipActive : ''}`}
-            disabled={!hasRebatePendingPayouts(rebateDemo)}
-            onClick={() => {
-              if (!hasRebatePendingPayouts(rebateDemo)) return
-              setDrillFilter((f) => (f === 'all' ? 'rebates-usd' : 'all'))
-            }}
-          >
-            {drillFilter === 'all' ? 'Program type' : 'Rebates'}
-            <IconChevronDown className={styles.v2ChipChevron} size={16} stroke={2} aria-hidden />
-          </button>
-          <button
-            type="button"
-            className={`${styles.v2Chip} ${drillFilter === 'rebates-usd' ? styles.v2ChipActive : ''}`}
-            disabled={!hasRebatePendingPayouts(rebateDemo)}
-            onClick={() => {
-              if (!hasRebatePendingPayouts(rebateDemo)) return
-              setDrillFilter((f) => (f === 'all' ? 'rebates-usd' : 'all'))
-            }}
-          >
-            {drillFilter === 'all' ? 'Equity type' : 'USD'}
-            <IconChevronDown className={styles.v2ChipChevron} size={16} stroke={2} aria-hidden />
-          </button>
+        <div className={styles.v2ChipRowsStack}>
+          <p className={styles.v2FilterSectionLabel}>Program type</p>
+          <div className={styles.v2ChipRow}>
+            {(['all', 'loyalty', 'rebates'] as const).map((key) => (
+              <button
+                key={key}
+                type="button"
+                className={`${styles.v2Chip} ${drillProgram === key ? styles.v2ChipActive : ''}`}
+                disabled={key === 'rebates' && !hasRebate}
+                onClick={() => {
+                  if (key === 'rebates' && !hasRebate) return
+                  setDrillProgram(key)
+                }}
+              >
+                {key === 'all' ? 'All' : key === 'loyalty' ? 'Loyalty' : 'Rebates'}
+              </button>
+            ))}
+          </div>
+          <p className={styles.v2FilterSectionLabel}>Equity type</p>
+          <div className={styles.v2ChipRow}>
+            {(['all', 'usd', 'exd'] as const).map((key) => (
+              <button
+                key={key}
+                type="button"
+                className={`${styles.v2Chip} ${drillEquity === key ? styles.v2ChipActive : ''}`}
+                disabled={key !== 'all' && !hasRebate}
+                onClick={() => {
+                  if (key !== 'all' && !hasRebate) return
+                  setDrillEquity(key)
+                }}
+              >
+                {key === 'all' ? 'All' : key.toUpperCase()}
+              </button>
+            ))}
+          </div>
         </div>
-        {drillFilter === 'rebates-usd' && hasRebatePendingPayouts(rebateDemo) ? (
+        {showUsdTotalBar ? (
           <div className={styles.v2TotalBar}>
             <span className={styles.v2TotalBarLabel}>Total upcoming USD rebates:</span>
-            <span className={styles.v2TotalBarAmount}>{filteredUsdTotalLabel}</span>
+            <span className={styles.v2TotalBarAmount}>{usdTotalLabel}</span>
           </div>
         ) : null}
         <div className={styles.v2AllPage}>
-          {(drillFilter === 'rebates-usd' ? groupsFiltered : groupsAll).map((group) => (
+          {drillGroups.map((group) => (
             <div key={group.id} className={styles.v2DrillGroup}>
               <p className={styles.v2DateHeading}>{group.heading}</p>
               {group.rows.map((row) => (
@@ -254,14 +271,104 @@ type V2UpcomingRowData = {
   countBadge?: string
   /** Открыть леджер spread rebate (прототип). */
   opensRebateLedger?: boolean
+  /** Фильтр drill-in: блок Loyalty vs Rebates. */
+  filterProgram?: 'loyalty' | 'rebates'
+  /** Фильтр drill-in: USD vs EXD. */
+  filterEquity?: 'usd' | 'exd'
 }
 
-type V2DrillFilter = 'all' | 'rebates-usd'
+type V2DrillProgramFilter = 'all' | 'loyalty' | 'rebates'
+type V2DrillEquityFilter = 'all' | 'usd' | 'exd'
 
 type V2DrillGroup = {
   id: string
   heading: string
   rows: V2UpcomingRowData[]
+}
+
+const V2_DRILL_DATE_HEADINGS = [
+  'Tomorrow',
+  '7 May 2026',
+  '14 May 2026',
+  '21 May 2026',
+  '28 May 2026',
+  '4 Jun 2026',
+] as const
+
+/** По одной строке на слот pendingCount для USD и для EXD (30+30 или 60+60). */
+function buildV2RebateSlotRows(rebate: RebateDemoState): V2UpcomingRowData[] {
+  if (!hasRebatePendingPayouts(rebate)) return []
+  const n = Math.max(0, Math.floor(Number(rebate.pendingCount)))
+  if (n === 0) return []
+  const usdChunk = rebateNextChunk(rebate.pendingUsd, n, 'USD')
+  const exdChunk = rebateNextChunk(rebate.pendingExd, n, 'EXD')
+  const dateStr =
+    rebate.nextPayoutDate === '—'
+      ? ''
+      : rebate.nextPayoutDate === 'Tomorrow'
+        ? 'Tomorrow'
+        : rebate.nextPayoutDate.startsWith('on ')
+          ? rebate.nextPayoutDate
+          : `on ${rebate.nextPayoutDate}`
+
+  const rows: V2UpcomingRowData[] = []
+  for (let i = 0; i < n; i++) {
+    rows.push({
+      id: `v2-slot-usd-${i}`,
+      icon: 'dollar',
+      title: 'Cash rebates',
+      amount: usdChunk,
+      line1: `Payout slot ${i + 1} of ${n} · USD`,
+      date: dateStr,
+      opensRebateLedger: true,
+      filterProgram: 'rebates',
+      filterEquity: 'usd',
+    })
+    rows.push({
+      id: `v2-slot-exd-${i}`,
+      icon: 'crown',
+      title: 'EXD rebates',
+      amount: exdChunk,
+      line1: `Payout slot ${i + 1} of ${n} · EXD`,
+      date: dateStr,
+      opensRebateLedger: true,
+      filterProgram: 'rebates',
+      filterEquity: 'exd',
+    })
+  }
+  return rows
+}
+
+function filterV2DrillRows(
+  rows: V2UpcomingRowData[],
+  program: V2DrillProgramFilter,
+  equity: V2DrillEquityFilter,
+): V2UpcomingRowData[] {
+  return rows.filter((row) => {
+    const p = row.filterProgram
+    const e = row.filterEquity
+    if (program !== 'all') {
+      if (!p || p !== program) return false
+    }
+    if (equity !== 'all') {
+      if (!e || e !== equity) return false
+    }
+    return true
+  })
+}
+
+function bucketRowsIntoV2DrillGroups(rows: V2UpcomingRowData[]): V2DrillGroup[] {
+  if (rows.length === 0) return []
+  const k = V2_DRILL_DATE_HEADINGS.length
+  const buckets: V2DrillGroup[] = V2_DRILL_DATE_HEADINGS.map((heading, idx) => ({
+    id: `drill-grp-${idx}`,
+    heading,
+    rows: [],
+  }))
+  rows.forEach((row, i) => {
+    buckets[i % k].rows.push(row)
+  })
+  return buckets.filter((g) => g.rows.length > 0)
 }
 
 function TransactionRow({
@@ -425,7 +532,8 @@ export function ExnessRewardsScreen({
   activityPreviewItems,
 }: ExnessRewardsScreenProps) {
   const [flexUpcomingDrillOpen, setFlexUpcomingDrillOpen] = useState(false)
-  const [v2DrillFilter, setV2DrillFilter] = useState<V2DrillFilter>('all')
+  const [v2DrillProgram, setV2DrillProgram] = useState<V2DrillProgramFilter>('all')
+  const [v2DrillEquity, setV2DrillEquity] = useState<V2DrillEquityFilter>('all')
   const [v2AlertDismissed, setV2AlertDismissed] = useState(false)
   const availableExdAmount = parseFloat(
     availableRewardsExd.replace(/,/g, '').trim().split(/\s+/)[0] ?? '0',
@@ -471,26 +579,30 @@ export function ExnessRewardsScreen({
     [rebateDemo.pendingExd, rebateDemo.pendingCount],
   )
 
-  const hasRebatePaid = hasRebatePaidExd(rebateDemo)
   const hasRebate = hasRebatePendingPayouts(rebateDemo)
 
   useEffect(() => {
     setFlexUpcomingDrillOpen(false)
-    setV2DrillFilter('all')
+    setV2DrillProgram('all')
+    setV2DrillEquity('all')
     if (spreadVariant !== 'v2') {
       setV2AlertDismissed(false)
     }
   }, [spreadVariant])
 
   useEffect(() => {
-    if (!flexUpcomingDrillOpen) setV2DrillFilter('all')
+    if (!flexUpcomingDrillOpen) {
+      setV2DrillProgram('all')
+      setV2DrillEquity('all')
+    }
   }, [flexUpcomingDrillOpen])
 
   useEffect(() => {
-    if (!hasRebatePendingPayouts(rebateDemo) && v2DrillFilter === 'rebates-usd') {
-      setV2DrillFilter('all')
+    if (!hasRebatePendingPayouts(rebateDemo)) {
+      setV2DrillProgram((p) => (p === 'rebates' ? 'all' : p))
+      setV2DrillEquity((e) => (e !== 'all' ? 'all' : e))
     }
-  }, [rebateDemo, v2DrillFilter])
+  }, [rebateDemo])
 
   useEffect(() => {
     setV2AlertDismissed(false)
@@ -614,13 +726,14 @@ export function ExnessRewardsScreen({
 
   const v2SpreadPreviewRows: V2UpcomingRowData[] = useMemo(() => {
     if (!hasRebatePendingPayouts(rebateDemo)) return []
+    const n = Math.floor(Number(rebateDemo.pendingCount))
     return [
       {
         id: 'pin-cash-rebates',
         icon: 'dollar',
         title: 'Cash rebates',
         amount: spreadPreviewUsd,
-        line1: 'For trading on Dec 15',
+        line1: `From ${n} payout slots · USD`,
         date: v2RebatePayoutCol,
         opensRebateLedger: true,
       },
@@ -629,168 +742,68 @@ export function ExnessRewardsScreen({
         icon: 'crown',
         title: 'EXD rebates',
         amount: spreadPreviewExd,
-        line1: 'For trading on Dec 16',
+        line1: `From ${n} payout slots · EXD`,
         date: v2RebatePayoutCol,
         opensRebateLedger: true,
       },
     ]
   }, [rebateDemo, spreadPreviewExd, spreadPreviewUsd, v2RebatePayoutCol])
 
-  const flexiblePreviewRows: V2UpcomingRowData[] = useMemo(
-    () => [...v2PinnedRows, ...v2SpreadPreviewRows],
-    [v2PinnedRows, v2SpreadPreviewRows],
-  )
-
-  const flexibleAllRows: V2UpcomingRowData[] = useMemo(() => {
-    const tail: V2UpcomingRowData[] = [
+  const v2DrillLoyaltyRows: V2UpcomingRowData[] = useMemo(
+    () => [
       {
-        id: 'all-loyalty-next',
-        icon: 'crown',
-        title: 'Loyalty rewards',
-        amount: '+2.20 EXD',
-        line1: 'For weekly trading',
-        date: 'on Jan 24',
-      },
-      {
-        id: 'all-cashback-next',
-        icon: 'dollar',
-        title: 'Cashback',
-        amount: '+4.10 USD',
-        line1: 'For daily trading',
-        date: 'on Jan 25',
-      },
-    ]
-    if (hasRebatePendingPayouts(rebateDemo)) {
-      tail.push({
-        id: 'all-spread-agg',
-        icon: 'dollar',
-        title: 'Spread rebate · all pending',
-        amount: `${rebateDemo.pendingExd} / ${rebateDemo.pendingUsd}`,
-        line1: `${rebateDemo.pendingCount} payouts pending in total`,
-        date: 'Daily',
-        opensRebateLedger: true,
-      })
-    }
-    if (hasRebatePaid) {
-      tail.push({
-        id: 'all-spread-paid',
-        icon: 'crown',
-        title: 'Spread rebate · EXD already paid',
-        amount: rebateDemo.paidExdAmount,
-        line1: `${rebateDemo.paidExdCount} mature payouts processed`,
-        date: 'Done',
-        opensRebateLedger: true,
-      })
-    }
-    return [...flexiblePreviewRows, ...tail]
-  }, [flexiblePreviewRows, hasRebatePaid, rebateDemo])
-
-  const v2BadgeCount = useMemo(() => flexibleAllRows.length, [flexibleAllRows])
-
-  const v2DrillGroupsAll = useMemo((): V2DrillGroup[] => {
-    const has = hasRebatePendingPayouts(rebateDemo)
-    const sliceUsd = spreadPreviewUsd
-    const sliceExd = spreadPreviewExd
-    const tomorrow: V2UpcomingRowData[] = [
-      {
-        id: 'g1-exd-cb',
+        id: 'drill-exd-cashback',
         icon: 'dollar',
         title: 'EXD cashback',
         amount: '+0.64 USD',
         line1: 'For daily trading',
-        date: '',
+        date: 'Tomorrow',
+        filterProgram: 'loyalty',
+        filterEquity: 'usd',
       },
-    ]
-    if (has) {
-      tomorrow.push(
-        {
-          id: 'g1-cash-r',
-          icon: 'dollar',
-          title: 'Cash rebates',
-          amount: sliceUsd,
-          line1: 'For trading on Dec 15',
-          date: '',
-          opensRebateLedger: true,
-        },
-        {
-          id: 'g1-exd-r',
-          icon: 'crown',
-          title: 'EXD rebates',
-          amount: sliceExd,
-          line1: 'For trading on Dec 16',
-          date: '',
-          opensRebateLedger: true,
-        },
-      )
-    }
-    const april23: V2UpcomingRowData[] = [
       {
-        id: 'g2-loy',
+        id: 'drill-loyalty-rewards',
         icon: 'crown',
         title: 'Loyalty rewards',
         amount: '+3.70 EXD',
         line1: 'For weekly trading',
-        date: '',
+        date: 'on Jan 17',
         countBadge: '2',
+        filterProgram: 'loyalty',
+        filterEquity: 'exd',
       },
-    ]
-    const may15: V2UpcomingRowData[] = []
-    if (has) {
-      may15.push(
-        {
-          id: 'g3-cr',
-          icon: 'dollar',
-          title: 'Cash rebates',
-          amount: sliceUsd,
-          line1: 'For trading on Dec 15',
-          date: '',
-          opensRebateLedger: true,
-        },
-        {
-          id: 'g3-er',
-          icon: 'crown',
-          title: 'EXD rebates',
-          amount: sliceExd,
-          line1: 'For trading on Dec 16',
-          date: '',
-          opensRebateLedger: true,
-        },
-      )
-    }
-    const groups: V2DrillGroup[] = [
-      { id: 'grp-tomorrow', heading: 'Tomorrow', rows: tomorrow },
-      { id: 'grp-apr23', heading: '23 April', rows: april23 },
-    ]
-    if (may15.length > 0) {
-      groups.push({ id: 'grp-may15', heading: 'May 15', rows: may15 })
-    }
-    return groups
-  }, [rebateDemo, spreadPreviewExd, spreadPreviewUsd])
+    ],
+    [],
+  )
 
-  const v2DrillGroupsFiltered = useMemo((): V2DrillGroup[] => {
-    if (!hasRebatePendingPayouts(rebateDemo)) return []
-    const sliceUsd = spreadPreviewUsd
-    const row: V2UpcomingRowData = {
-      id: 'f-cr-t',
-      icon: 'dollar',
-      title: 'Cash rebates',
-      amount: sliceUsd,
-      line1: 'For trading on Dec 15',
-      date: '',
-      opensRebateLedger: true,
-    }
-    const row2: V2UpcomingRowData = { ...row, id: 'f-cr-m' }
-    return [
-      { id: 'fg-tomorrow', heading: 'Tomorrow', rows: [row] },
-      { id: 'fg-may15', heading: 'May 15', rows: [row2] },
-    ]
-  }, [rebateDemo, spreadPreviewUsd])
+  const v2DrillSlotRows = useMemo(() => buildV2RebateSlotRows(rebateDemo), [rebateDemo])
 
-  const v2FilteredUsdTotalLabel = useMemo(() => {
-    const slice = parseSignedAmount(spreadPreviewUsd)
-    const total = Number.isFinite(slice) ? slice * 2 : 0.9
-    return `+${total.toFixed(2)} USD`
-  }, [spreadPreviewUsd])
+  const v2DrillAllFlatRows = useMemo(
+    () => [...v2DrillLoyaltyRows, ...v2DrillSlotRows],
+    [v2DrillLoyaltyRows, v2DrillSlotRows],
+  )
+
+  const v2DrillGroupsVisible = useMemo(
+    () =>
+      bucketRowsIntoV2DrillGroups(
+        filterV2DrillRows(v2DrillAllFlatRows, v2DrillProgram, v2DrillEquity),
+      ),
+    [v2DrillAllFlatRows, v2DrillProgram, v2DrillEquity],
+  )
+
+  const v2DrillShowUsdTotalBar =
+    hasRebatePendingPayouts(rebateDemo) &&
+    v2DrillProgram !== 'loyalty' &&
+    v2DrillEquity !== 'exd' &&
+    parseSignedAmount(rebateDemo.pendingUsd) > 0
+
+  const v2BadgeCount = useMemo(() => {
+    const pinned = v2PinnedRows.length
+    const slots = hasRebatePendingPayouts(rebateDemo)
+      ? Math.max(0, Math.floor(Number(rebateDemo.pendingCount))) * 2
+      : 0
+    return pinned + slots
+  }, [rebateDemo, v2PinnedRows])
 
   const v4UpcomingRows: V2UpcomingRowData[] = useMemo(() => {
     const base: V2UpcomingRowData[] = [
@@ -853,11 +866,13 @@ export function ExnessRewardsScreen({
             fullPage
             onBack={() => setFlexUpcomingDrillOpen(false)}
             rebateDemo={rebateDemo}
-            drillFilter={v2DrillFilter}
-            setDrillFilter={setV2DrillFilter}
-            groupsAll={v2DrillGroupsAll}
-            groupsFiltered={v2DrillGroupsFiltered}
-            filteredUsdTotalLabel={v2FilteredUsdTotalLabel}
+            drillProgram={v2DrillProgram}
+            drillEquity={v2DrillEquity}
+            setDrillProgram={setV2DrillProgram}
+            setDrillEquity={setV2DrillEquity}
+            drillGroups={v2DrillGroupsVisible}
+            usdTotalLabel={rebateDemo.pendingUsd}
+            showUsdTotalBar={v2DrillShowUsdTotalBar}
             onOpenRebateLedger={onOpenRebateLedger}
           />
         </div>
@@ -994,6 +1009,7 @@ export function ExnessRewardsScreen({
             <div className={styles.sectionSpacer} aria-hidden />
             <V2UpcomingSectionTitle
               badgeCount={v2BadgeCount}
+              showChevron={false}
               onOpenAll={() => setFlexUpcomingDrillOpen(true)}
             />
             <div className={styles.v2List}>
