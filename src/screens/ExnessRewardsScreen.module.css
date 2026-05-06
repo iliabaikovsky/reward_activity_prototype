@@ -568,6 +568,188 @@
   line-height: 1;
 }
 
+.v2List {
+  display: flex;
+  flex-direction: column;
+}
+
+.v2PinnedHeader {
+  margin: 0 0 4px;
+  font-size: 11px;
+  line-height: 16px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--reward-text-secondary);
+}
+
+.v2Row {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--reward-border);
+}
+
+.v2RowPinned {
+  background: linear-gradient(180deg, rgba(245, 248, 252, 0.7) 0%, rgba(245, 248, 252, 0.2) 100%);
+}
+
+.v2RowIcon {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: 1000px;
+  background: var(--reward-steel);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--reward-text-primary);
+}
+
+.v2RowBody {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.v2RowHead {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.v2RowTitle {
+  flex: 1;
+  margin: 0;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--reward-text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.v2PinTag {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 6px;
+  border-radius: 100px;
+  background: #e9eef5;
+  color: #576c81;
+  font-size: 10px;
+  line-height: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.v2RowAmount {
+  margin: 0;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--reward-text-primary);
+  white-space: nowrap;
+}
+
+.v2RowDesc {
+  display: flex;
+  gap: 4px;
+  align-items: flex-start;
+}
+
+.v2RowText {
+  flex: 1;
+  min-width: 0;
+}
+
+.v2RowText p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--reward-text-secondary);
+}
+
+.v2RowDate {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--reward-text-secondary);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.v2Alert {
+  margin: 14px 0;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 211, 93, 0.2);
+  background: #fff9eb;
+  padding: 12px;
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.v2AlertIcon {
+  color: #b17a00;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: 1px;
+}
+
+.v2AlertBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.v2AlertTitle {
+  margin: 0;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+  color: var(--reward-text-primary);
+}
+
+.v2AlertDesc {
+  margin: 2px 0 8px;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--reward-text-primary);
+}
+
+.v2AlertBtn {
+  margin: 0;
+  border: none;
+  border-radius: 4px;
+  background: rgba(108, 133, 149, 0.08);
+  color: var(--reward-text-primary);
+  padding: 6px 16px;
+  font-size: 14px;
+  line-height: 20px;
+  cursor: pointer;
+}
+
+.v2AlertClose {
+  margin: 0;
+  border: none;
+  background: transparent;
+  color: rgba(20, 29, 34, 0.55);
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  cursor: pointer;
+}
+
+.v2All {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--reward-border);
+}
+
 .flexUpcomingCard {
   border: 1px solid var(--reward-border);
   border-radius: 8px;

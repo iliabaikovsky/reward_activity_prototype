@@ -1,5 +1,6 @@
 import { useMemo, useState, type ReactNode } from 'react'
 import {
+  IconAlertTriangle,
   IconArrowRight,
   IconArrowsRightLeft,
   IconChevronLeft,
@@ -9,6 +10,7 @@ import {
   IconCurrencyDollar,
   IconGift,
   IconInfoCircle,
+  IconX,
 } from '@tabler/icons-react'
 import type { RewardModalVariant } from '../components/reward/rewardModalTypes'
 import type {
@@ -86,6 +88,17 @@ type TxProps = {
   onOpenDetail?: () => void
 }
 
+type V2UpcomingRowData = {
+  id: string
+  icon: LifecycleActivityIcon
+  title: string
+  amount: string
+  line1: string
+  line2?: string
+  date: string
+  pinned?: boolean
+}
+
 function TransactionRow({
   icon,
   title,
@@ -135,6 +148,32 @@ function TransactionRow({
   }
 
   return <div className={styles.tx}>{inner}</div>
+}
+
+function V2UpcomingRow({ row }: { row: V2UpcomingRowData }) {
+  return (
+    <div className={`${styles.v2Row} ${row.pinned ? styles.v2RowPinned : ''}`}>
+      <div className={styles.v2RowIcon}>
+        <RowIconTabler kind={row.icon} />
+      </div>
+      <div className={styles.v2RowBody}>
+        <div className={styles.v2RowHead}>
+          <p className={styles.v2RowTitle}>
+            {row.title}
+            {row.pinned ? <span className={styles.v2PinTag}>Pinned</span> : null}
+          </p>
+          <p className={styles.v2RowAmount}>{row.amount}</p>
+        </div>
+        <div className={styles.v2RowDesc}>
+          <div className={styles.v2RowText}>
+            <p>{row.line1}</p>
+            {row.line2 ? <p>{row.line2}</p> : null}
+          </div>
+          <p className={styles.v2RowDate}>{row.date}</p>
+        </div>
+      </div>
+    </div>
+  )
 }
 
 function RowIconTabler({ kind }: { kind: LifecycleActivityIcon }) {
@@ -253,61 +292,78 @@ export function ExnessRewardsScreen({
 
   const showUpcomingBlock = spreadVariant !== 'v2' && (upcomingItems.length > 0 || spreadVariant === 'v1')
 
-  const flexiblePreviewRows = [
+  const flexiblePreviewRows: V2UpcomingRowData[] = [
     {
       id: 'pin-cashback',
+      icon: 'dollar',
       title: 'Cashback',
-      amount: '+5.00 USD',
-      hint: 'For trading on Mar 22',
+      amount: '+0.64 USD',
+      line1: 'For daily trading',
+      date: 'Tomorrow',
       pinned: true,
     },
     {
       id: 'pin-loyalty',
+      icon: 'crown',
       title: 'Loyalty rewards',
-      amount: '+1.00 EXD',
-      hint: 'For trading on Mar 18-22',
+      amount: '+3.70 EXD',
+      line1: 'For weekly trading',
+      date: 'on Jan 17',
       pinned: true,
     },
     {
       id: 'pin-spread-exd',
-      title: 'Spread rebate · next EXD payout',
-      amount: '+3.90 EXD',
-      hint: `Next: ${SPREAD_DEMO.nextPayoutDate}`,
+      icon: 'dollar',
+      title: 'Spread rebates',
+      amount: '+2.45 USD',
+      line1: 'Closest payout',
+      line2: 'Place for text',
+      date: 'Place for date',
     },
     {
       id: 'pin-spread-usd',
-      title: 'Spread rebate · USD on hold',
-      amount: SPREAD_DEMO.onHoldUsdAmount,
-      hint: 'Select account to release',
-      warn: true,
+      icon: 'crown',
+      title: 'Spread rebates',
+      amount: '+1.20 EXD',
+      line1: 'Closest payout',
+      line2: 'Place for text',
+      date: 'Place for date',
     },
   ]
 
-  const flexibleAllRows = [
+  const flexibleAllRows: V2UpcomingRowData[] = [
     ...flexiblePreviewRows,
     {
       id: 'all-loyalty-next',
+      icon: 'crown',
       title: 'Loyalty rewards',
       amount: '+2.20 EXD',
-      hint: 'For trading on Mar 23-26',
+      line1: 'For weekly trading',
+      date: 'on Jan 24',
     },
     {
       id: 'all-cashback-next',
+      icon: 'dollar',
       title: 'Cashback',
       amount: '+4.10 USD',
-      hint: 'For trading on Mar 24',
+      line1: 'For daily trading',
+      date: 'on Jan 25',
     },
     {
       id: 'all-spread-agg',
+      icon: 'dollar',
       title: 'Spread rebate · all pending',
       amount: `${SPREAD_DEMO.pendingExd} / ${SPREAD_DEMO.pendingUsd}`,
-      hint: `${SPREAD_DEMO.pendingCount} payouts pending in total`,
+      line1: `${SPREAD_DEMO.pendingCount} payouts pending in total`,
+      date: 'Daily',
     },
     {
       id: 'all-spread-paid',
+      icon: 'crown',
       title: 'Spread rebate · EXD already paid',
       amount: SPREAD_DEMO.paidExdAmount,
-      hint: `${SPREAD_DEMO.paidExdCount} mature payouts processed`,
+      line1: `${SPREAD_DEMO.paidExdCount} mature payouts processed`,
+      date: 'Done',
     },
   ]
 
@@ -474,41 +530,42 @@ export function ExnessRewardsScreen({
           <>
             <div className={styles.sectionSpacer} aria-hidden />
             <SectionTitle
-              title="Upcoming (flexible prototype)"
+              title="Upcoming"
               showChevron
               onClick={() => setShowFlexibleUpcomingAll((v) => !v)}
             />
-            <div className={styles.flexUpcomingCard}>
-              <p className={styles.flexLabel}>Preview list (2 pinned + 2 regular)</p>
-              {flexiblePreviewRows.map((row) => (
-                <div
-                  key={row.id}
-                  className={`${styles.flexRow} ${row.warn ? styles.flexRowWarn : ''} ${
-                    row.pinned ? styles.flexRowPinned : ''
-                  }`}
-                >
-                  <div>
-                    <p className={styles.flexRowTitle}>
-                      {row.pinned ? <span className={styles.flexPinBadge}>Pinned</span> : null}
-                      {row.title}
-                    </p>
-                    <p className={styles.flexRowHint}>{row.hint}</p>
-                  </div>
-                  <p className={styles.flexRowAmount}>{row.amount}</p>
+            <div className={styles.v2List}>
+              <p className={styles.v2PinnedHeader}>Pinned</p>
+              {flexiblePreviewRows.map((row, i) => (
+                <div key={row.id}>
+                  <V2UpcomingRow row={row} />
+                  {i === 2 ? (
+                    <div className={styles.v2Alert}>
+                      <div className={styles.v2AlertIcon}>
+                        <IconAlertTriangle size={20} stroke={2} aria-hidden />
+                      </div>
+                      <div className={styles.v2AlertBody}>
+                        <p className={styles.v2AlertTitle}>Select account for USD</p>
+                        <p className={styles.v2AlertDesc}>
+                          {SPREAD_DEMO.onHoldUsdAmount} is waiting until account is selected.
+                        </p>
+                        <button type="button" className={styles.v2AlertBtn}>
+                          Select account
+                        </button>
+                      </div>
+                      <button type="button" className={styles.v2AlertClose} aria-label="Dismiss">
+                        <IconX size={18} stroke={2} aria-hidden />
+                      </button>
+                    </div>
+                  ) : null}
                 </div>
               ))}
 
               {showFlexibleUpcomingAll ? (
-                <div className={styles.flexAll}>
-                  <p className={styles.flexLabel}>All upcoming (prototype drill-in)</p>
+                <div className={styles.v2All}>
+                  <p className={styles.v2PinnedHeader}>All upcoming</p>
                   {flexibleAllRows.map((row) => (
-                    <div key={row.id} className={styles.flexRow}>
-                      <div>
-                        <p className={styles.flexRowTitle}>{row.title}</p>
-                        <p className={styles.flexRowHint}>{row.hint}</p>
-                      </div>
-                      <p className={styles.flexRowAmount}>{row.amount}</p>
-                    </div>
+                    <V2UpcomingRow key={row.id} row={row} />
                   ))}
                 </div>
               ) : null}
