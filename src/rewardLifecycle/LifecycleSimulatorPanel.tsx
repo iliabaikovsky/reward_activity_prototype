@@ -7,9 +7,17 @@ type Props = {
   steps: LifecycleStep[]
   stepIndex: number
   onStepIndexChange: (index: number) => void
+  spreadVariant: 'v1' | 'v2' | 'v3' | 'v4'
+  onSpreadVariantChange: (variant: 'v1' | 'v2' | 'v3' | 'v4') => void
 }
 
-export function LifecycleSimulatorPanel({ steps, stepIndex, onStepIndexChange }: Props) {
+export function LifecycleSimulatorPanel({
+  steps,
+  stepIndex,
+  onStepIndexChange,
+  spreadVariant,
+  onSpreadVariantChange,
+}: Props) {
   const step = steps[stepIndex]
   const last = steps.length - 1
   const detailsRef = useRef<HTMLDetailsElement>(null)
@@ -87,6 +95,41 @@ export function LifecycleSimulatorPanel({ steps, stepIndex, onStepIndexChange }:
               </option>
             ))}
           </select>
+
+          <div className={styles.variantBlock}>
+            <p className={styles.variantTitle}>Spread rebate prototypes</p>
+            <p className={styles.variantSub}>Switches V1-V4 visualization inside Rewards screen</p>
+            <div className={styles.variantButtons}>
+              <button
+                type="button"
+                className={`${styles.variantBtn} ${spreadVariant === 'v1' ? styles.variantBtnActive : ''}`}
+                onClick={() => onSpreadVariantChange('v1')}
+              >
+                V1 · In Upcoming
+              </button>
+              <button
+                type="button"
+                className={`${styles.variantBtn} ${spreadVariant === 'v2' ? styles.variantBtnActive : ''}`}
+                onClick={() => onSpreadVariantChange('v2')}
+              >
+                V2 · Flexible Upcoming
+              </button>
+              <button
+                type="button"
+                className={`${styles.variantBtn} ${spreadVariant === 'v3' ? styles.variantBtnActive : ''}`}
+                onClick={() => onSpreadVariantChange('v3')}
+              >
+                V3 · Separate Widget
+              </button>
+              <button
+                type="button"
+                className={`${styles.variantBtn} ${spreadVariant === 'v4' ? styles.variantBtnActive : ''}`}
+                onClick={() => onSpreadVariantChange('v4')}
+              >
+                V4 · Hybrid section
+              </button>
+            </div>
+          </div>
 
           <p className={styles.stepLabel}>{step.label}</p>
           <p className={styles.stepMeta}>{step.docRef}</p>

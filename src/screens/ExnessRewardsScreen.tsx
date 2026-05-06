@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import {
   IconAlertTriangle,
   IconArrowRight,
@@ -195,6 +195,7 @@ function RowIconTabler({ kind }: { kind: LifecycleActivityIcon }) {
 }
 
 type ExnessRewardsScreenProps = {
+  spreadVariant: SpreadPrototypeVariant
   /** `category: 'cashback'` — с Lifetime cashback; без opts — с Activity feed */
   onOpenActivityFeed?: (opts?: { category?: ActivityTypeFilter }) => void
   onOpenRewardModal?: (variant: RewardModalVariant, feedItemId?: string) => void
@@ -210,6 +211,7 @@ type ExnessRewardsScreenProps = {
 }
 
 export function ExnessRewardsScreen({
+  spreadVariant,
   onOpenActivityFeed,
   onOpenRewardModal,
   availableRewardsExd,
@@ -221,7 +223,6 @@ export function ExnessRewardsScreen({
   upcomingItems,
   activityPreviewItems,
 }: ExnessRewardsScreenProps) {
-  const [spreadVariant, setSpreadVariant] = useState<SpreadPrototypeVariant>('v1')
   const [showFlexibleUpcomingAll, setShowFlexibleUpcomingAll] = useState(false)
   const [v4AccountSelected, setV4AccountSelected] = useState(false)
   const availableExdAmount = parseFloat(
@@ -261,6 +262,10 @@ export function ExnessRewardsScreen({
 
   const v1NextUsdPayout = `+${(192.45 / 60).toFixed(2)} USD`
   const v1NextExdPayout = `+${(184.2 / 60).toFixed(2)} EXD`
+
+  useEffect(() => {
+    if (spreadVariant !== 'v2') setShowFlexibleUpcomingAll(false)
+  }, [spreadVariant])
 
   const v1UpcomingRows: LifecycleUpcomingItem[] = useMemo(
     () => [
@@ -500,57 +505,6 @@ export function ExnessRewardsScreen({
       </div>
 
       <div className={styles.body}>
-        <section className={styles.protoControls} aria-label="Spread rebate variant switcher">
-          <div>
-            <p className={styles.protoTitle}>Spread rebate prototypes</p>
-            <p className={styles.protoSubtitle}>
-              Same demo state: 60 pending payouts, EXD credited, USD on hold
-            </p>
-          </div>
-          <div className={styles.protoToggle}>
-            <button
-              type="button"
-              className={`${styles.protoToggleBtn} ${spreadVariant === 'v1' ? styles.protoToggleBtnActive : ''}`}
-              onClick={() => {
-                setSpreadVariant('v1')
-                setShowFlexibleUpcomingAll(false)
-              }}
-            >
-              V1 · In Upcoming
-            </button>
-            <button
-              type="button"
-              className={`${styles.protoToggleBtn} ${spreadVariant === 'v2' ? styles.protoToggleBtnActive : ''}`}
-              onClick={() => {
-                setSpreadVariant('v2')
-                setShowFlexibleUpcomingAll(false)
-              }}
-            >
-              V2 · Flexible Upcoming
-            </button>
-            <button
-              type="button"
-              className={`${styles.protoToggleBtn} ${spreadVariant === 'v3' ? styles.protoToggleBtnActive : ''}`}
-              onClick={() => {
-                setSpreadVariant('v3')
-                setShowFlexibleUpcomingAll(false)
-              }}
-            >
-              V3 · Separate Widget
-            </button>
-            <button
-              type="button"
-              className={`${styles.protoToggleBtn} ${spreadVariant === 'v4' ? styles.protoToggleBtnActive : ''}`}
-              onClick={() => {
-                setSpreadVariant('v4')
-                setShowFlexibleUpcomingAll(false)
-              }}
-            >
-              V4 · Hybrid section
-            </button>
-          </div>
-        </section>
-
         <div className={styles.walletsSection}>
           <div className={styles.walletsScroll} role="region" aria-label="Reward wallets">
             <article className={styles.walletCard}>

@@ -10,6 +10,7 @@ import type { ActivityDatePreset, ActivityTypeFilter } from './screens/activityF
 import { ExnessRewardsScreen } from './screens/ExnessRewardsScreen'
 
 type Route = 'rewards' | 'activity'
+type SpreadPrototypeVariant = 'v1' | 'v2' | 'v3' | 'v4'
 
 function App() {
   const [lifecycleStepIndex, setLifecycleStepIndex] = useState(0)
@@ -22,6 +23,7 @@ function App() {
   } | null>(null)
   const [activityTypeFilter, setActivityTypeFilter] = useState<ActivityTypeFilter>('all')
   const [activityDatePreset, setActivityDatePreset] = useState<ActivityDatePreset>('all')
+  const [spreadVariant, setSpreadVariant] = useState<SpreadPrototypeVariant>('v1')
   const scrollRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -50,6 +52,7 @@ function App() {
           <div className="device-frame-scroll" ref={scrollRef}>
             {route === 'rewards' ? (
               <ExnessRewardsScreen
+                spreadVariant={spreadVariant}
                 onOpenActivityFeed={(opts) => openActivity(opts)}
                 onOpenRewardModal={(v, id) => setRewardModal({ variant: v, feedItemId: id })}
                 availableRewardsExd={lifecycle.availableRewardsExd}
@@ -87,6 +90,8 @@ function App() {
             steps={LIFECYCLE_STEPS}
             stepIndex={lifecycleStepIndex}
             onStepIndexChange={setLifecycleStepIndex}
+            spreadVariant={spreadVariant}
+            onSpreadVariantChange={setSpreadVariant}
           />
         </div>
       </div>
