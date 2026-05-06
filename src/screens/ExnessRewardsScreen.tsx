@@ -565,6 +565,15 @@ export function ExnessRewardsScreen({
               <p className={styles.v2InnerTitle}>Upcoming</p>
             </div>
             <div className={styles.v2AllPage}>
+              <div className={styles.v2SummaryCard}>
+                <p className={styles.v2SummaryTitle}>Accumulated rebates</p>
+                <p className={styles.v2SummaryValue}>
+                  {SPREAD_DEMO.pendingUsd} USD · {SPREAD_DEMO.pendingExd} EXD
+                </p>
+                <p className={styles.v2SummaryMeta}>
+                  {SPREAD_DEMO.pendingCount} payouts in queue, nearest on {SPREAD_DEMO.nextPayoutDate}
+                </p>
+              </div>
               <p className={styles.v2PinnedHeader}>All upcoming</p>
               {flexibleAllRows.map((row) => (
                 <V2UpcomingRow key={row.id} row={row} />
@@ -582,6 +591,15 @@ export function ExnessRewardsScreen({
               onClick={() => setV2FullUpcomingOpen(true)}
             />
             <div className={styles.v2List}>
+              <div className={styles.v2SummaryInline}>
+                <p className={styles.v2SummaryInlineTitle}>Spread rebates total</p>
+                <p className={styles.v2SummaryInlineValue}>
+                  {SPREAD_DEMO.pendingUsd} USD · {SPREAD_DEMO.pendingExd} EXD
+                </p>
+                <p className={styles.v2SummaryInlineMeta}>
+                  {SPREAD_DEMO.pendingCount} payouts in queue
+                </p>
+              </div>
               <p className={styles.v2PinnedHeader}>Pinned</p>
               {flexiblePreviewRows.map((row, i) => (
                 <div key={row.id}>
