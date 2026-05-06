@@ -26,6 +26,21 @@ import {
   parseSignedAmount,
   rebateNextChunk,
 } from '../rewardLifecycle/rebateSimulatorSteps'
+
+function filterV1RebateRowsForDisplay(
+  rows: LifecycleUpcomingItem[],
+  rebate: RebateDemoState,
+): LifecycleUpcomingItem[] {
+  return rows.filter((row) => {
+    if (row.id === 'v1-cash-rebates') {
+      return hasRebatePendingPayouts(rebate) && parseSignedAmount(rebate.pendingUsd) > 0
+    }
+    if (row.id === 'v1-reward-rebates') {
+      return hasRebatePendingPayouts(rebate) && parseSignedAmount(rebate.pendingExd) > 0
+    }
+    return true
+  })
+}
 import styles from './ExnessRewardsScreen.module.css'
 
 /** Временно скрываем бейдж в разметке (элемент в DOM остаётся). Поставь false, чтобы снова показать. */
@@ -293,8 +308,8 @@ export function ExnessRewardsScreen({
     [rebateDemo.pendingExd, rebateDemo.pendingCount],
   )
 
-  const hasRebate = hasRebatePendingPayouts(rebateDemo)
   const hasRebatePaid = hasRebatePaidExd(rebateDemo)
+  const hasRebate = hasRebatePendingPayouts(rebateDemo)
 
   useEffect(() => {
     if (spreadVariant !== 'v2') {
@@ -329,7 +344,10 @@ export function ExnessRewardsScreen({
       },
     ]
     const extra: LifecycleUpcomingItem[] = []
-    if (rebateDemo.pendingCount > 0 && parseSignedAmount(rebateDemo.pendingUsd) > 0) {
+    if (
+      hasRebatePendingPayouts(rebateDemo) &&
+      parseSignedAmount(rebateDemo.pendingUsd) > 0
+    ) {
       extra.push({
         id: 'v1-cash-rebates',
         icon: 'dollar',
@@ -345,7 +363,10 @@ export function ExnessRewardsScreen({
         rewardModal: 'cashback-upcoming',
       })
     }
-    if (rebateDemo.pendingCount > 0 && parseSignedAmount(rebateDemo.pendingExd) > 0) {
+    if (
+      hasRebatePendingPayouts(rebateDemo) &&
+      parseSignedAmount(rebateDemo.pendingExd) > 0
+    ) {
       extra.push({
         id: 'v1-reward-rebates',
         icon: 'crown',
@@ -409,7 +430,7 @@ export function ExnessRewardsScreen({
   )
 
   const v2SpreadPreviewRows: V2UpcomingRowData[] = useMemo(() => {
-    if (!hasRebate) return []
+    if (!hasRebatePendingPayouts(rebateDemo)) return []
     return [
       {
         id: 'pin-spread-exd',
@@ -432,7 +453,7 @@ export function ExnessRewardsScreen({
         opensRebateLedger: true,
       },
     ]
-  }, [hasRebate, rebateDemo.pendingCount, spreadDateLabel, spreadPreviewExd, spreadPreviewUsd])
+  }, [rebateDemo, spreadDateLabel, spreadPreviewExd, spreadPreviewUsd])
 
   const flexiblePreviewRows: V2UpcomingRowData[] = useMemo(
     () => [...v2PinnedRows, ...v2SpreadPreviewRows],
@@ -458,7 +479,7 @@ export function ExnessRewardsScreen({
         date: 'on Jan 25',
       },
     ]
-    if (hasRebate) {
+    if (hasRebatePendingPayouts(rebateDemo)) {
       tail.push({
         id: 'all-spread-agg',
         icon: 'dollar',
@@ -481,7 +502,7 @@ export function ExnessRewardsScreen({
       })
     }
     return [...flexiblePreviewRows, ...tail]
-  }, [flexiblePreviewRows, hasRebate, hasRebatePaid, rebateDemo])
+  }, [flexiblePreviewRows, hasRebatePaid, rebateDemo])
 
   const v4UpcomingRows: V2UpcomingRowData[] = useMemo(() => {
     const base: V2UpcomingRowData[] = [
@@ -502,7 +523,7 @@ export function ExnessRewardsScreen({
         date: 'on Jan 17',
       },
     ]
-    if (!hasRebate) return base
+    if (!hasRebatePendingPayouts(rebateDemo)) return base
     return [
       ...base,
       {
@@ -526,10 +547,12 @@ export function ExnessRewardsScreen({
         opensRebateLedger: true,
       },
     ]
-  }, [hasRebate, rebateDemo.pendingCount, spreadDateLabel, spreadPreviewExd, spreadPreviewUsd])
+  }, [rebateDemo, spreadDateLabel, spreadPreviewExd, spreadPreviewUsd])
 
   const showV4SpreadSection =
-    hasRebate || rebateDemo.showAccountAlert || rebateDemo.usdAccountSelected
+    hasRebatePendingPayouts(rebateDemo) ||
+    rebateDemo.showAccountAlert ||
+    rebateDemo.usdAccountSelected
 
   return (
     <div className={styles.screen} data-node-id="42104:10683">
@@ -724,7 +747,10 @@ export function ExnessRewardsScreen({
           <>
             <div className={styles.sectionSpacer} aria-hidden />
             <SectionTitle title="Upcoming" showChevron={spreadVariant === 'v1'} />
-            {(spreadVariant === 'v1' ? v1UpcomingRows : upcomingItems).map((row) => (
+            {(spreadVariant === 'v1'
+              ? filterV1RebateRowsForDisplay(v1UpcomingRows, rebateDemo)
+              : upcomingItems
+            ).map((row) => (
               <TransactionRow
                 key={row.id}
                 icon={<RowIconTabler kind={row.icon} />}

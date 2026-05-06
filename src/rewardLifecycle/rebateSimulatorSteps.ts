@@ -172,10 +172,12 @@ export function parseSignedAmount(amount: string): number {
 
 /** Есть ли ненулевые будущие выплаты по spread rebate (для строк в Upcoming). */
 export function hasRebatePendingPayouts(rebate: RebateDemoState): boolean {
-  if (rebate.pendingCount <= 0) return false
+  const count = Math.floor(Number(rebate.pendingCount))
+  if (!Number.isFinite(count) || count < 1) return false
   const usd = parseSignedAmount(rebate.pendingUsd)
   const exd = parseSignedAmount(rebate.pendingExd)
-  return usd > 0 || exd > 0
+  if (usd <= 0 && exd <= 0) return false
+  return true
 }
 
 /** Суммы EXD уже зачисленные по зрелым выплатам (для строки в списке). */
