@@ -3,6 +3,7 @@ import {
   IconAlertTriangle,
   IconArrowRight,
   IconArrowsRightLeft,
+  IconChevronDown,
   IconChevronLeft,
   IconChevronRight,
   IconCrown,
@@ -26,6 +27,7 @@ import {
   parseSignedAmount,
   rebateNextChunk,
 } from '../rewardLifecycle/rebateSimulatorSteps'
+import styles from './ExnessRewardsScreen.module.css'
 
 function filterV1RebateRowsForDisplay(
   rows: LifecycleUpcomingItem[],
@@ -41,7 +43,6 @@ function filterV1RebateRowsForDisplay(
     return true
   })
 }
-import styles from './ExnessRewardsScreen.module.css'
 
 /** Временно скрываем бейдж в разметке (элемент в DOM остаётся). Поставь false, чтобы снова показать. */
 const HIDE_TRANSACTION_BADGES = true
@@ -88,6 +89,29 @@ function SectionTitle({
   return <div className={`${styles.sectionTitleRow} ${styles.sectionTitleRowStatic}`}>{inner}</div>
 }
 
+/** Заголовок секции Upcoming для V2 — Figma 48965:88125 (H3 + count badge + chevron). */
+function V2UpcomingSectionTitle({
+  badgeCount,
+  onOpenAll,
+}: {
+  badgeCount: number
+  onOpenAll: () => void
+}) {
+  return (
+    <button type="button" className={styles.v2SectionTitleRow} onClick={onOpenAll}>
+      <span className={styles.v2SectionTitleLeft}>
+        <span className={styles.v2SectionTitleText} role="heading" aria-level={2}>
+          Upcoming
+        </span>
+        <span className={styles.v2SectionTitleBadge} aria-label={`${badgeCount} items`}>
+          {badgeCount}
+        </span>
+      </span>
+      <IconChevronRight className={styles.chevronIcon} size={24} stroke={2} aria-hidden />
+    </button>
+  )
+}
+
 type TxProps = {
   icon: ReactNode
   title: string
@@ -105,10 +129,22 @@ type V2UpcomingRowData = {
   amount: string
   line1: string
   line2?: string
+  /** Правая колонка (дата); пусто — как в Figma drill-in для части строк. */
   date: string
+  /** Лейбл «Pinned» (старый прототип); в V2 по Figma не используем. */
   pinned?: boolean
+  /** iOS badge с числом (Figma 48965:88125). */
+  countBadge?: string
   /** Открыть леджер spread rebate (прототип). */
   opensRebateLedger?: boolean
+}
+
+type V2DrillFilter = 'all' | 'rebates-usd'
+
+type V2DrillGroup = {
+  id: string
+  heading: string
+  rows: V2UpcomingRowData[]
 }
 
 function TransactionRow({
@@ -169,6 +205,13 @@ function V2UpcomingRow({
   row: V2UpcomingRowData
   onOpenRebateLedger?: () => void
 }) {
+  const dateCell =
+    row.date.trim().length > 0 ? (
+      <p className={styles.v2RowDate}>{row.date}</p>
+    ) : (
+      <span className={styles.v2RowDateSpacer} aria-hidden />
+    )
+
   const body = (
     <>
       <div className={styles.v2RowIcon}>
@@ -178,7 +221,10 @@ function V2UpcomingRow({
         <div className={styles.v2RowHead}>
           <p className={styles.v2RowTitle}>
             {row.title}
-            {row.pinned ? <span className={styles.v2PinTag}>Pinned</span> : null}
+            {row.countBadge ? (
+              <span className={styles.v2CountBadge}>{row.countBadge}</span>
+            ) : null}
+            {row.pinned && !row.countBadge ? <span className={styles.v2PinTag}>Pinned</span> : null}
           </p>
           <p className={styles.v2RowAmount}>{row.amount}</p>
         </div>
@@ -187,7 +233,7 @@ function V2UpcomingRow({
             <p>{row.line1}</p>
             {row.line2 ? <p>{row.line2}</p> : null}
           </div>
-          <p className={styles.v2RowDate}>{row.date}</p>
+          {dateCell}
         </div>
       </div>
     </>
@@ -195,17 +241,13 @@ function V2UpcomingRow({
 
   if (row.opensRebateLedger && onOpenRebateLedger) {
     return (
-      <button
-        type="button"
-        className={`${styles.v2RowBtn} ${row.pinned ? styles.v2RowBtnPinned : ''}`}
-        onClick={onOpenRebateLedger}
-      >
+      <button type="button" className={styles.v2RowBtn} onClick={onOpenRebateLedger}>
         {body}
       </button>
     )
   }
 
-  return <div className={`${styles.v2Row} ${row.pinned ? styles.v2RowPinned : ''}`}>{body}</div>
+  return <div className={styles.v2Row}>{body}</div>
 }
 
 function RowIconTabler({ kind }: { kind: LifecycleActivityIcon }) {
@@ -263,6 +305,7 @@ export function ExnessRewardsScreen({
   activityPreviewItems,
 }: ExnessRewardsScreenProps) {
   const [v2FullUpcomingOpen, setV2FullUpcomingOpen] = useState(false)
+  const [v2DrillFilter, setV2DrillFilter] = useState<V2DrillFilter>('all')
   const [v2AlertDismissed, setV2AlertDismissed] = useState(false)
   const availableExdAmount = parseFloat(
     availableRewardsExd.replace(/,/g, '').trim().split(/\s+/)[0] ?? '0',
@@ -314,9 +357,20 @@ export function ExnessRewardsScreen({
   useEffect(() => {
     if (spreadVariant !== 'v2') {
       setV2FullUpcomingOpen(false)
+      setV2DrillFilter('all')
       setV2AlertDismissed(false)
     }
   }, [spreadVariant])
+
+  useEffect(() => {
+    if (!v2FullUpcomingOpen) setV2DrillFilter('all')
+  }, [v2FullUpcomingOpen])
+
+  useEffect(() => {
+    if (!hasRebatePendingPayouts(rebateDemo) && v2DrillFilter === 'rebates-usd') {
+      setV2DrillFilter('all')
+    }
+  }, [rebateDemo, v2DrillFilter])
 
   useEffect(() => {
     setV2AlertDismissed(false)
@@ -405,16 +459,25 @@ export function ExnessRewardsScreen({
         ? 'Tomorrow'
         : `on ${rebateDemo.nextPayoutDate}`
 
+  /** Правая колонка для строк ребейта (календарная выплата), Figma CE-3188. */
+  const v2RebatePayoutCol =
+    rebateDemo.nextPayoutDate === '—'
+      ? ''
+      : rebateDemo.nextPayoutDate === 'Tomorrow'
+        ? 'on May 15'
+        : rebateDemo.nextPayoutDate.startsWith('on ')
+          ? rebateDemo.nextPayoutDate
+          : `on ${rebateDemo.nextPayoutDate}`
+
   const v2PinnedRows: V2UpcomingRowData[] = useMemo(
     () => [
       {
-        id: 'pin-cashback',
+        id: 'pin-exd-cashback',
         icon: 'dollar',
-        title: 'Cashback',
+        title: 'EXD cashback',
         amount: '+0.64 USD',
         line1: 'For daily trading',
         date: 'Tomorrow',
-        pinned: true,
       },
       {
         id: 'pin-loyalty',
@@ -423,7 +486,7 @@ export function ExnessRewardsScreen({
         amount: '+3.70 EXD',
         line1: 'For weekly trading',
         date: 'on Jan 17',
-        pinned: true,
+        countBadge: '2',
       },
     ],
     [],
@@ -433,27 +496,25 @@ export function ExnessRewardsScreen({
     if (!hasRebatePendingPayouts(rebateDemo)) return []
     return [
       {
-        id: 'pin-spread-exd',
+        id: 'pin-cash-rebates',
         icon: 'dollar',
-        title: 'Spread rebates',
+        title: 'Cash rebates',
         amount: spreadPreviewUsd,
-        line1: 'Closest payout',
-        line2: `From ${rebateDemo.pendingCount} payout slots`,
-        date: spreadDateLabel,
+        line1: 'For trading on Dec 15',
+        date: v2RebatePayoutCol,
         opensRebateLedger: true,
       },
       {
-        id: 'pin-spread-usd',
+        id: 'pin-exd-rebates',
         icon: 'crown',
-        title: 'Spread rebates',
+        title: 'EXD rebates',
         amount: spreadPreviewExd,
-        line1: 'Closest payout',
-        line2: `From ${rebateDemo.pendingCount} payout slots`,
-        date: spreadDateLabel,
+        line1: 'For trading on Dec 16',
+        date: v2RebatePayoutCol,
         opensRebateLedger: true,
       },
     ]
-  }, [rebateDemo, spreadDateLabel, spreadPreviewExd, spreadPreviewUsd])
+  }, [rebateDemo, spreadPreviewExd, spreadPreviewUsd, v2RebatePayoutCol])
 
   const flexiblePreviewRows: V2UpcomingRowData[] = useMemo(
     () => [...v2PinnedRows, ...v2SpreadPreviewRows],
@@ -503,6 +564,113 @@ export function ExnessRewardsScreen({
     }
     return [...flexiblePreviewRows, ...tail]
   }, [flexiblePreviewRows, hasRebatePaid, rebateDemo])
+
+  const v2BadgeCount = useMemo(() => flexibleAllRows.length, [flexibleAllRows])
+
+  const v2DrillGroupsAll = useMemo((): V2DrillGroup[] => {
+    const has = hasRebatePendingPayouts(rebateDemo)
+    const sliceUsd = spreadPreviewUsd
+    const sliceExd = spreadPreviewExd
+    const tomorrow: V2UpcomingRowData[] = [
+      {
+        id: 'g1-exd-cb',
+        icon: 'dollar',
+        title: 'EXD cashback',
+        amount: '+0.64 USD',
+        line1: 'For daily trading',
+        date: '',
+      },
+    ]
+    if (has) {
+      tomorrow.push(
+        {
+          id: 'g1-cash-r',
+          icon: 'dollar',
+          title: 'Cash rebates',
+          amount: sliceUsd,
+          line1: 'For trading on Dec 15',
+          date: '',
+          opensRebateLedger: true,
+        },
+        {
+          id: 'g1-exd-r',
+          icon: 'crown',
+          title: 'EXD rebates',
+          amount: sliceExd,
+          line1: 'For trading on Dec 16',
+          date: '',
+          opensRebateLedger: true,
+        },
+      )
+    }
+    const april23: V2UpcomingRowData[] = [
+      {
+        id: 'g2-loy',
+        icon: 'crown',
+        title: 'Loyalty rewards',
+        amount: '+3.70 EXD',
+        line1: 'For weekly trading',
+        date: '',
+        countBadge: '2',
+      },
+    ]
+    const may15: V2UpcomingRowData[] = []
+    if (has) {
+      may15.push(
+        {
+          id: 'g3-cr',
+          icon: 'dollar',
+          title: 'Cash rebates',
+          amount: sliceUsd,
+          line1: 'For trading on Dec 15',
+          date: '',
+          opensRebateLedger: true,
+        },
+        {
+          id: 'g3-er',
+          icon: 'crown',
+          title: 'EXD rebates',
+          amount: sliceExd,
+          line1: 'For trading on Dec 16',
+          date: '',
+          opensRebateLedger: true,
+        },
+      )
+    }
+    const groups: V2DrillGroup[] = [
+      { id: 'grp-tomorrow', heading: 'Tomorrow', rows: tomorrow },
+      { id: 'grp-apr23', heading: '23 April', rows: april23 },
+    ]
+    if (may15.length > 0) {
+      groups.push({ id: 'grp-may15', heading: 'May 15', rows: may15 })
+    }
+    return groups
+  }, [rebateDemo, spreadPreviewExd, spreadPreviewUsd])
+
+  const v2DrillGroupsFiltered = useMemo((): V2DrillGroup[] => {
+    if (!hasRebatePendingPayouts(rebateDemo)) return []
+    const sliceUsd = spreadPreviewUsd
+    const row: V2UpcomingRowData = {
+      id: 'f-cr-t',
+      icon: 'dollar',
+      title: 'Cash rebates',
+      amount: sliceUsd,
+      line1: 'For trading on Dec 15',
+      date: '',
+      opensRebateLedger: true,
+    }
+    const row2: V2UpcomingRowData = { ...row, id: 'f-cr-m' }
+    return [
+      { id: 'fg-tomorrow', heading: 'Tomorrow', rows: [row] },
+      { id: 'fg-may15', heading: 'May 15', rows: [row2] },
+    ]
+  }, [rebateDemo, spreadPreviewUsd])
+
+  const v2FilteredUsdTotalLabel = useMemo(() => {
+    const slice = parseSignedAmount(spreadPreviewUsd)
+    const total = Number.isFinite(slice) ? slice * 2 : 0.9
+    return `+${total.toFixed(2)} USD`
+  }, [spreadPreviewUsd])
 
   const v4UpcomingRows: V2UpcomingRowData[] = useMemo(() => {
     const base: V2UpcomingRowData[] = [
@@ -675,26 +843,66 @@ export function ExnessRewardsScreen({
         {spreadVariant === 'v2' && v2FullUpcomingOpen ? (
           <>
             <div className={styles.sectionSpacer} aria-hidden />
-            <div className={styles.v2InnerHeader}>
-              <button
-                type="button"
-                className={styles.v2InnerBack}
-                onClick={() => setV2FullUpcomingOpen(false)}
-                aria-label="Back"
-              >
-                <IconChevronLeft size={22} stroke={2} aria-hidden />
-              </button>
-              <p className={styles.v2InnerTitle}>Upcoming</p>
-            </div>
-            <div className={styles.v2AllPage}>
-              <p className={styles.v2PinnedHeader}>All upcoming</p>
-              {flexibleAllRows.map((row) => (
-                <V2UpcomingRow
-                  key={row.id}
-                  row={row}
-                  onOpenRebateLedger={onOpenRebateLedger}
-                />
-              ))}
+            <div className={styles.v2DrillShell}>
+              <div className={styles.v2DrillTop}>
+                <button
+                  type="button"
+                  className={styles.v2InnerBack}
+                  onClick={() => setV2FullUpcomingOpen(false)}
+                  aria-label="Back"
+                >
+                  <IconChevronLeft size={22} stroke={2} aria-hidden />
+                </button>
+              </div>
+              <p className={styles.v2ExpandedTitle}>Upcoming</p>
+              <div className={styles.v2ChipRow}>
+                <button
+                  type="button"
+                  className={`${styles.v2Chip} ${v2DrillFilter === 'rebates-usd' ? styles.v2ChipActive : ''}`}
+                  disabled={!hasRebatePendingPayouts(rebateDemo)}
+                  onClick={() => {
+                    if (!hasRebatePendingPayouts(rebateDemo)) return
+                    setV2DrillFilter((f) => (f === 'all' ? 'rebates-usd' : 'all'))
+                  }}
+                >
+                  {v2DrillFilter === 'all' ? 'Program type' : 'Rebates'}
+                  <IconChevronDown className={styles.v2ChipChevron} size={16} stroke={2} aria-hidden />
+                </button>
+                <button
+                  type="button"
+                  className={`${styles.v2Chip} ${v2DrillFilter === 'rebates-usd' ? styles.v2ChipActive : ''}`}
+                  disabled={!hasRebatePendingPayouts(rebateDemo)}
+                  onClick={() => {
+                    if (!hasRebatePendingPayouts(rebateDemo)) return
+                    setV2DrillFilter((f) => (f === 'all' ? 'rebates-usd' : 'all'))
+                  }}
+                >
+                  {v2DrillFilter === 'all' ? 'Equity type' : 'USD'}
+                  <IconChevronDown className={styles.v2ChipChevron} size={16} stroke={2} aria-hidden />
+                </button>
+              </div>
+              {v2DrillFilter === 'rebates-usd' && hasRebatePendingPayouts(rebateDemo) ? (
+                <div className={styles.v2TotalBar}>
+                  <span className={styles.v2TotalBarLabel}>Total upcoming USD rebates:</span>
+                  <span className={styles.v2TotalBarAmount}>{v2FilteredUsdTotalLabel}</span>
+                </div>
+              ) : null}
+              <div className={styles.v2AllPage}>
+                {(v2DrillFilter === 'rebates-usd' ? v2DrillGroupsFiltered : v2DrillGroupsAll).map(
+                  (group) => (
+                    <div key={group.id} className={styles.v2DrillGroup}>
+                      <p className={styles.v2DateHeading}>{group.heading}</p>
+                      {group.rows.map((row) => (
+                        <V2UpcomingRow
+                          key={row.id}
+                          row={row}
+                          onOpenRebateLedger={onOpenRebateLedger}
+                        />
+                      ))}
+                    </div>
+                  ),
+                )}
+              </div>
             </div>
           </>
         ) : null}
@@ -702,13 +910,11 @@ export function ExnessRewardsScreen({
         {spreadVariant === 'v2' && !v2FullUpcomingOpen ? (
           <>
             <div className={styles.sectionSpacer} aria-hidden />
-            <SectionTitle
-              title="Upcoming"
-              showChevron
-              onClick={() => setV2FullUpcomingOpen(true)}
+            <V2UpcomingSectionTitle
+              badgeCount={v2BadgeCount}
+              onOpenAll={() => setV2FullUpcomingOpen(true)}
             />
             <div className={styles.v2List}>
-              <p className={styles.v2PinnedHeader}>Pinned</p>
               {v2PinnedRows.map((row) => (
                 <V2UpcomingRow key={row.id} row={row} onOpenRebateLedger={onOpenRebateLedger} />
               ))}
