@@ -224,6 +224,7 @@ export function ExnessRewardsScreen({
   activityPreviewItems,
 }: ExnessRewardsScreenProps) {
   const [v2FullUpcomingOpen, setV2FullUpcomingOpen] = useState(false)
+  const [v2AlertDismissed, setV2AlertDismissed] = useState(false)
   const [v4AccountSelected, setV4AccountSelected] = useState(false)
   const availableExdAmount = parseFloat(
     availableRewardsExd.replace(/,/g, '').trim().split(/\s+/)[0] ?? '0',
@@ -264,7 +265,10 @@ export function ExnessRewardsScreen({
   const v1NextExdPayout = `+${(184.2 / 60).toFixed(2)} EXD`
 
   useEffect(() => {
-    if (spreadVariant !== 'v2') setV2FullUpcomingOpen(false)
+    if (spreadVariant !== 'v2') {
+      setV2FullUpcomingOpen(false)
+      setV2AlertDismissed(false)
+    }
   }, [spreadVariant])
 
   const v1UpcomingRows: LifecycleUpcomingItem[] = useMemo(
@@ -565,15 +569,6 @@ export function ExnessRewardsScreen({
               <p className={styles.v2InnerTitle}>Upcoming</p>
             </div>
             <div className={styles.v2AllPage}>
-              <div className={styles.v2SummaryCard}>
-                <p className={styles.v2SummaryTitle}>Accumulated rebates</p>
-                <p className={styles.v2SummaryValue}>
-                  {SPREAD_DEMO.pendingUsd} USD · {SPREAD_DEMO.pendingExd} EXD
-                </p>
-                <p className={styles.v2SummaryMeta}>
-                  {SPREAD_DEMO.pendingCount} payouts in queue, nearest on {SPREAD_DEMO.nextPayoutDate}
-                </p>
-              </div>
               <p className={styles.v2PinnedHeader}>All upcoming</p>
               {flexibleAllRows.map((row) => (
                 <V2UpcomingRow key={row.id} row={row} />
@@ -591,20 +586,11 @@ export function ExnessRewardsScreen({
               onClick={() => setV2FullUpcomingOpen(true)}
             />
             <div className={styles.v2List}>
-              <div className={styles.v2SummaryInline}>
-                <p className={styles.v2SummaryInlineTitle}>Spread rebates total</p>
-                <p className={styles.v2SummaryInlineValue}>
-                  {SPREAD_DEMO.pendingUsd} USD · {SPREAD_DEMO.pendingExd} EXD
-                </p>
-                <p className={styles.v2SummaryInlineMeta}>
-                  {SPREAD_DEMO.pendingCount} payouts in queue
-                </p>
-              </div>
               <p className={styles.v2PinnedHeader}>Pinned</p>
               {flexiblePreviewRows.map((row, i) => (
                 <div key={row.id}>
                   <V2UpcomingRow row={row} />
-                  {i === 2 ? (
+                  {i === 2 && !v2AlertDismissed ? (
                     <div className={styles.v2Alert}>
                       <div className={styles.v2AlertIcon}>
                         <IconAlertTriangle size={20} stroke={2} aria-hidden />
@@ -618,7 +604,12 @@ export function ExnessRewardsScreen({
                           Select account
                         </button>
                       </div>
-                      <button type="button" className={styles.v2AlertClose} aria-label="Dismiss">
+                      <button
+                        type="button"
+                        className={styles.v2AlertClose}
+                        aria-label="Dismiss"
+                        onClick={() => setV2AlertDismissed(true)}
+                      >
                         <IconX size={18} stroke={2} aria-hidden />
                       </button>
                     </div>

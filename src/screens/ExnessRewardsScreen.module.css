@@ -561,36 +561,6 @@
   color: var(--reward-text-secondary);
 }
 
-.v2SummaryInline {
-  border-radius: 8px;
-  border: 1px solid var(--reward-border);
-  background: #fff;
-  padding: 10px 12px;
-  margin: 0 0 10px;
-}
-
-.v2SummaryInlineTitle {
-  margin: 0;
-  font-size: 12px;
-  line-height: 16px;
-  color: var(--reward-text-secondary);
-}
-
-.v2SummaryInlineValue {
-  margin: 2px 0 0;
-  font-size: 15px;
-  line-height: 22px;
-  font-weight: 600;
-  color: var(--reward-text-primary);
-}
-
-.v2SummaryInlineMeta {
-  margin: 2px 0 0;
-  font-size: 12px;
-  line-height: 16px;
-  color: var(--reward-text-secondary);
-}
-
 .v2Row {
   display: flex;
   gap: 16px;
@@ -762,36 +732,6 @@
 .v2AllPage {
   border-top: 1px dashed var(--reward-border);
   padding-top: 10px;
-}
-
-.v2SummaryCard {
-  border-radius: 8px;
-  border: 1px solid var(--reward-border);
-  background: #fff;
-  padding: 12px;
-  margin-bottom: 10px;
-}
-
-.v2SummaryTitle {
-  margin: 0;
-  font-size: 13px;
-  line-height: 18px;
-  color: var(--reward-text-secondary);
-}
-
-.v2SummaryValue {
-  margin: 4px 0 0;
-  font-size: 16px;
-  line-height: 24px;
-  font-weight: 600;
-  color: var(--reward-text-primary);
-}
-
-.v2SummaryMeta {
-  margin: 4px 0 0;
-  font-size: 13px;
-  line-height: 18px;
-  color: var(--reward-text-secondary);
 }
 
 .v4Section {
