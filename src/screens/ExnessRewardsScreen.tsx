@@ -56,6 +56,11 @@ function parseExdFromAmountLabel(amount: string): number {
   return Number.isFinite(n) ? n : 0
 }
 
+/** Убирает знак +/-, оставляя формат суммы для UI-лейбла. */
+function unsignedAmountLabel(amount: string): string {
+  return amount.replace(/^\s*[+-]\s*/, '').trim()
+}
+
 function SectionTitle({
   title,
   showChevron = true,
@@ -332,6 +337,35 @@ function SpreadPrototypeVariantStrip({
           onClick={() => onSpreadVariantChange(id)}
         >
           {short}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+function V2SummaryUpcomingBlock({
+  usdAmount,
+  exdAmount,
+  onOpen,
+}: {
+  usdAmount: string
+  exdAmount: string
+  onOpen: () => void
+}) {
+  const rows = [
+    { id: 'summary-cashback', icon: 'dollar' as const, title: 'Cashback', amount: usdAmount },
+    { id: 'summary-rewards', icon: 'crown' as const, title: 'Rewards', amount: exdAmount },
+  ]
+  return (
+    <div className={styles.v2SummaryList}>
+      {rows.map((row) => (
+        <button key={row.id} type="button" className={styles.v2SummaryCell} onClick={onOpen}>
+          <span className={styles.v2SummaryCellIcon}>
+            <RowIconTabler kind={row.icon} />
+          </span>
+          <span className={styles.v2SummaryCellTitle}>{row.title}</span>
+          <span className={styles.v2SummaryCellAmount}>{row.amount}</span>
+          <IconChevronRight size={20} stroke={2} className={styles.v2SummaryCellChevron} aria-hidden />
         </button>
       ))}
     </div>
@@ -897,22 +931,6 @@ export function ExnessRewardsScreen({
     return pinned + slots
   }, [rebateDemo, v2PinnedRows])
 
-  const v2SummaryWidgetItems = useMemo(
-    () => [
-      {
-        id: 'summary-exd',
-        label: 'Upcoming EXD',
-        amount: rebateDemo.pendingExd,
-      },
-      {
-        id: 'summary-usd',
-        label: 'Upcoming USD',
-        amount: rebateDemo.pendingUsd,
-      },
-    ],
-    [rebateDemo.pendingExd, rebateDemo.pendingUsd],
-  )
-
   const flexibleDrillFullPage =
     flexUpcomingDrillOpen && (spreadVariant === 'v2' || spreadVariant === 'v4')
 
@@ -1234,23 +1252,12 @@ export function ExnessRewardsScreen({
         {spreadVariant === 'v4' ? (
           <>
             <div className={styles.sectionSpacer} aria-hidden />
-            <V2UpcomingSectionTitle
-              badgeCount={v2BadgeCount}
-              onOpenAll={() => setFlexUpcomingDrillOpen(true)}
+            <SectionTitle title="Upcoming" showChevron={false} />
+            <V2SummaryUpcomingBlock
+              usdAmount={unsignedAmountLabel(rebateDemo.pendingUsd)}
+              exdAmount={unsignedAmountLabel(rebateDemo.pendingExd)}
+              onOpen={() => setFlexUpcomingDrillOpen(true)}
             />
-            <button
-              type="button"
-              className={styles.v2SummaryWidget}
-              onClick={() => setFlexUpcomingDrillOpen(true)}
-              aria-label="Open upcoming details"
-            >
-              {v2SummaryWidgetItems.map((item) => (
-                <div key={item.id} className={styles.v2SummaryWidgetRow}>
-                  <span className={styles.v2SummaryWidgetLabel}>{item.label}</span>
-                  <span className={styles.v2SummaryWidgetAmount}>{item.amount}</span>
-                </div>
-              ))}
-            </button>
           </>
         ) : null}
 
