@@ -75,7 +75,7 @@ export function LifecycleSimulatorPanel({
           <h2 className={styles.title}>Симулятор spread rebate</h2>
           <p className={styles.sub}>
             Пять этапов для прототипа программы (T+60, USD/EXD, on-hold). Экран Rewards и лента
-            синхронизированы с выбранным шагом; варианты V1–V4 только меняют вёрстку.
+            синхронизированы с выбранным шагом; сравниваем два варианта V2.
           </p>
 
           <label className={styles.stepMeta} htmlFor="rebate-step-select">
@@ -96,15 +96,8 @@ export function LifecycleSimulatorPanel({
 
           <div className={styles.variantBlock}>
             <p className={styles.variantTitle}>Spread rebate prototypes</p>
-            <p className={styles.variantSub}>Switches V1-V4 visualization inside Rewards screen</p>
+            <p className={styles.variantSub}>Switches two V2 layouts inside Rewards screen</p>
             <div className={styles.variantButtons}>
-              <button
-                type="button"
-                className={`${styles.variantBtn} ${spreadVariant === 'v1' ? styles.variantBtnActive : ''}`}
-                onClick={() => onSpreadVariantChange('v1')}
-              >
-                V1 · In Upcoming
-              </button>
               <button
                 type="button"
                 className={`${styles.variantBtn} ${spreadVariant === 'v2' ? styles.variantBtnActive : ''}`}
@@ -114,17 +107,10 @@ export function LifecycleSimulatorPanel({
               </button>
               <button
                 type="button"
-                className={`${styles.variantBtn} ${spreadVariant === 'v3' ? styles.variantBtnActive : ''}`}
-                onClick={() => onSpreadVariantChange('v3')}
-              >
-                V3 · Separate Widget
-              </button>
-              <button
-                type="button"
                 className={`${styles.variantBtn} ${spreadVariant === 'v4' ? styles.variantBtnActive : ''}`}
                 onClick={() => onSpreadVariantChange('v4')}
               >
-                V4 · Hybrid section
+                V2 · Upcoming summary widget
               </button>
             </div>
           </div>

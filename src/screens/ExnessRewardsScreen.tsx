@@ -218,10 +218,8 @@ function SpreadPrototypeVariantStrip({
   onSpreadVariantChange: (v: SpreadPrototypeVariant) => void
 }) {
   const variants: { id: SpreadPrototypeVariant; short: string; hint: string }[] = [
-    { id: 'v1', short: 'V1', hint: 'In Upcoming' },
-    { id: 'v2', short: 'V2', hint: 'Flexible Upcoming' },
-    { id: 'v3', short: 'V3', hint: 'Separate widget' },
-    { id: 'v4', short: 'V4', hint: 'Hybrid section' },
+    { id: 'v2', short: 'V2 Flexible', hint: 'Flexible upcoming list' },
+    { id: 'v4', short: 'V2 Summary', hint: 'Compact upcoming widget' },
   ]
   return (
     <div
@@ -805,55 +803,21 @@ export function ExnessRewardsScreen({
     return pinned + slots
   }, [rebateDemo, v2PinnedRows])
 
-  const v4UpcomingRows: V2UpcomingRowData[] = useMemo(() => {
-    const base: V2UpcomingRowData[] = [
+  const v2SummaryWidgetItems = useMemo(
+    () => [
       {
-        id: 'v4-cashback',
-        icon: 'dollar',
-        title: 'Cashback',
-        amount: '+0.64 USD',
-        line1: 'For daily trading',
-        date: 'Tomorrow',
+        id: 'summary-exd',
+        label: 'Upcoming EXD',
+        amount: rebateDemo.pendingExd,
       },
       {
-        id: 'v4-loyalty',
-        icon: 'crown',
-        title: 'Loyalty rewards',
-        amount: '+3.70 EXD',
-        line1: 'For weekly trading',
-        date: 'on Jan 17',
+        id: 'summary-usd',
+        label: 'Upcoming USD',
+        amount: rebateDemo.pendingUsd,
       },
-    ]
-    if (!hasRebatePendingPayouts(rebateDemo)) return base
-    return [
-      ...base,
-      {
-        id: 'v4-spread-usd',
-        icon: 'dollar',
-        title: 'Spread rebates',
-        amount: spreadPreviewUsd,
-        line1: 'Closest payout',
-        line2: `From ${rebateDemo.pendingCount} payout slots`,
-        date: spreadDateLabel,
-        opensRebateLedger: true,
-      },
-      {
-        id: 'v4-spread-exd',
-        icon: 'crown',
-        title: 'Spread rebates',
-        amount: spreadPreviewExd,
-        line1: 'Closest payout',
-        line2: `From ${rebateDemo.pendingCount} payout slots`,
-        date: spreadDateLabel,
-        opensRebateLedger: true,
-      },
-    ]
-  }, [rebateDemo, spreadDateLabel, spreadPreviewExd, spreadPreviewUsd])
-
-  const showV4SpreadSection =
-    hasRebatePendingPayouts(rebateDemo) ||
-    rebateDemo.showAccountAlert ||
-    rebateDemo.usdAccountSelected
+    ],
+    [rebateDemo.pendingExd, rebateDemo.pendingUsd],
+  )
 
   const flexibleDrillFullPage =
     flexUpcomingDrillOpen && (spreadVariant === 'v2' || spreadVariant === 'v4')
@@ -1176,69 +1140,24 @@ export function ExnessRewardsScreen({
 
         {spreadVariant === 'v4' ? (
           <>
-            {showV4SpreadSection ? (
-              <>
-                <div className={styles.sectionSpacer} aria-hidden />
-                <SectionTitle
-                  title="Spread rebates"
-                  showChevron={hasRebate}
-                  onClick={hasRebate ? () => onOpenRebateLedger?.() : undefined}
-                />
-                <div className={styles.v4Section}>
-                  {rebateDemo.usdAccountSelected ? (
-                    <div className={styles.v4AccountInfo}>
-                      <p className={styles.v4AccountLabel}>USD destination account</p>
-                      <p className={styles.v4AccountValue}>MT5 · #12345678</p>
-                    </div>
-                  ) : rebateDemo.showAccountAlert ? (
-                    <div className={styles.v4Alert}>
-                      <div className={styles.v4AlertIcon}>
-                        <IconAlertTriangle size={20} stroke={2} aria-hidden />
-                      </div>
-                      <div className={styles.v4AlertBody}>
-                        <p className={styles.v4AlertTitle}>Select account for USD</p>
-                        <p className={styles.v4AlertDesc}>
-                          {rebateDemo.onHoldUsdAmount} is waiting for account selection.
-                        </p>
-                        <button type="button" className={styles.v4AlertBtn}>
-                          Select account
-                        </button>
-                      </div>
-                    </div>
-                  ) : null}
-                  <div className={styles.v4Summary}>
-                    <div className={styles.v4SummaryTop}>
-                      <div>
-                        <p className={styles.v4SummaryLabel}>Accumulated USD</p>
-                        <p className={styles.v4SummaryValue}>{rebateDemo.pendingUsd}</p>
-                      </div>
-                      <div>
-                        <p className={styles.v4SummaryLabel}>Accumulated EXD</p>
-                        <p className={styles.v4SummaryValue}>{rebateDemo.pendingExd}</p>
-                      </div>
-                    </div>
-                    <p className={styles.v4SummaryInfo}>
-                      {rebateDemo.pendingCount} future payouts, nearest on {rebateDemo.nextPayoutDate}
-                    </p>
-                  </div>
-                </div>
-              </>
-            ) : null}
-
             <div className={styles.sectionSpacer} aria-hidden />
             <V2UpcomingSectionTitle
-              badgeCount={v4UpcomingRows.length}
+              badgeCount={v2BadgeCount}
               onOpenAll={() => setFlexUpcomingDrillOpen(true)}
             />
-            <div className={styles.v4UpcomingList}>
-              {v4UpcomingRows.map((row) => (
-                <V2UpcomingRow
-                  key={row.id}
-                  row={row}
-                  onOpenRebateLedger={onOpenRebateLedger}
-                />
+            <button
+              type="button"
+              className={styles.v2SummaryWidget}
+              onClick={() => setFlexUpcomingDrillOpen(true)}
+              aria-label="Open upcoming details"
+            >
+              {v2SummaryWidgetItems.map((item) => (
+                <div key={item.id} className={styles.v2SummaryWidgetRow}>
+                  <span className={styles.v2SummaryWidgetLabel}>{item.label}</span>
+                  <span className={styles.v2SummaryWidgetAmount}>{item.amount}</span>
+                </div>
               ))}
-            </div>
+            </button>
           </>
         ) : null}
 

@@ -28,7 +28,7 @@ function App() {
   } | null>(null)
   const [activityTypeFilter, setActivityTypeFilter] = useState<ActivityTypeFilter>('all')
   const [activityDatePreset, setActivityDatePreset] = useState<ActivityDatePreset>('all')
-  const [spreadVariant, setSpreadVariant] = useState<SpreadPrototypeVariant>('v1')
+  const [spreadVariant, setSpreadVariant] = useState<SpreadPrototypeVariant>('v2')
   const scrollRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {

@@ -546,7 +546,7 @@
   flex-direction: column;
 }
 
-/* Внутри телефона: быстрый выбор V1–V4 (синхрон с панелью справа). */
+/* Внутри телефона: быстрый выбор двух V2-вариантов. */
 .prototypeVariantStrip {
   display: flex;
   flex-wrap: wrap;
@@ -574,6 +574,50 @@
 .prototypeVariantChipActive {
   border-color: var(--reward-text-primary);
   background: var(--reward-steel);
+  color: var(--reward-text-primary);
+}
+
+.v2SummaryWidget {
+  width: 100%;
+  border: 1px solid var(--reward-border);
+  border-radius: 12px;
+  background: #fff;
+  padding: 4px 12px;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+
+.v2SummaryWidgetRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--reward-border);
+}
+
+.v2SummaryWidgetRow:last-child {
+  border-bottom: none;
+}
+
+.v2SummaryWidgetLabel {
+  margin: 0;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--reward-text-secondary);
+}
+
+.v2SummaryWidgetAmount {
+  margin: 0;
+  font-size: 24px;
+  line-height: 32px;
+  font-weight: 600;
   color: var(--reward-text-primary);
 }
 
