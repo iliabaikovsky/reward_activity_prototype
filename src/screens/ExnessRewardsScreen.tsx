@@ -259,9 +259,22 @@ function FlexibleUpcomingDrillIn({
               const value = bucket.usd + bucket.exd
               const h =
                 maxBucketValue > 0 ? Math.max(16, Math.round((value / maxBucketValue) * 96)) : 16
+              const usdShare = value > 0 ? bucket.usd / value : 0
+              const usdHeight = Math.round(h * usdShare)
+              const exdHeight = Math.max(0, h - usdHeight)
               return (
                 <div key={bucket.id} className={styles.v2TimelineBarWrap}>
-                  <span className={styles.v2TimelineBar} style={{ height: `${h}px` }} />
+                  <span className={styles.v2TimelineBarStack} style={{ height: `${h}px` }}>
+                    {bucket.usd > 0 ? (
+                      <span className={styles.v2TimelineBarUsd} style={{ height: `${usdHeight}px` }} />
+                    ) : null}
+                    {bucket.exd > 0 ? (
+                      <span className={styles.v2TimelineBarExd} style={{ height: `${exdHeight}px` }} />
+                    ) : null}
+                    {bucket.usd <= 0 && bucket.exd <= 0 ? (
+                      <span className={styles.v2TimelineBarEmpty} />
+                    ) : null}
+                  </span>
                   <span className={styles.v2TimelineBarLabel}>D{bucket.day}</span>
                 </div>
               )
@@ -276,9 +289,10 @@ function FlexibleUpcomingDrillIn({
                 <p className={styles.v2DayRowTitle}>Day {bucket.day}</p>
                 <p className={styles.v2DayRowHint}>{bucket.count} payouts</p>
               </div>
-              <p className={styles.v2DayRowAmount}>
-                {fmt(bucket.usd, 'USD')} · {fmt(bucket.exd, 'EXD')}
-              </p>
+              <div className={styles.v2DayRowAmountStack}>
+                <p className={styles.v2DayRowAmountUsd}>{fmt(bucket.usd, 'USD')}</p>
+                <p className={styles.v2DayRowAmountExd}>{fmt(bucket.exd, 'EXD')}</p>
+              </div>
             </div>
           ))}
           {dayBuckets.length === 0 ? (
