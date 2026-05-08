@@ -125,7 +125,6 @@ function FlexibleUpcomingDrillIn({
   drillGroups,
   usdTotalLabel,
   showUsdTotalBar,
-  onOpenRebateLedger,
   fullPage = false,
 }: {
   onBack: () => void
@@ -137,12 +136,64 @@ function FlexibleUpcomingDrillIn({
   drillGroups: V2DrillGroup[]
   usdTotalLabel: string
   showUsdTotalBar: boolean
-  onOpenRebateLedger?: () => void
   /** Отдельный экран без hero и прочих секций (Figma drill-in). */
   fullPage?: boolean
 }) {
   const shellClass = fullPage ? `${styles.v2DrillShell} ${styles.v2DrillShellFullPage}` : styles.v2DrillShell
   const hasRebate = hasRebatePendingPayouts(rebateDemo)
+  const flatRows = useMemo(() => drillGroups.flatMap((group) => group.rows), [drillGroups])
+  const horizonDays = useMemo(() => {
+    const pendingDays = Math.max(0, Math.floor(Number(rebateDemo.pendingCount)))
+    if (pendingDays > 0) return Math.min(90, Math.min(60, pendingDays))
+    if (flatRows.length > 0) return Math.min(90, Math.max(7, flatRows.length))
+    return 7
+  }, [flatRows.length, rebateDemo.pendingCount])
+  const horizonWeeks = Math.ceil(horizonDays / 7)
+
+  const dayBuckets = useMemo(() => {
+    if (flatRows.length === 0) return [] as { id: string; day: number; usd: number; exd: number; count: number }[]
+    const bucketCount = Math.min(8, Math.max(4, Math.ceil(horizonDays / 10)))
+    const buckets = Array.from({ length: bucketCount }, (_, i) => ({
+      id: `day-bucket-${i + 1}`,
+      day: Math.max(1, Math.round(((i + 1) * horizonDays) / bucketCount)),
+      usd: 0,
+      exd: 0,
+      count: 0,
+    }))
+    flatRows.forEach((row, idx) => {
+      const bucketIdx =
+        flatRows.length <= 1
+          ? 0
+          : Math.min(bucketCount - 1, Math.floor((idx * bucketCount) / flatRows.length))
+      const amount = parseSignedAmount(row.amount)
+      if (row.amount.toUpperCase().includes('USD')) {
+        buckets[bucketIdx].usd += amount
+      } else if (row.amount.toUpperCase().includes('EXD')) {
+        buckets[bucketIdx].exd += amount
+      }
+      buckets[bucketIdx].count += 1
+    })
+    return buckets
+  }, [flatRows, horizonDays])
+
+  const totals = useMemo(
+    () =>
+      dayBuckets.reduce(
+        (acc, bucket) => ({
+          usd: acc.usd + bucket.usd,
+          exd: acc.exd + bucket.exd,
+          count: acc.count + bucket.count,
+        }),
+        { usd: 0, exd: 0, count: 0 },
+      ),
+    [dayBuckets],
+  )
+  const maxBucketValue = useMemo(
+    () => dayBuckets.reduce((max, bucket) => Math.max(max, bucket.usd + bucket.exd), 0),
+    [dayBuckets],
+  )
+  const fmt = (n: number, c: 'USD' | 'EXD') => `+${n.toFixed(2)} ${c}`
+
   return (
     <>
       {!fullPage ? <div className={styles.sectionSpacer} aria-hidden /> : null}
@@ -195,15 +246,44 @@ function FlexibleUpcomingDrillIn({
             <span className={styles.v2TotalBarAmount}>{usdTotalLabel}</span>
           </div>
         ) : null}
+        <div className={styles.v2TimelineCard}>
+          <p className={styles.v2TimelineTitle}>Future payouts (EXD + USD)</p>
+          <p className={styles.v2TimelineAmount}>
+            {fmt(totals.usd, 'USD')} · {fmt(totals.exd, 'EXD')}
+          </p>
+          <p className={styles.v2TimelineHint}>
+            Horizon: {horizonDays} days ({horizonWeeks} weeks) · max lookahead 90 days
+          </p>
+          <div className={styles.v2TimelineBars} aria-hidden>
+            {dayBuckets.map((bucket) => {
+              const value = bucket.usd + bucket.exd
+              const h =
+                maxBucketValue > 0 ? Math.max(16, Math.round((value / maxBucketValue) * 96)) : 16
+              return (
+                <div key={bucket.id} className={styles.v2TimelineBarWrap}>
+                  <span className={styles.v2TimelineBar} style={{ height: `${h}px` }} />
+                  <span className={styles.v2TimelineBarLabel}>D{bucket.day}</span>
+                </div>
+              )
+            })}
+          </div>
+        </div>
         <div className={styles.v2AllPage}>
-          {drillGroups.map((group) => (
-            <div key={group.id} className={styles.v2DrillGroup}>
-              <p className={styles.v2DateHeading}>{group.heading}</p>
-              {group.rows.map((row) => (
-                <V2UpcomingRow key={row.id} row={row} onOpenRebateLedger={onOpenRebateLedger} />
-              ))}
+          <p className={styles.v2DateHeading}>By payout day</p>
+          {dayBuckets.map((bucket) => (
+            <div key={bucket.id} className={styles.v2DayRow}>
+              <div>
+                <p className={styles.v2DayRowTitle}>Day {bucket.day}</p>
+                <p className={styles.v2DayRowHint}>{bucket.count} payouts</p>
+              </div>
+              <p className={styles.v2DayRowAmount}>
+                {fmt(bucket.usd, 'USD')} · {fmt(bucket.exd, 'EXD')}
+              </p>
             </div>
           ))}
+          {dayBuckets.length === 0 ? (
+            <p className={styles.emptyHint}>No upcoming payouts in selected filter</p>
+          ) : null}
         </div>
       </div>
     </>
@@ -837,7 +917,6 @@ export function ExnessRewardsScreen({
             drillGroups={v2DrillGroupsVisible}
             usdTotalLabel={rebateDemo.pendingUsd}
             showUsdTotalBar={v2DrillShowUsdTotalBar}
-            onOpenRebateLedger={onOpenRebateLedger}
           />
         </div>
       </div>
