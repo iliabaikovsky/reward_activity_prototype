@@ -69,6 +69,71 @@ function scrollDeviceFrameToTop(): void {
   if (el instanceof HTMLElement) el.scrollTo(0, 0)
 }
 
+function fmtSignedAmount(value: number, currency: 'USD' | 'EXD'): string {
+  return `+${value.toFixed(2)} ${currency}`
+}
+
+type SummaryPayoutEntry = {
+  id: string
+  payoutDate: Date
+  amount: number
+  title: string
+  line1: string
+  icon: LifecycleActivityIcon
+}
+
+function buildSummaryPayoutEntries(
+  currency: V2SummaryCurrencyPage,
+  totalLabel: string,
+  pendingCount: number,
+): SummaryPayoutEntry[] {
+  const total = parseSignedAmount(totalLabel)
+  if (total <= 0) return []
+  const horizon = 90
+  const payoutsCount = Math.min(90, Math.max(24, Math.floor(Number(pendingCount)) || 30))
+  const entries: SummaryPayoutEntry[] = []
+  const now = new Date()
+  now.setHours(0, 0, 0, 0)
+  const weights = Array.from({ length: payoutsCount }, (_, i) => {
+    const base = 0.8 + ((i * 37) % 10) / 20
+    const wave = 0.18 * Math.sin((i + 1) * 1.31)
+    return Math.max(0.2, base + wave)
+  })
+  const sumWeights = weights.reduce((s, w) => s + w, 0) || 1
+  let running = 0
+  for (let i = 0; i < payoutsCount; i++) {
+    const day = Math.max(1, Math.round(((i + 1) * horizon) / payoutsCount))
+    const payoutDate = new Date(now)
+    payoutDate.setDate(now.getDate() + day)
+    const raw = i === payoutsCount - 1 ? total - running : (total * weights[i]) / sumWeights
+    const amount = Math.max(0, Number(raw.toFixed(2)))
+    running += amount
+    entries.push({
+      id: `${currency}-pay-${i + 1}`,
+      payoutDate,
+      amount,
+      title:
+        currency === 'usd'
+          ? i % 7 === 0
+            ? 'EXD cashback'
+            : 'Cash rebates'
+          : i % 6 === 0
+            ? 'Loyalty rewards'
+            : 'EXD rebates',
+      line1:
+        currency === 'usd'
+          ? i % 7 === 0
+            ? 'For daily trading'
+            : 'For trading on Dec 15'
+          : i % 6 === 0
+            ? 'For weekly trading'
+            : 'For trading on Dec 16',
+      icon: currency === 'usd' ? 'dollar' : 'crown',
+    })
+  }
+  return entries
+}
+
 function SectionTitle({
   title,
   showChevron = true,
@@ -397,39 +462,104 @@ function V2SummaryUpcomingBlock({
 function V2SummaryCurrencyDetailPage({
   currency,
   totalLabel,
-  rows,
+  pendingCount,
   onBack,
 }: {
   currency: V2SummaryCurrencyPage
   totalLabel: string
-  rows: V2UpcomingRowData[]
+  pendingCount: number
   onBack: () => void
 }) {
   const title = currency === 'usd' ? 'Upcoming cashback' : 'Upcoming rewards'
   const unit = currency.toUpperCase()
-  const headingLabels = ['Tomorrow', 'May 10', 'May 15']
-  const withFallback = rows.length > 0 ? rows : []
-  const groupedRows = headingLabels.map((heading, idx) => {
-    const perBucket = Math.max(1, Math.ceil(withFallback.length / headingLabels.length))
-    const start = idx * perBucket
-    const slice = withFallback.slice(start, start + perBucket).map((row, i) => ({
-      ...row,
-      id: `${row.id}-${idx}-${i}`,
-      line1: row.filterProgram === 'rebates' ? 'For trading on Dec 15' : row.line1,
-      date: '',
-    }))
-    return { id: `summary-detail-${idx}`, heading, rows: slice }
-  })
+  const [monthOffset, setMonthOffset] = useState<0 | 1 | 2>(0)
+  const entries = useMemo(
+    () => buildSummaryPayoutEntries(currency, totalLabel, pendingCount),
+    [currency, totalLabel, pendingCount],
+  )
+  const monthOptions = useMemo(() => {
+    const base = new Date()
+    base.setDate(1)
+    base.setHours(0, 0, 0, 0)
+    return ([0, 1, 2] as const).map((offset) => {
+      const m = new Date(base)
+      m.setMonth(base.getMonth() + offset)
+      return {
+        offset,
+        month: m.getMonth(),
+        year: m.getFullYear(),
+        label: m.toLocaleDateString('en-US', { month: 'short' }),
+      }
+    })
+  }, [])
 
-  const bucketLabels = ['1-7', '8-14', '15-21', '22-28', '29-30']
-  const total = parseSignedAmount(totalLabel)
-  const monthTotal = total * 0.5
-  const weights = [0.68, 1, 0.32, 0.7, 0.48]
-  const weightSum = weights.reduce((s, w) => s + w, 0)
-  const barValues = weights.map((w) => (weightSum > 0 ? (monthTotal * w) / weightSum : 0))
-  const maxBar = barValues.reduce((m, v) => Math.max(m, v), 0)
+  const selectedMonth = monthOptions.find((m) => m.offset === monthOffset) ?? monthOptions[0]
+  const selectedEntries = useMemo(
+    () =>
+      entries
+        .filter(
+          (entry) =>
+            entry.payoutDate.getMonth() === selectedMonth.month &&
+            entry.payoutDate.getFullYear() === selectedMonth.year,
+        )
+        .sort((a, b) => a.payoutDate.getTime() - b.payoutDate.getTime()),
+    [entries, selectedMonth.month, selectedMonth.year],
+  )
+  const monthTotal = useMemo(
+    () => selectedEntries.reduce((sum, entry) => sum + entry.amount, 0),
+    [selectedEntries],
+  )
+
+  const monthDays = new Date(selectedMonth.year, selectedMonth.month + 1, 0).getDate()
+  const weekRanges = [
+    { start: 1, end: 7 },
+    { start: 8, end: 14 },
+    { start: 15, end: 21 },
+    { start: 22, end: 28 },
+    { start: 29, end: monthDays },
+  ].filter((r) => r.start <= monthDays)
+  const weekBuckets = weekRanges.map((range, idx) => {
+    const items = selectedEntries.filter((entry) => {
+      const day = entry.payoutDate.getDate()
+      return day >= range.start && day <= range.end
+    })
+    return {
+      id: `wk-${idx + 1}`,
+      label: `${range.start}-${range.end}`,
+      total: items.reduce((sum, entry) => sum + entry.amount, 0),
+    }
+  })
+  const maxBar = weekBuckets.reduce((m, b) => Math.max(m, b.total), 0)
   const axisMax = Math.max(5, Math.ceil(maxBar))
   const axisTicks = [5, 4, 3, 2, 1, 0].map((n) => ((axisMax * n) / 5).toFixed(2))
+
+  const groupedRows = useMemo(() => {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const groups = new Map<string, V2UpcomingRowData[]>()
+    selectedEntries.forEach((entry, idx) => {
+      const key =
+        entry.payoutDate.getTime() - today.getTime() <= 24 * 60 * 60 * 1000
+          ? 'Tomorrow'
+          : entry.payoutDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+      const row: V2UpcomingRowData = {
+        id: `${entry.id}-m${monthOffset}-${idx}`,
+        icon: entry.icon,
+        title: entry.title,
+        amount: fmtSignedAmount(entry.amount, unit as 'USD' | 'EXD'),
+        line1: entry.line1,
+        date: '',
+      }
+      const arr = groups.get(key)
+      if (arr) arr.push(row)
+      else groups.set(key, [row])
+    })
+    return Array.from(groups.entries()).map(([heading, rows], idx) => ({
+      id: `summary-detail-${idx}`,
+      heading,
+      rows,
+    }))
+  }, [selectedEntries, monthOffset, unit])
 
   return (
     <div className={styles.v2SummaryDetailPage}>
@@ -442,13 +572,25 @@ function V2SummaryCurrencyDetailPage({
 
       <div className={styles.v2SummaryDetailHero}>
         <p className={styles.v2SummaryDetailLabel}>{title}</p>
-        <p className={styles.v2SummaryDetailAmount}>{unsignedAmountLabel(totalLabel)} {unit}</p>
+        <p className={styles.v2SummaryDetailAmount}>{unsignedAmountLabel(fmtSignedAmount(monthTotal, unit as 'USD' | 'EXD'))}</p>
       </div>
 
       <button type="button" className={styles.v2SummaryFilterChip}>
         All programs
         <IconChevronDown size={16} stroke={2} aria-hidden />
       </button>
+      <div className={styles.v2MonthSwitch} role="group" aria-label="Select month">
+        {monthOptions.map((opt) => (
+          <button
+            key={opt.offset}
+            type="button"
+            className={`${styles.v2MonthSwitchBtn} ${monthOffset === opt.offset ? styles.v2MonthSwitchBtnActive : ''}`}
+            onClick={() => setMonthOffset(opt.offset)}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
 
       <div className={styles.v2SummaryChart}>
         <div className={styles.v2SummaryChartHeader}>{unit}</div>
@@ -459,12 +601,12 @@ function V2SummaryCurrencyDetailPage({
             ))}
           </div>
           <div className={styles.v2SummaryBars}>
-            {barValues.map((v, i) => {
-              const h = maxBar > 0 ? Math.max(6, Math.round((v / maxBar) * 156)) : 6
+            {weekBuckets.map((b) => {
+              const h = maxBar > 0 ? Math.max(6, Math.round((b.total / maxBar) * 156)) : 6
               return (
-                <div key={bucketLabels[i]} className={styles.v2SummaryBarCol}>
+                <div key={b.id} className={styles.v2SummaryBarCol}>
                   <span className={styles.v2SummaryBar} style={{ height: `${h}px` }} />
-                  <span className={styles.v2SummaryBarTick}>{bucketLabels[i]}</span>
+                  <span className={styles.v2SummaryBarTick}>{b.label}</span>
                 </div>
               )
             })}
@@ -482,6 +624,7 @@ function V2SummaryCurrencyDetailPage({
           </div>
         ) : null,
       )}
+      {groupedRows.length === 0 ? <p className={styles.emptyHint}>No payouts this month</p> : null}
     </div>
   )
 }
@@ -1053,16 +1196,6 @@ export function ExnessRewardsScreen({
     return pinned + slots
   }, [rebateDemo, v2PinnedRows])
 
-  const v2SummaryUsdDetailRows = useMemo(
-    () => v2DrillAllFlatRows.filter((row) => row.filterEquity === 'usd').slice(0, 8),
-    [v2DrillAllFlatRows],
-  )
-
-  const v2SummaryExdDetailRows = useMemo(
-    () => v2DrillAllFlatRows.filter((row) => row.filterEquity === 'exd').slice(0, 8),
-    [v2DrillAllFlatRows],
-  )
-
   const flexibleDrillFullPage = flexUpcomingDrillOpen && spreadVariant === 'v2'
 
   if (spreadVariant === 'v4' && v2SummaryCurrencyPage) {
@@ -1072,7 +1205,7 @@ export function ExnessRewardsScreen({
           <V2SummaryCurrencyDetailPage
             currency={v2SummaryCurrencyPage}
             totalLabel={v2SummaryCurrencyPage === 'usd' ? rebateDemo.pendingUsd : rebateDemo.pendingExd}
-            rows={v2SummaryCurrencyPage === 'usd' ? v2SummaryUsdDetailRows : v2SummaryExdDetailRows}
+            pendingCount={rebateDemo.pendingCount}
             onBack={() => setV2SummaryCurrencyPage(null)}
           />
         </div>

@@ -700,6 +700,29 @@
   cursor: default;
 }
 
+.v2MonthSwitch {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.v2MonthSwitchBtn {
+  margin: 0;
+  border: none;
+  border-radius: 1000px;
+  background: var(--reward-neutral-ultralight);
+  color: var(--reward-text-primary);
+  padding: 6px 12px;
+  font-size: 14px;
+  line-height: 20px;
+  cursor: pointer;
+}
+
+.v2MonthSwitchBtnActive {
+  background: #6c8595;
+  color: #fff;
+}
+
 .v2SummaryChart {
   display: flex;
   flex-direction: column;
