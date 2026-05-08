@@ -472,7 +472,7 @@ function V2SummaryCurrencyDetailPage({
 }) {
   const title = currency === 'usd' ? 'Upcoming cashback' : 'Upcoming rewards'
   const unit = currency.toUpperCase()
-  const [monthOffset, setMonthOffset] = useState<0 | 1 | 2>(0)
+  const [monthSelection, setMonthSelection] = useState<'all' | 0 | 1 | 2>('all')
   const entries = useMemo(
     () => buildSummaryPayoutEntries(currency, totalLabel, pendingCount),
     [currency, totalLabel, pendingCount],
@@ -493,43 +493,46 @@ function V2SummaryCurrencyDetailPage({
     })
   }, [])
 
-  const selectedMonth = monthOptions.find((m) => m.offset === monthOffset) ?? monthOptions[0]
-  const selectedEntries = useMemo(
-    () =>
-      entries
+  const selectedMonth = monthSelection === 'all' ? null : monthOptions.find((m) => m.offset === monthSelection) ?? monthOptions[0]
+  const selectedEntries = useMemo(() => {
+    const sorted = [...entries].sort((a, b) => a.payoutDate.getTime() - b.payoutDate.getTime())
+    if (monthSelection === 'all' || !selectedMonth) return sorted
+    return sorted.filter(
+      (entry) =>
+        entry.payoutDate.getMonth() === selectedMonth.month &&
+        entry.payoutDate.getFullYear() === selectedMonth.year,
+    )
+  }, [entries, monthSelection, selectedMonth])
+  const viewTotal = useMemo(() => selectedEntries.reduce((sum, entry) => sum + entry.amount, 0), [selectedEntries])
+
+  const halfMonthBuckets = useMemo(() => {
+    const baseMonth = monthSelection === 'all' ? monthOptions[0] : (selectedMonth ?? monthOptions[0])
+    const ranges = Array.from({ length: 4 }, (_, idx) => {
+      const monthShift = Math.floor(idx / 2)
+      const firstHalf = idx % 2 === 0
+      const d = new Date(baseMonth.year, baseMonth.month, 1)
+      d.setMonth(d.getMonth() + monthShift)
+      const y = d.getFullYear()
+      const m = d.getMonth()
+      const monthDays = new Date(y, m + 1, 0).getDate()
+      const start = firstHalf ? 1 : 16
+      const end = firstHalf ? Math.min(15, monthDays) : monthDays
+      const label = `${start}-${end} ${d.toLocaleDateString('en-US', { month: 'short' })}`
+      const total = selectedEntries
         .filter(
           (entry) =>
-            entry.payoutDate.getMonth() === selectedMonth.month &&
-            entry.payoutDate.getFullYear() === selectedMonth.year,
+            entry.payoutDate.getFullYear() === y &&
+            entry.payoutDate.getMonth() === m &&
+            entry.payoutDate.getDate() >= start &&
+            entry.payoutDate.getDate() <= end,
         )
-        .sort((a, b) => a.payoutDate.getTime() - b.payoutDate.getTime()),
-    [entries, selectedMonth.month, selectedMonth.year],
-  )
-  const monthTotal = useMemo(
-    () => selectedEntries.reduce((sum, entry) => sum + entry.amount, 0),
-    [selectedEntries],
-  )
-
-  const monthDays = new Date(selectedMonth.year, selectedMonth.month + 1, 0).getDate()
-  const weekRanges = [
-    { start: 1, end: 7 },
-    { start: 8, end: 14 },
-    { start: 15, end: 21 },
-    { start: 22, end: 28 },
-    { start: 29, end: monthDays },
-  ].filter((r) => r.start <= monthDays)
-  const weekBuckets = weekRanges.map((range, idx) => {
-    const items = selectedEntries.filter((entry) => {
-      const day = entry.payoutDate.getDate()
-      return day >= range.start && day <= range.end
+        .reduce((sum, entry) => sum + entry.amount, 0)
+      return { id: `half-${idx + 1}`, label, total }
     })
-    return {
-      id: `wk-${idx + 1}`,
-      label: `${range.start}-${range.end}`,
-      total: items.reduce((sum, entry) => sum + entry.amount, 0),
-    }
-  })
-  const maxBar = weekBuckets.reduce((m, b) => Math.max(m, b.total), 0)
+    return ranges
+  }, [monthOptions, monthSelection, selectedEntries, selectedMonth])
+
+  const maxBar = halfMonthBuckets.reduce((m, b) => Math.max(m, b.total), 0)
   const axisMax = Math.max(5, Math.ceil(maxBar))
   const axisTicks = [5, 4, 3, 2, 1, 0].map((n) => ((axisMax * n) / 5).toFixed(2))
 
@@ -543,7 +546,7 @@ function V2SummaryCurrencyDetailPage({
           ? 'Tomorrow'
           : entry.payoutDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
       const row: V2UpcomingRowData = {
-        id: `${entry.id}-m${monthOffset}-${idx}`,
+        id: `${entry.id}-m${monthSelection}-${idx}`,
         icon: entry.icon,
         title: entry.title,
         amount: fmtSignedAmount(entry.amount, unit as 'USD' | 'EXD'),
@@ -559,7 +562,7 @@ function V2SummaryCurrencyDetailPage({
       heading,
       rows,
     }))
-  }, [selectedEntries, monthOffset, unit])
+  }, [selectedEntries, monthSelection, unit])
 
   return (
     <div className={styles.v2SummaryDetailPage}>
@@ -572,7 +575,9 @@ function V2SummaryCurrencyDetailPage({
 
       <div className={styles.v2SummaryDetailHero}>
         <p className={styles.v2SummaryDetailLabel}>{title}</p>
-        <p className={styles.v2SummaryDetailAmount}>{unsignedAmountLabel(fmtSignedAmount(monthTotal, unit as 'USD' | 'EXD'))}</p>
+        <p className={styles.v2SummaryDetailAmount}>
+          {unsignedAmountLabel(fmtSignedAmount(viewTotal, unit as 'USD' | 'EXD'))}
+        </p>
       </div>
 
       <button type="button" className={styles.v2SummaryFilterChip}>
@@ -580,12 +585,19 @@ function V2SummaryCurrencyDetailPage({
         <IconChevronDown size={16} stroke={2} aria-hidden />
       </button>
       <div className={styles.v2MonthSwitch} role="group" aria-label="Select month">
+        <button
+          type="button"
+          className={`${styles.v2MonthSwitchBtn} ${monthSelection === 'all' ? styles.v2MonthSwitchBtnActive : ''}`}
+          onClick={() => setMonthSelection('all')}
+        >
+          All time
+        </button>
         {monthOptions.map((opt) => (
           <button
             key={opt.offset}
             type="button"
-            className={`${styles.v2MonthSwitchBtn} ${monthOffset === opt.offset ? styles.v2MonthSwitchBtnActive : ''}`}
-            onClick={() => setMonthOffset(opt.offset)}
+            className={`${styles.v2MonthSwitchBtn} ${monthSelection === opt.offset ? styles.v2MonthSwitchBtnActive : ''}`}
+            onClick={() => setMonthSelection(opt.offset)}
           >
             {opt.label}
           </button>
@@ -601,7 +613,7 @@ function V2SummaryCurrencyDetailPage({
             ))}
           </div>
           <div className={styles.v2SummaryBars}>
-            {weekBuckets.map((b) => {
+            {halfMonthBuckets.map((b) => {
               const h = maxBar > 0 ? Math.max(6, Math.round((b.total / maxBar) * 156)) : 6
               return (
                 <div key={b.id} className={styles.v2SummaryBarCol}>
