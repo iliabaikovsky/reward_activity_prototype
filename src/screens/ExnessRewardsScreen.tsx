@@ -3,6 +3,7 @@ import {
   IconAlertTriangle,
   IconArrowRight,
   IconArrowsRightLeft,
+  IconChevronDown,
   IconChevronLeft,
   IconChevronRight,
   IconCrown,
@@ -47,6 +48,7 @@ const HIDE_TRANSACTION_BADGES = true
 
 const TIER_EXD_GOAL = 1000
 type SpreadPrototypeVariant = 'v1' | 'v2' | 'v3' | 'v4'
+type V2SummaryCurrencyPage = 'usd' | 'exd'
 
 /** Парсит сумму из строки вида "+3.20 EXD" */
 function parseExdFromAmountLabel(amount: string): number {
@@ -59,6 +61,12 @@ function parseExdFromAmountLabel(amount: string): number {
 /** Убирает знак +/-, оставляя формат суммы для UI-лейбла. */
 function unsignedAmountLabel(amount: string): string {
   return amount.replace(/^\s*[+-]\s*/, '').trim()
+}
+
+function scrollDeviceFrameToTop(): void {
+  if (typeof document === 'undefined') return
+  const el = document.querySelector('.device-frame-scroll')
+  if (el instanceof HTMLElement) el.scrollTo(0, 0)
 }
 
 function SectionTitle({
@@ -346,20 +354,34 @@ function SpreadPrototypeVariantStrip({
 function V2SummaryUpcomingBlock({
   usdAmount,
   exdAmount,
-  onOpen,
+  onOpenUsd,
+  onOpenExd,
 }: {
   usdAmount: string
   exdAmount: string
-  onOpen: () => void
+  onOpenUsd: () => void
+  onOpenExd: () => void
 }) {
   const rows = [
-    { id: 'summary-cashback', icon: 'dollar' as const, title: 'Cashback', amount: usdAmount },
-    { id: 'summary-rewards', icon: 'crown' as const, title: 'Rewards', amount: exdAmount },
+    {
+      id: 'summary-cashback',
+      icon: 'dollar' as const,
+      title: 'Cashback',
+      amount: usdAmount,
+      onOpen: onOpenUsd,
+    },
+    {
+      id: 'summary-rewards',
+      icon: 'crown' as const,
+      title: 'Rewards',
+      amount: exdAmount,
+      onOpen: onOpenExd,
+    },
   ]
   return (
     <div className={styles.v2SummaryList}>
       {rows.map((row) => (
-        <button key={row.id} type="button" className={styles.v2SummaryCell} onClick={onOpen}>
+        <button key={row.id} type="button" className={styles.v2SummaryCell} onClick={row.onOpen}>
           <span className={styles.v2SummaryCellIcon}>
             <RowIconTabler kind={row.icon} />
           </span>
@@ -368,6 +390,98 @@ function V2SummaryUpcomingBlock({
           <IconChevronRight size={20} stroke={2} className={styles.v2SummaryCellChevron} aria-hidden />
         </button>
       ))}
+    </div>
+  )
+}
+
+function V2SummaryCurrencyDetailPage({
+  currency,
+  totalLabel,
+  rows,
+  onBack,
+}: {
+  currency: V2SummaryCurrencyPage
+  totalLabel: string
+  rows: V2UpcomingRowData[]
+  onBack: () => void
+}) {
+  const title = currency === 'usd' ? 'Upcoming cashback' : 'Upcoming rewards'
+  const unit = currency.toUpperCase()
+  const headingLabels = ['Tomorrow', 'May 10', 'May 15']
+  const withFallback = rows.length > 0 ? rows : []
+  const groupedRows = headingLabels.map((heading, idx) => {
+    const perBucket = Math.max(1, Math.ceil(withFallback.length / headingLabels.length))
+    const start = idx * perBucket
+    const slice = withFallback.slice(start, start + perBucket).map((row, i) => ({
+      ...row,
+      id: `${row.id}-${idx}-${i}`,
+      line1: row.filterProgram === 'rebates' ? 'For trading on Dec 15' : row.line1,
+      date: '',
+    }))
+    return { id: `summary-detail-${idx}`, heading, rows: slice }
+  })
+
+  const bucketLabels = ['1-7', '8-14', '15-21', '22-28', '29-30']
+  const total = parseSignedAmount(totalLabel)
+  const monthTotal = total * 0.5
+  const weights = [0.68, 1, 0.32, 0.7, 0.48]
+  const weightSum = weights.reduce((s, w) => s + w, 0)
+  const barValues = weights.map((w) => (weightSum > 0 ? (monthTotal * w) / weightSum : 0))
+  const maxBar = barValues.reduce((m, v) => Math.max(m, v), 0)
+  const axisMax = Math.max(5, Math.ceil(maxBar))
+  const axisTicks = [5, 4, 3, 2, 1, 0].map((n) => ((axisMax * n) / 5).toFixed(2))
+
+  return (
+    <div className={styles.v2SummaryDetailPage}>
+      <div className={styles.v2SummaryDetailTop}>
+        <button type="button" className={styles.v2InnerBack} onClick={onBack} aria-label="Back">
+          <IconChevronLeft size={22} stroke={2} aria-hidden />
+        </button>
+        <p className={styles.v2SummaryDetailNavTitle}>{title}</p>
+      </div>
+
+      <div className={styles.v2SummaryDetailHero}>
+        <p className={styles.v2SummaryDetailLabel}>{title}</p>
+        <p className={styles.v2SummaryDetailAmount}>{unsignedAmountLabel(totalLabel)} {unit}</p>
+      </div>
+
+      <button type="button" className={styles.v2SummaryFilterChip}>
+        All programs
+        <IconChevronDown size={16} stroke={2} aria-hidden />
+      </button>
+
+      <div className={styles.v2SummaryChart}>
+        <div className={styles.v2SummaryChartHeader}>{unit}</div>
+        <div className={styles.v2SummaryChartBody}>
+          <div className={styles.v2SummaryAxis}>
+            {axisTicks.map((t, i) => (
+              <p key={`${t}-${i}`}>{i === axisTicks.length - 1 ? '0' : t}</p>
+            ))}
+          </div>
+          <div className={styles.v2SummaryBars}>
+            {barValues.map((v, i) => {
+              const h = maxBar > 0 ? Math.max(6, Math.round((v / maxBar) * 156)) : 6
+              return (
+                <div key={bucketLabels[i]} className={styles.v2SummaryBarCol}>
+                  <span className={styles.v2SummaryBar} style={{ height: `${h}px` }} />
+                  <span className={styles.v2SummaryBarTick}>{bucketLabels[i]}</span>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      </div>
+
+      {groupedRows.map((group) =>
+        group.rows.length > 0 ? (
+          <div key={group.id} className={styles.v2SummaryDetailGroup}>
+            <p className={styles.v2DateHeading}>{group.heading}</p>
+            {group.rows.map((row) => (
+              <V2UpcomingRow key={row.id} row={row} />
+            ))}
+          </div>
+        ) : null,
+      )}
     </div>
   )
 }
@@ -658,6 +772,9 @@ export function ExnessRewardsScreen({
   activityPreviewItems,
 }: ExnessRewardsScreenProps) {
   const [flexUpcomingDrillOpen, setFlexUpcomingDrillOpen] = useState(false)
+  const [v2SummaryCurrencyPage, setV2SummaryCurrencyPage] = useState<V2SummaryCurrencyPage | null>(
+    null,
+  )
   const [v2DrillProgram, setV2DrillProgram] = useState<V2DrillProgramFilter>('all')
   const [v2DrillEquity, setV2DrillEquity] = useState<V2DrillEquityFilter>('all')
   const [v2AlertDismissed, setV2AlertDismissed] = useState(false)
@@ -709,6 +826,7 @@ export function ExnessRewardsScreen({
 
   useEffect(() => {
     setFlexUpcomingDrillOpen(false)
+    setV2SummaryCurrencyPage(null)
     setV2DrillProgram('all')
     setV2DrillEquity('all')
     if (spreadVariant !== 'v2') {
@@ -729,6 +847,10 @@ export function ExnessRewardsScreen({
       setV2DrillEquity((e) => (e !== 'all' ? 'all' : e))
     }
   }, [rebateDemo])
+
+  useEffect(() => {
+    scrollDeviceFrameToTop()
+  }, [flexUpcomingDrillOpen, v2SummaryCurrencyPage, spreadVariant])
 
   useEffect(() => {
     setV2AlertDismissed(false)
@@ -931,8 +1053,32 @@ export function ExnessRewardsScreen({
     return pinned + slots
   }, [rebateDemo, v2PinnedRows])
 
-  const flexibleDrillFullPage =
-    flexUpcomingDrillOpen && (spreadVariant === 'v2' || spreadVariant === 'v4')
+  const v2SummaryUsdDetailRows = useMemo(
+    () => v2DrillAllFlatRows.filter((row) => row.filterEquity === 'usd').slice(0, 8),
+    [v2DrillAllFlatRows],
+  )
+
+  const v2SummaryExdDetailRows = useMemo(
+    () => v2DrillAllFlatRows.filter((row) => row.filterEquity === 'exd').slice(0, 8),
+    [v2DrillAllFlatRows],
+  )
+
+  const flexibleDrillFullPage = flexUpcomingDrillOpen && spreadVariant === 'v2'
+
+  if (spreadVariant === 'v4' && v2SummaryCurrencyPage) {
+    return (
+      <div className={`${styles.screen} ${styles.screenDrillOnly}`} data-node-id="42104:10683">
+        <div className={styles.flexDrillPageRoot}>
+          <V2SummaryCurrencyDetailPage
+            currency={v2SummaryCurrencyPage}
+            totalLabel={v2SummaryCurrencyPage === 'usd' ? rebateDemo.pendingUsd : rebateDemo.pendingExd}
+            rows={v2SummaryCurrencyPage === 'usd' ? v2SummaryUsdDetailRows : v2SummaryExdDetailRows}
+            onBack={() => setV2SummaryCurrencyPage(null)}
+          />
+        </div>
+      </div>
+    )
+  }
 
   if (flexibleDrillFullPage) {
     return (
@@ -1256,7 +1402,8 @@ export function ExnessRewardsScreen({
             <V2SummaryUpcomingBlock
               usdAmount={unsignedAmountLabel(rebateDemo.pendingUsd)}
               exdAmount={unsignedAmountLabel(rebateDemo.pendingExd)}
-              onOpen={() => setFlexUpcomingDrillOpen(true)}
+              onOpenUsd={() => setV2SummaryCurrencyPage('usd')}
+              onOpenExd={() => setV2SummaryCurrencyPage('exd')}
             />
           </>
         ) : null}
