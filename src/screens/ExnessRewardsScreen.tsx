@@ -197,7 +197,7 @@ function HoldAccountPickerSheet({
         <div className={styles.holdSheetGrab} aria-hidden />
         <header className={styles.holdSheetHeader}>
           <h2 className={styles.holdSheetTitle} id={titleId}>
-            Choose account
+            Select account
           </h2>
           <button type="button" className={styles.holdSheetCloseBtn} onClick={onClose} aria-label="Close">
             <IconX size={22} stroke={2} aria-hidden />
@@ -215,8 +215,8 @@ function HoldAccountPickerSheet({
           <div className={styles.holdSheetEmpty}>
             <p className={styles.holdSheetEmptyTitle}>No eligible trading accounts</p>
             <p className={styles.holdSheetEmptyDesc}>
-              You need an active account we can use for this payout. Unarchive an existing account or
-              add a new one, then tap <strong>Choose account</strong> again.
+              There is no active trading account we can use for this payout. Add a new account or
+              restore an archived one, then tap <strong>Select account</strong> again.
             </p>
             <button type="button" className={styles.holdSheetPrimaryBtn} onClick={onManageAccounts}>
               Manage accounts
@@ -1756,18 +1756,18 @@ export function ExnessRewardsScreen({
                   <IconAlertTriangle size={20} stroke={2} aria-hidden />
                 </div>
                 <div className={styles.v2AlertBody}>
-                  <p className={styles.v2AlertTitle}>You have funds with nowhere to go</p>
+                  <p className={styles.v2AlertTitle}>Payout pending</p>
                   <p className={styles.v2AlertDesc}>
-                    <strong>{rebateDemo.onHoldUsdAmount}</strong> is ready to send, but you have no{' '}
-                    <strong>active trading account</strong> we can credit. Unarchive an eligible account
-                    or add a new one, then tap <strong>Choose account</strong> to pick where it should go.
+                    You have <strong>{rebateDemo.onHoldUsdAmount}</strong> ready to be credited, but there
+                    is no active trading account to receive it yet. Create a new account or restore an
+                    archived one, then tap <strong>Select account</strong> to choose where it should go.
                   </p>
                   <button
                     type="button"
                     className={styles.v2AlertBtn}
                     onClick={() => setHoldAccountSheetOpen(true)}
                   >
-                    Choose account
+                    Select account
                   </button>
                 </div>
               </div>
