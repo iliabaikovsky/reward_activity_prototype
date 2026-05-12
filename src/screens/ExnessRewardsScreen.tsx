@@ -1758,9 +1758,8 @@ export function ExnessRewardsScreen({
                 <div className={styles.v2AlertBody}>
                   <p className={styles.v2AlertTitle}>Payout pending</p>
                   <p className={styles.v2AlertDesc}>
-                    You have <strong>{rebateDemo.onHoldUsdAmount}</strong> ready to be credited, but there
-                    is no active trading account to receive it yet. Create a new account or restore an
-                    archived one, then tap <strong>Select account</strong> to choose where it should go.
+                    <strong>{rebateDemo.onHoldUsdAmount}</strong> is ready to credit, but there is no active
+                    trading account yet. Add or restore one, then tap <strong>Select account</strong>.
                   </p>
                   <button
                     type="button"
