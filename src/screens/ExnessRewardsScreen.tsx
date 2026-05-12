@@ -213,10 +213,10 @@ function HoldAccountPickerSheet({
           </div>
         ) : (
           <div className={styles.holdSheetEmpty}>
-            <p className={styles.holdSheetEmptyTitle}>No eligible trading accounts</p>
+            <p className={styles.holdSheetEmptyTitle}>No accounts to show</p>
             <p className={styles.holdSheetEmptyDesc}>
-              There is no active trading account we can use for this payout. Add a new account or
-              restore an archived one, then tap <strong>Select account</strong> again.
+              Eligible trading accounts will appear in this list when they are available. Use{' '}
+              <strong>Manage accounts</strong> to add or restore one.
             </p>
             <button type="button" className={styles.holdSheetPrimaryBtn} onClick={onManageAccounts}>
               Manage accounts
