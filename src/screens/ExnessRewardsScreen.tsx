@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState, type Dispatch, type ReactNode, type SetStateAction } from 'react'
+import { createPortal } from 'react-dom'
+import { useEffect, useId, useMemo, useState, type Dispatch, type ReactNode, type SetStateAction } from 'react'
 import {
   IconAlertTriangle,
   IconArrowRight,
@@ -26,6 +27,7 @@ import {
   parseSignedAmount,
   rebateNextChunk,
 } from '../rewardLifecycle/rebateSimulatorSteps'
+import { useDeviceFrameEl } from '../context/DeviceFrameContext'
 import styles from './ExnessRewardsScreen.module.css'
 
 function filterV1RebateRowsForDisplay(
@@ -71,6 +73,14 @@ function scrollDeviceFrameToTop(): void {
 
 function fmtSignedAmount(value: number, currency: 'USD' | 'EXD'): string {
   return `+${value.toFixed(2)} ${currency}`
+}
+
+/** Upcoming USD в V2 Summary: без on-hold суммы (hold показывается только в алерте). */
+function rebatePendingUsdExcludingHold(rebate: RebateDemoState): string {
+  if (!rebate.showAccountAlert) return rebate.pendingUsd
+  const pending = parseSignedAmount(rebate.pendingUsd)
+  const hold = parseSignedAmount(rebate.onHoldUsdAmount)
+  return fmtSignedAmount(Math.max(0, pending - hold), 'USD')
 }
 
 type SummaryPayoutEntry = {
@@ -132,6 +142,95 @@ function buildSummaryPayoutEntries(
     })
   }
   return entries
+}
+
+/** Прототип: в сценарии hold список счетов пуст (нужен empty state). Поставь true — покажутся демо-счета. */
+const HOLD_ACCOUNT_SHEET_DEMO_HAS_ELIGIBLE = false
+
+const DEMO_ELIGIBLE_ACCOUNTS = ['MT5 · Standard · 12345678', 'MT5 · Pro · 87654321'] as const
+
+function HoldAccountPickerSheet({
+  open,
+  onClose,
+  onManageAccounts,
+}: {
+  open: boolean
+  onClose: () => void
+  onManageAccounts: () => void
+}) {
+  const titleId = useId()
+  const deviceFrameEl = useDeviceFrameEl()
+
+  useEffect(() => {
+    if (!open) return
+    const prevBody = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    const scrollEl = deviceFrameEl?.querySelector<HTMLElement>('.device-frame-scroll') ?? null
+    const prevScroll = scrollEl?.style.overflow ?? ''
+    if (scrollEl) scrollEl.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = prevBody
+      if (scrollEl) scrollEl.style.overflow = prevScroll
+    }
+  }, [open, deviceFrameEl])
+
+  useEffect(() => {
+    if (!open) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [open, onClose])
+
+  if (!open) return null
+
+  const overlay = (
+    <div className={styles.holdSheetOverlay} role="presentation">
+      <button type="button" className={styles.holdSheetBackdrop} onClick={onClose} aria-label="Close" />
+      <div
+        className={styles.holdSheetPanel}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+      >
+        <div className={styles.holdSheetGrab} aria-hidden />
+        <header className={styles.holdSheetHeader}>
+          <h2 className={styles.holdSheetTitle} id={titleId}>
+            Choose account
+          </h2>
+          <button type="button" className={styles.holdSheetCloseBtn} onClick={onClose} aria-label="Close">
+            <IconX size={22} stroke={2} aria-hidden />
+          </button>
+        </header>
+        {HOLD_ACCOUNT_SHEET_DEMO_HAS_ELIGIBLE ? (
+          <div className={styles.holdSheetList} role="listbox">
+            {DEMO_ELIGIBLE_ACCOUNTS.map((label) => (
+              <button key={label} type="button" className={styles.holdSheetOption} onClick={onClose}>
+                <span className={styles.holdSheetOptionLabel}>{label}</span>
+              </button>
+            ))}
+          </div>
+        ) : (
+          <div className={styles.holdSheetEmpty}>
+            <p className={styles.holdSheetEmptyTitle}>No eligible trading accounts</p>
+            <p className={styles.holdSheetEmptyDesc}>
+              You need an active account we can use for this payout. Unarchive an existing account or
+              add a new one, then tap <strong>Choose account</strong> again.
+            </p>
+            <button type="button" className={styles.holdSheetPrimaryBtn} onClick={onManageAccounts}>
+              Manage accounts
+            </button>
+            <button type="button" className={styles.holdSheetSecondaryBtn} onClick={onClose}>
+              Close
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+
+  return deviceFrameEl ? createPortal(overlay, deviceFrameEl) : overlay
 }
 
 function SectionTitle({
@@ -1024,6 +1123,7 @@ export function ExnessRewardsScreen({
   const [v2DrillProgram, setV2DrillProgram] = useState<V2DrillProgramFilter>('all')
   const [v2DrillEquity, setV2DrillEquity] = useState<V2DrillEquityFilter>('all')
   const [v2AlertDismissed, setV2AlertDismissed] = useState(false)
+  const [holdAccountSheetOpen, setHoldAccountSheetOpen] = useState(false)
   const availableExdAmount = parseFloat(
     availableRewardsExd.replace(/,/g, '').trim().split(/\s+/)[0] ?? '0',
   )
@@ -1070,11 +1170,17 @@ export function ExnessRewardsScreen({
 
   const hasRebate = hasRebatePendingPayouts(rebateDemo)
 
+  const v4SummaryUsdLabel = useMemo(
+    () => unsignedAmountLabel(rebatePendingUsdExcludingHold(rebateDemo)),
+    [rebateDemo],
+  )
+
   useEffect(() => {
     setFlexUpcomingDrillOpen(false)
     setV2SummaryCurrencyPage(null)
     setV2DrillProgram('all')
     setV2DrillEquity('all')
+    setHoldAccountSheetOpen(false)
     if (spreadVariant !== 'v2') {
       setV2AlertDismissed(false)
     }
@@ -1100,7 +1206,12 @@ export function ExnessRewardsScreen({
 
   useEffect(() => {
     setV2AlertDismissed(false)
+    setHoldAccountSheetOpen(false)
   }, [rebateScenarioId])
+
+  useEffect(() => {
+    if (v2SummaryCurrencyPage) setHoldAccountSheetOpen(false)
+  }, [v2SummaryCurrencyPage])
 
   const v1UpcomingRows: LifecycleUpcomingItem[] = useMemo(() => {
     const base: LifecycleUpcomingItem[] = [
@@ -1307,7 +1418,11 @@ export function ExnessRewardsScreen({
         <div className={styles.flexDrillPageRoot}>
           <V2SummaryCurrencyDetailPage
             currency={v2SummaryCurrencyPage}
-            totalLabel={v2SummaryCurrencyPage === 'usd' ? rebateDemo.pendingUsd : rebateDemo.pendingExd}
+            totalLabel={
+              v2SummaryCurrencyPage === 'usd'
+                ? rebatePendingUsdExcludingHold(rebateDemo)
+                : rebateDemo.pendingExd
+            }
             pendingCount={rebateDemo.pendingCount}
             onBack={() => setV2SummaryCurrencyPage(null)}
           />
@@ -1635,38 +1750,30 @@ export function ExnessRewardsScreen({
           <>
             <div className={styles.sectionSpacer} aria-hidden />
             <SectionTitle title="Upcoming" showChevron={false} />
-            {rebateDemo.showAccountAlert && !v2AlertDismissed ? (
+            {rebateDemo.showAccountAlert ? (
               <div className={styles.v2Alert}>
                 <div className={styles.v2AlertIcon}>
                   <IconAlertTriangle size={20} stroke={2} aria-hidden />
                 </div>
                 <div className={styles.v2AlertBody}>
-                  <p className={styles.v2AlertTitle}>USD payout on hold</p>
+                  <p className={styles.v2AlertTitle}>You have funds with nowhere to go</p>
                   <p className={styles.v2AlertDesc}>
-                    {rebateDemo.onHoldUsdAmount} is on hold: the payout account is no longer active
-                    and no other active trading account was found for auto-routing (T+60). Restore an
-                    account or choose where payouts should go.
+                    <strong>{rebateDemo.onHoldUsdAmount}</strong> is ready to send, but you have no{' '}
+                    <strong>active trading account</strong> we can credit. Unarchive an eligible account
+                    or add a new one, then tap <strong>Choose account</strong> to pick where it should go.
                   </p>
                   <button
                     type="button"
                     className={styles.v2AlertBtn}
-                    onClick={() => onOpenRebateLedger?.()}
+                    onClick={() => setHoldAccountSheetOpen(true)}
                   >
-                    Review payout status
+                    Choose account
                   </button>
                 </div>
-                <button
-                  type="button"
-                  className={styles.v2AlertClose}
-                  aria-label="Dismiss"
-                  onClick={() => setV2AlertDismissed(true)}
-                >
-                  <IconX size={18} stroke={2} aria-hidden />
-                </button>
               </div>
             ) : null}
             <V2SummaryUpcomingBlock
-              usdAmount={unsignedAmountLabel(rebateDemo.pendingUsd)}
+              usdAmount={v4SummaryUsdLabel}
               exdAmount={unsignedAmountLabel(rebateDemo.pendingExd)}
               onOpenUsd={() => setV2SummaryCurrencyPage('usd')}
               onOpenExd={() => setV2SummaryCurrencyPage('exd')}
@@ -1709,6 +1816,14 @@ export function ExnessRewardsScreen({
 
         <div className={styles.bottomSafe} aria-hidden />
       </div>
+      <HoldAccountPickerSheet
+        open={holdAccountSheetOpen}
+        onClose={() => setHoldAccountSheetOpen(false)}
+        onManageAccounts={() => {
+          setHoldAccountSheetOpen(false)
+          onOpenRebateLedger?.()
+        }}
+      />
     </div>
   )
 }
