@@ -1,5 +1,5 @@
 import { createPortal } from 'react-dom'
-import { useEffect, useId, useMemo, useState, type Dispatch, type ReactNode, type SetStateAction } from 'react'
+import { useEffect, useId, useMemo, useRef, useState, type Dispatch, type ReactNode, type SetStateAction } from 'react'
 import {
   IconAlertTriangle,
   IconArrowRight,
@@ -144,19 +144,18 @@ function buildSummaryPayoutEntries(
   return entries
 }
 
-/** Прототип: в сценарии hold список счетов пуст (нужен empty state). Поставь true — покажутся демо-счета. */
-const HOLD_ACCOUNT_SHEET_DEMO_HAS_ELIGIBLE = false
-
 const DEMO_ELIGIBLE_ACCOUNTS = ['MT5 · Standard · 12345678', 'MT5 · Pro · 87654321'] as const
 
 function HoldAccountPickerSheet({
   open,
   onClose,
   onManageAccounts,
+  hasEligibleAccounts,
 }: {
   open: boolean
   onClose: () => void
   onManageAccounts: () => void
+  hasEligibleAccounts: boolean
 }) {
   const titleId = useId()
   const deviceFrameEl = useDeviceFrameEl()
@@ -203,7 +202,7 @@ function HoldAccountPickerSheet({
             <IconX size={22} stroke={2} aria-hidden />
           </button>
         </header>
-        {HOLD_ACCOUNT_SHEET_DEMO_HAS_ELIGIBLE ? (
+        {hasEligibleAccounts ? (
           <div className={styles.holdSheetList} role="listbox">
             {DEMO_ELIGIBLE_ACCOUNTS.map((label) => (
               <button key={label} type="button" className={styles.holdSheetOption} onClick={onClose}>
@@ -1124,6 +1123,8 @@ export function ExnessRewardsScreen({
   const [v2DrillEquity, setV2DrillEquity] = useState<V2DrillEquityFilter>('all')
   const [v2AlertDismissed, setV2AlertDismissed] = useState(false)
   const [holdAccountSheetOpen, setHoldAccountSheetOpen] = useState(false)
+  const [holdPickerHasEligibleAccounts, setHoldPickerHasEligibleAccounts] = useState(false)
+  const holdPickerReopenTimerRef = useRef(0)
   const availableExdAmount = parseFloat(
     availableRewardsExd.replace(/,/g, '').trim().split(/\s+/)[0] ?? '0',
   )
@@ -1181,10 +1182,17 @@ export function ExnessRewardsScreen({
     setV2DrillProgram('all')
     setV2DrillEquity('all')
     setHoldAccountSheetOpen(false)
+    setHoldPickerHasEligibleAccounts(false)
     if (spreadVariant !== 'v2') {
       setV2AlertDismissed(false)
     }
   }, [spreadVariant])
+
+  useEffect(() => {
+    return () => {
+      window.clearTimeout(holdPickerReopenTimerRef.current)
+    }
+  }, [])
 
   useEffect(() => {
     if (!flexUpcomingDrillOpen) {
@@ -1207,6 +1215,7 @@ export function ExnessRewardsScreen({
   useEffect(() => {
     setV2AlertDismissed(false)
     setHoldAccountSheetOpen(false)
+    setHoldPickerHasEligibleAccounts(false)
   }, [rebateScenarioId])
 
   useEffect(() => {
@@ -1815,10 +1824,15 @@ export function ExnessRewardsScreen({
       </div>
       <HoldAccountPickerSheet
         open={holdAccountSheetOpen}
+        hasEligibleAccounts={holdPickerHasEligibleAccounts}
         onClose={() => setHoldAccountSheetOpen(false)}
         onManageAccounts={() => {
+          window.clearTimeout(holdPickerReopenTimerRef.current)
           setHoldAccountSheetOpen(false)
-          onOpenRebateLedger?.()
+          setHoldPickerHasEligibleAccounts(true)
+          holdPickerReopenTimerRef.current = window.setTimeout(() => {
+            setHoldAccountSheetOpen(true)
+          }, 420)
         }}
       />
     </div>
