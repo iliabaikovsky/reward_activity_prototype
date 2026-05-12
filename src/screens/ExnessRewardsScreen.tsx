@@ -1566,10 +1566,8 @@ export function ExnessRewardsScreen({
         <SectionTitle title="How to earn rewards" />
         <div className={styles.banner}>
           <div className={styles.bannerText}>
-            <p className={styles.bannerTitle}>Get 1% back from every trade</p>
-            <p className={styles.bannerDesc}>
-              Get 1% in USD and 1% in EXD from daily spread. Payout arrives in 60 days.
-            </p>
+            <p className={styles.bannerTitle}>Long-term rebates</p>
+            <p className={styles.bannerDesc}>Trade and get rebates after 60 day.</p>
           </div>
           <div className={styles.bannerArt} aria-hidden>
             💸
