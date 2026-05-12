@@ -1215,6 +1215,13 @@
   color: var(--reward-text-primary);
 }
 
+.v2AlertDesc strong {
+  background-clip: unset;
+  -webkit-background-clip: unset;
+  color: rgba(20, 29, 34, 1);
+  font-weight: 400;
+}
+
 .v2AlertBtn {
   margin: 0;
   border: none;
