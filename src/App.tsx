@@ -16,10 +16,17 @@ import { SpreadRebateLedgerScreen } from './screens/SpreadRebateLedgerScreen'
 type Route = 'rewards' | 'activity' | 'rebateLedger'
 type SpreadPrototypeVariant = 'v1' | 'v2' | 'v3' | 'v4'
 
+function readFlexiblePrototypeFromUrl(): boolean {
+  if (typeof window === 'undefined') return false
+  return new URLSearchParams(window.location.search).get('v2flexible') === '1'
+}
+
 function App() {
   const [rebateStepIndex, setRebateStepIndex] = useState(REBATE_SIMULATOR_DEFAULT_INDEX)
   const rebateScenario = REBATE_SIMULATOR_STEPS[rebateStepIndex]
   const lifecycle = rebateScenario.lifecycle
+
+  const flexiblePrototypeEnabled = useMemo(() => readFlexiblePrototypeFromUrl(), [])
 
   const [route, setRoute] = useState<Route>('rewards')
   const [rewardModal, setRewardModal] = useState<{
@@ -28,8 +35,14 @@ function App() {
   } | null>(null)
   const [activityTypeFilter, setActivityTypeFilter] = useState<ActivityTypeFilter>('all')
   const [activityDatePreset, setActivityDatePreset] = useState<ActivityDatePreset>('all')
-  const [spreadVariant, setSpreadVariant] = useState<SpreadPrototypeVariant>('v2')
+  const [spreadVariant, setSpreadVariant] = useState<SpreadPrototypeVariant>('v4')
   const scrollRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!flexiblePrototypeEnabled && spreadVariant === 'v2') {
+      setSpreadVariant('v4')
+    }
+  }, [flexiblePrototypeEnabled, spreadVariant])
 
   useEffect(() => {
     scrollRef.current?.scrollTo(0, 0)
@@ -64,7 +77,7 @@ function App() {
             ) : route === 'rewards' ? (
               <ExnessRewardsScreen
                 spreadVariant={spreadVariant}
-                onSpreadVariantChange={setSpreadVariant}
+                onSpreadVariantChange={flexiblePrototypeEnabled ? setSpreadVariant : undefined}
                 rebateScenarioId={rebateScenario.id}
                 rebateDemo={rebateScenario.rebate}
                 onOpenActivityFeed={(opts) => openActivity(opts)}
@@ -106,7 +119,8 @@ function App() {
             stepIndex={rebateStepIndex}
             onStepIndexChange={setRebateStepIndex}
             spreadVariant={spreadVariant}
-            onSpreadVariantChange={setSpreadVariant}
+            onSpreadVariantChange={flexiblePrototypeEnabled ? setSpreadVariant : undefined}
+            flexiblePrototypeEnabled={flexiblePrototypeEnabled}
           />
         </div>
       </div>

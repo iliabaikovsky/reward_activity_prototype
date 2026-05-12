@@ -200,6 +200,20 @@
   color: var(--reward-text-secondary);
 }
 
+.inlineCode {
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-family: ui-monospace, monospace;
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.variantMeta {
+  margin: 0;
+  font-size: 11px;
+  color: var(--reward-text-secondary);
+}
+
 .variantButtons {
   display: grid;
   gap: 6px;

@@ -471,8 +471,10 @@ function V2SummaryCurrencyDetailPage({
   onBack: () => void
 }) {
   const title = currency === 'usd' ? 'Upcoming cashback' : 'Upcoming rewards'
-  const unit = currency.toUpperCase()
-  const [monthSelection, setMonthSelection] = useState<'all' | 0 | 1 | 2>('all')
+  const unit = currency.toUpperCase() as 'USD' | 'EXD'
+  const [periodMode, setPeriodMode] = useState<'all-time' | 'month' | 'week'>('all-time')
+  const [monthOffset, setMonthOffset] = useState<0 | 1 | 2>(0)
+  const [hoveredBucketId, setHoveredBucketId] = useState<string | null>(null)
   const entries = useMemo(
     () => buildSummaryPayoutEntries(currency, totalLabel, pendingCount),
     [currency, totalLabel, pendingCount],
@@ -493,21 +495,73 @@ function V2SummaryCurrencyDetailPage({
     })
   }, [])
 
-  const selectedMonth = monthSelection === 'all' ? null : monthOptions.find((m) => m.offset === monthSelection) ?? monthOptions[0]
-  const selectedEntries = useMemo(() => {
+  const selectedMonth = monthOptions.find((m) => m.offset === monthOffset) ?? monthOptions[0]
+
+  const visibleEntries = useMemo(() => {
     const sorted = [...entries].sort((a, b) => a.payoutDate.getTime() - b.payoutDate.getTime())
-    if (monthSelection === 'all' || !selectedMonth) return sorted
+    if (periodMode === 'all-time') {
+      const start = new Date(monthOptions[0].year, monthOptions[0].month, 1)
+      const end = new Date(monthOptions[0].year, monthOptions[0].month + 2, 0)
+      return sorted.filter((entry) => entry.payoutDate >= start && entry.payoutDate <= end)
+    }
     return sorted.filter(
       (entry) =>
         entry.payoutDate.getMonth() === selectedMonth.month &&
         entry.payoutDate.getFullYear() === selectedMonth.year,
     )
-  }, [entries, monthSelection, selectedMonth])
-  const viewTotal = useMemo(() => selectedEntries.reduce((sum, entry) => sum + entry.amount, 0), [selectedEntries])
+  }, [entries, monthOptions, periodMode, selectedMonth.month, selectedMonth.year])
 
-  const halfMonthBuckets = useMemo(() => {
-    const baseMonth = monthSelection === 'all' ? monthOptions[0] : (selectedMonth ?? monthOptions[0])
-    const ranges = Array.from({ length: 4 }, (_, idx) => {
+  const viewTotal = useMemo(
+    () => visibleEntries.reduce((sum, entry) => sum + entry.amount, 0),
+    [visibleEntries],
+  )
+
+  const chartBuckets = useMemo(() => {
+    if (periodMode === 'week') {
+      const labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+      const weekdayTotals = new Array(7).fill(0) as number[]
+      visibleEntries.forEach((entry) => {
+        const jsDay = entry.payoutDate.getDay()
+        const mondayFirst = jsDay === 0 ? 6 : jsDay - 1
+        weekdayTotals[mondayFirst] += entry.amount
+      })
+      return labels.map((label, idx) => ({
+        id: `wkday-${idx}`,
+        label,
+        total: weekdayTotals[idx],
+        tooltipLabel: `${selectedMonth.label} · ${label}`,
+      }))
+    }
+
+    if (periodMode === 'month') {
+      const monthName = selectedMonth.label
+      const monthDays = new Date(selectedMonth.year, selectedMonth.month + 1, 0).getDate()
+      const ranges = [
+        { start: 1, end: 7 },
+        { start: 8, end: 14 },
+        { start: 15, end: 22 },
+        { start: 23, end: monthDays },
+      ]
+      return ranges
+        .filter((range) => range.start <= monthDays)
+        .map((range, idx) => {
+          const total = visibleEntries
+            .filter((entry) => {
+              const day = entry.payoutDate.getDate()
+              return day >= range.start && day <= range.end
+            })
+            .reduce((sum, entry) => sum + entry.amount, 0)
+          return {
+            id: `month-${idx}`,
+            label: `${monthName} ${range.start}-${range.end}`,
+            total,
+            tooltipLabel: `${monthName} ${range.start}-${range.end}`,
+          }
+        })
+    }
+
+    const baseMonth = monthOptions[0]
+    return Array.from({ length: 4 }, (_, idx) => {
       const monthShift = Math.floor(idx / 2)
       const firstHalf = idx % 2 === 0
       const d = new Date(baseMonth.year, baseMonth.month, 1)
@@ -515,24 +569,29 @@ function V2SummaryCurrencyDetailPage({
       const y = d.getFullYear()
       const m = d.getMonth()
       const monthDays = new Date(y, m + 1, 0).getDate()
-      const start = firstHalf ? 1 : 16
-      const end = firstHalf ? Math.min(15, monthDays) : monthDays
-      const label = `${start}-${end} ${d.toLocaleDateString('en-US', { month: 'short' })}`
-      const total = selectedEntries
-        .filter(
-          (entry) =>
+      const start = firstHalf ? 1 : 15
+      const end = firstHalf ? Math.min(14, monthDays) : monthDays
+      const monthName = d.toLocaleDateString('en-US', { month: 'short' })
+      const total = visibleEntries
+        .filter((entry) => {
+          return (
             entry.payoutDate.getFullYear() === y &&
             entry.payoutDate.getMonth() === m &&
             entry.payoutDate.getDate() >= start &&
-            entry.payoutDate.getDate() <= end,
-        )
+            entry.payoutDate.getDate() <= end
+          )
+        })
         .reduce((sum, entry) => sum + entry.amount, 0)
-      return { id: `half-${idx + 1}`, label, total }
+      return {
+        id: `all-${idx}`,
+        label: `${monthName} ${start}-${end}`,
+        total,
+        tooltipLabel: `${monthName} ${start}-${end}`,
+      }
     })
-    return ranges
-  }, [monthOptions, monthSelection, selectedEntries, selectedMonth])
+  }, [monthOptions, periodMode, selectedMonth.label, selectedMonth.month, selectedMonth.year, visibleEntries])
 
-  const maxBar = halfMonthBuckets.reduce((m, b) => Math.max(m, b.total), 0)
+  const maxBar = chartBuckets.reduce((m, b) => Math.max(m, b.total), 0)
   const axisMax = Math.max(5, Math.ceil(maxBar))
   const axisTicks = [5, 4, 3, 2, 1, 0].map((n) => ((axisMax * n) / 5).toFixed(2))
 
@@ -540,16 +599,16 @@ function V2SummaryCurrencyDetailPage({
     const today = new Date()
     today.setHours(0, 0, 0, 0)
     const groups = new Map<string, V2UpcomingRowData[]>()
-    selectedEntries.forEach((entry, idx) => {
+    visibleEntries.forEach((entry, idx) => {
       const key =
         entry.payoutDate.getTime() - today.getTime() <= 24 * 60 * 60 * 1000
           ? 'Tomorrow'
           : entry.payoutDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
       const row: V2UpcomingRowData = {
-        id: `${entry.id}-m${monthSelection}-${idx}`,
+        id: `${entry.id}-${periodMode}-${monthOffset}-${idx}`,
         icon: entry.icon,
-        title: entry.title,
-        amount: fmtSignedAmount(entry.amount, unit as 'USD' | 'EXD'),
+        title: entry.title.replace(/^Cash rebates$/i, currency === 'usd' ? 'Cash rebates' : 'EXD rebates'),
+        amount: fmtSignedAmount(entry.amount, unit),
         line1: entry.line1,
         date: '',
       }
@@ -562,7 +621,7 @@ function V2SummaryCurrencyDetailPage({
       heading,
       rows,
     }))
-  }, [selectedEntries, monthSelection, unit])
+  }, [visibleEntries, periodMode, monthOffset, currency, unit])
 
   return (
     <div className={styles.v2SummaryDetailPage}>
@@ -584,25 +643,43 @@ function V2SummaryCurrencyDetailPage({
         All programs
         <IconChevronDown size={16} stroke={2} aria-hidden />
       </button>
-      <div className={styles.v2MonthSwitch} role="group" aria-label="Select month">
+      <div className={styles.v2MonthSwitch} role="group" aria-label="Select period">
         <button
           type="button"
-          className={`${styles.v2MonthSwitchBtn} ${monthSelection === 'all' ? styles.v2MonthSwitchBtnActive : ''}`}
-          onClick={() => setMonthSelection('all')}
+          className={`${styles.v2MonthSwitchBtn} ${periodMode === 'all-time' ? styles.v2MonthSwitchBtnActive : ''}`}
+          onClick={() => setPeriodMode('all-time')}
         >
           All time
         </button>
-        {monthOptions.map((opt) => (
-          <button
-            key={opt.offset}
-            type="button"
-            className={`${styles.v2MonthSwitchBtn} ${monthSelection === opt.offset ? styles.v2MonthSwitchBtnActive : ''}`}
-            onClick={() => setMonthSelection(opt.offset)}
-          >
-            {opt.label}
-          </button>
-        ))}
+        <button
+          type="button"
+          className={`${styles.v2MonthSwitchBtn} ${periodMode === 'month' ? styles.v2MonthSwitchBtnActive : ''}`}
+          onClick={() => setPeriodMode('month')}
+        >
+          Month
+        </button>
+        <button
+          type="button"
+          className={`${styles.v2MonthSwitchBtn} ${periodMode === 'week' ? styles.v2MonthSwitchBtnActive : ''}`}
+          onClick={() => setPeriodMode('week')}
+        >
+          Week
+        </button>
       </div>
+      {periodMode !== 'all-time' ? (
+        <div className={styles.v2MonthSwitch} role="group" aria-label="Select calendar month">
+          {monthOptions.map((opt) => (
+            <button
+              key={opt.offset}
+              type="button"
+              className={`${styles.v2MonthSwitchBtn} ${monthOffset === opt.offset ? styles.v2MonthSwitchBtnActive : ''}`}
+              onClick={() => setMonthOffset(opt.offset)}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      ) : null}
 
       <div className={styles.v2SummaryChart}>
         <div className={styles.v2SummaryChartHeader}>{unit}</div>
@@ -613,13 +690,27 @@ function V2SummaryCurrencyDetailPage({
             ))}
           </div>
           <div className={styles.v2SummaryBars}>
-            {halfMonthBuckets.map((b) => {
+            {chartBuckets.map((b) => {
               const h = maxBar > 0 ? Math.max(6, Math.round((b.total / maxBar) * 156)) : 6
               return (
-                <div key={b.id} className={styles.v2SummaryBarCol}>
+                <button
+                  key={b.id}
+                  type="button"
+                  className={styles.v2SummaryBarCol}
+                  onMouseEnter={() => setHoveredBucketId(b.id)}
+                  onMouseLeave={() => setHoveredBucketId((prev) => (prev === b.id ? null : prev))}
+                  onFocus={() => setHoveredBucketId(b.id)}
+                  onBlur={() => setHoveredBucketId((prev) => (prev === b.id ? null : prev))}
+                >
+                  {hoveredBucketId === b.id ? (
+                    <span className={styles.v2SummaryBarTooltip}>
+                      <strong>{fmtSignedAmount(b.total, unit)}</strong>
+                      <span>{b.tooltipLabel}</span>
+                    </span>
+                  ) : null}
                   <span className={styles.v2SummaryBar} style={{ height: `${h}px` }} />
                   <span className={styles.v2SummaryBarTick}>{b.label}</span>
-                </div>
+                </button>
               )
             })}
           </div>
@@ -1544,6 +1635,36 @@ export function ExnessRewardsScreen({
           <>
             <div className={styles.sectionSpacer} aria-hidden />
             <SectionTitle title="Upcoming" showChevron={false} />
+            {rebateDemo.showAccountAlert && !v2AlertDismissed ? (
+              <div className={styles.v2Alert}>
+                <div className={styles.v2AlertIcon}>
+                  <IconAlertTriangle size={20} stroke={2} aria-hidden />
+                </div>
+                <div className={styles.v2AlertBody}>
+                  <p className={styles.v2AlertTitle}>USD payout on hold</p>
+                  <p className={styles.v2AlertDesc}>
+                    {rebateDemo.onHoldUsdAmount} is on hold: the payout account is no longer active
+                    and no other active trading account was found for auto-routing (T+60). Restore an
+                    account or choose where payouts should go.
+                  </p>
+                  <button
+                    type="button"
+                    className={styles.v2AlertBtn}
+                    onClick={() => onOpenRebateLedger?.()}
+                  >
+                    Review payout status
+                  </button>
+                </div>
+                <button
+                  type="button"
+                  className={styles.v2AlertClose}
+                  aria-label="Dismiss"
+                  onClick={() => setV2AlertDismissed(true)}
+                >
+                  <IconX size={18} stroke={2} aria-hidden />
+                </button>
+              </div>
+            ) : null}
             <V2SummaryUpcomingBlock
               usdAmount={unsignedAmountLabel(rebateDemo.pendingUsd)}
               exdAmount={unsignedAmountLabel(rebateDemo.pendingExd)}
