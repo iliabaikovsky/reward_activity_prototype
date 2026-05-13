@@ -17,6 +17,8 @@
   flex: 1 1 auto;
   min-height: 100%;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .flexDrillPageRoot {
@@ -26,9 +28,16 @@
   min-height: 0;
   width: 100%;
   box-sizing: border-box;
-  padding: calc(10px + env(safe-area-inset-top, 0px)) 16px max(24px, env(safe-area-inset-bottom, 0px));
+  padding: 8px 16px max(24px, env(safe-area-inset-bottom, 0px));
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+}
+
+.drillStatusBarBand {
+  flex-shrink: 0;
+  width: 100%;
+  background: #1a1f28;
+  padding-top: env(safe-area-inset-top, 0px);
 }
 
 .v2DrillShellFullPage {
@@ -697,7 +706,51 @@
   color: var(--reward-text-primary);
   font-size: 14px;
   line-height: 20px;
-  cursor: default;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.v2SummaryFilterRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.v2SummaryDropdown {
+  position: relative;
+}
+
+.v2SummaryDropdownMenu {
+  position: absolute;
+  left: 0;
+  top: calc(100% + 6px);
+  z-index: 6;
+  min-width: max(100%, 180px);
+  padding: 6px 0;
+  border-radius: 12px;
+  background: var(--reward-paper);
+  border: 1px solid var(--reward-border);
+  box-shadow: 0 8px 24px rgba(20, 29, 34, 0.12);
+}
+
+.v2SummaryDropdownItem {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 10px 14px;
+  border: none;
+  background: transparent;
+  text-align: left;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--reward-text-primary);
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.v2SummaryDropdownItem:hover {
+  background: var(--reward-neutral-ultralight);
 }
 
 .v2MonthSwitch {
@@ -738,7 +791,7 @@
 
 .v2SummaryChartBody {
   display: flex;
-  align-items: flex-end;
+  align-items: flex-start;
   gap: 8px;
 }
 
@@ -766,17 +819,47 @@
   align-items: flex-end;
   justify-content: space-between;
   gap: 8px;
-  padding-bottom: 2px;
+  padding-bottom: 0;
   border-bottom: 1px solid var(--reward-border);
+}
+
+.v2SummaryBarsPlotWrap {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.v2SummaryChartTicksRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 8px;
+  width: 100%;
+}
+
+.v2SummaryTickCell {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--reward-text-secondary);
+  text-align: center;
+  word-break: break-word;
 }
 
 .v2SummaryBarCol {
   position: relative;
   flex: 1;
   min-width: 0;
+  min-height: 192px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: flex-end;
   gap: 6px;
   margin: 0;
   padding: 0;

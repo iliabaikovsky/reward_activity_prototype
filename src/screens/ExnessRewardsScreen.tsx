@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type Dispatch, type ReactNode, type SetStateAction } from 'react'
+import { useEffect, useMemo, useRef, useState, type Dispatch, type ReactNode, type SetStateAction } from 'react'
 import {
   IconAlertTriangle,
   IconArrowRight,
@@ -69,6 +69,17 @@ function scrollDeviceFrameToTop(): void {
   if (el instanceof HTMLElement) el.scrollTo(0, 0)
 }
 
+function DrillScreenStatusBar() {
+  return (
+    <div className={styles.drillStatusBarBand}>
+      <div className={styles.statusBar}>
+        <span className={styles.statusTime}>9:41</span>
+        <span className={styles.statusRight} aria-hidden />
+      </div>
+    </div>
+  )
+}
+
 function fmtSignedAmount(value: number, currency: 'USD' | 'EXD'): string {
   return `+${value.toFixed(2)} ${currency}`
 }
@@ -88,6 +99,7 @@ type SummaryPayoutEntry = {
   title: string
   line1: string
   icon: LifecycleActivityIcon
+  program: 'loyalty' | 'rebates'
 }
 
 function buildSummaryPayoutEntries(
@@ -116,18 +128,27 @@ function buildSummaryPayoutEntries(
     const raw = i === payoutsCount - 1 ? total - running : (total * weights[i]) / sumWeights
     const amount = Math.max(0, Number(raw.toFixed(2)))
     running += amount
+    const title =
+      currency === 'usd'
+        ? i % 7 === 0
+          ? 'EXD cashback'
+          : 'Cash rebates'
+        : i % 6 === 0
+          ? 'Loyalty rewards'
+          : 'EXD rebates'
+    const program: 'loyalty' | 'rebates' =
+      currency === 'usd'
+        ? title === 'EXD cashback'
+          ? 'loyalty'
+          : 'rebates'
+        : title === 'Loyalty rewards'
+          ? 'loyalty'
+          : 'rebates'
     entries.push({
       id: `${currency}-pay-${i + 1}`,
       payoutDate,
       amount,
-      title:
-        currency === 'usd'
-          ? i % 7 === 0
-            ? 'EXD cashback'
-            : 'Cash rebates'
-          : i % 6 === 0
-            ? 'Loyalty rewards'
-            : 'EXD rebates',
+      title,
       line1:
         currency === 'usd'
           ? i % 7 === 0
@@ -137,6 +158,7 @@ function buildSummaryPayoutEntries(
             ? 'For weekly trading'
             : 'For trading on Dec 16',
       icon: currency === 'usd' ? 'dollar' : 'crown',
+      program,
     })
   }
   return entries
@@ -483,10 +505,35 @@ function V2SummaryCurrencyDetailPage({
   const [periodMode, setPeriodMode] = useState<'all-time' | 'month' | 'week'>('all-time')
   const [monthOffset, setMonthOffset] = useState<0 | 1 | 2>(0)
   const [hoveredBucketId, setHoveredBucketId] = useState<string | null>(null)
-  const entries = useMemo(
+  const [programFilter, setProgramFilter] = useState<'loyalty' | 'rebates'>('rebates')
+  const [programMenuOpen, setProgramMenuOpen] = useState(false)
+  const [periodMenuOpen, setPeriodMenuOpen] = useState(false)
+  const programDropdownRef = useRef<HTMLDivElement>(null)
+  const periodDropdownRef = useRef<HTMLDivElement>(null)
+
+  const allEntries = useMemo(
     () => buildSummaryPayoutEntries(currency, totalLabel, pendingCount),
     [currency, totalLabel, pendingCount],
   )
+  const entries = useMemo(
+    () => allEntries.filter((e) => e.program === programFilter),
+    [allEntries, programFilter],
+  )
+
+  useEffect(() => {
+    if (!programMenuOpen && !periodMenuOpen) return
+    const onDocDown = (e: MouseEvent) => {
+      const t = e.target as Node
+      if (programMenuOpen && programDropdownRef.current && !programDropdownRef.current.contains(t)) {
+        setProgramMenuOpen(false)
+      }
+      if (periodMenuOpen && periodDropdownRef.current && !periodDropdownRef.current.contains(t)) {
+        setPeriodMenuOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', onDocDown)
+    return () => document.removeEventListener('mousedown', onDocDown)
+  }, [programMenuOpen, periodMenuOpen])
   const monthOptions = useMemo(() => {
     const base = new Date()
     base.setDate(1)
@@ -631,6 +678,10 @@ function V2SummaryCurrencyDetailPage({
     }))
   }, [visibleEntries, periodMode, monthOffset, currency, unit])
 
+  const programChipLabel = programFilter === 'loyalty' ? 'Loyalty' : 'Long term rebates'
+  const periodChipLabel =
+    periodMode === 'all-time' ? 'All time' : periodMode === 'month' ? 'Month' : 'Week'
+
   return (
     <div className={styles.v2SummaryDetailPage}>
       <div className={styles.v2SummaryDetailTop}>
@@ -647,33 +698,95 @@ function V2SummaryCurrencyDetailPage({
         </p>
       </div>
 
-      <button type="button" className={styles.v2SummaryFilterChip}>
-        All programs
-        <IconChevronDown size={16} stroke={2} aria-hidden />
-      </button>
-      <div className={styles.v2MonthSwitch} role="group" aria-label="Select period">
-        <button
-          type="button"
-          className={`${styles.v2MonthSwitchBtn} ${periodMode === 'all-time' ? styles.v2MonthSwitchBtnActive : ''}`}
-          onClick={() => setPeriodMode('all-time')}
-        >
-          All time
-        </button>
-        <button
-          type="button"
-          className={`${styles.v2MonthSwitchBtn} ${periodMode === 'month' ? styles.v2MonthSwitchBtnActive : ''}`}
-          onClick={() => setPeriodMode('month')}
-        >
-          Month
-        </button>
-        <button
-          type="button"
-          className={`${styles.v2MonthSwitchBtn} ${periodMode === 'week' ? styles.v2MonthSwitchBtnActive : ''}`}
-          onClick={() => setPeriodMode('week')}
-        >
-          Week
-        </button>
+      <div className={styles.v2SummaryFilterRow}>
+        <div className={styles.v2SummaryDropdown} ref={programDropdownRef}>
+          <button
+            type="button"
+            className={styles.v2SummaryFilterChip}
+            aria-expanded={programMenuOpen}
+            aria-haspopup="listbox"
+            aria-label="Program"
+            onClick={() => {
+              setProgramMenuOpen((o) => !o)
+              setPeriodMenuOpen(false)
+            }}
+          >
+            {programChipLabel}
+            <IconChevronDown size={16} stroke={2} aria-hidden />
+          </button>
+          {programMenuOpen ? (
+            <div className={styles.v2SummaryDropdownMenu} role="listbox" aria-label="Program">
+              <button
+                type="button"
+                className={styles.v2SummaryDropdownItem}
+                role="option"
+                aria-selected={programFilter === 'loyalty'}
+                onClick={() => {
+                  setProgramFilter('loyalty')
+                  setProgramMenuOpen(false)
+                }}
+              >
+                Loyalty
+              </button>
+              <button
+                type="button"
+                className={styles.v2SummaryDropdownItem}
+                role="option"
+                aria-selected={programFilter === 'rebates'}
+                onClick={() => {
+                  setProgramFilter('rebates')
+                  setProgramMenuOpen(false)
+                }}
+              >
+                Long term rebates
+              </button>
+            </div>
+          ) : null}
+        </div>
+
+        <div className={styles.v2SummaryDropdown} ref={periodDropdownRef}>
+          <button
+            type="button"
+            className={styles.v2SummaryFilterChip}
+            aria-expanded={periodMenuOpen}
+            aria-haspopup="listbox"
+            aria-label="Period"
+            onClick={() => {
+              setPeriodMenuOpen((o) => !o)
+              setProgramMenuOpen(false)
+            }}
+          >
+            {periodChipLabel}
+            <IconChevronDown size={16} stroke={2} aria-hidden />
+          </button>
+          {periodMenuOpen ? (
+            <div className={styles.v2SummaryDropdownMenu} role="listbox" aria-label="Period">
+              {(
+                [
+                  { id: 'all-time' as const, label: 'All time' },
+                  { id: 'month' as const, label: 'Month' },
+                  { id: 'week' as const, label: 'Week' },
+                ] as const
+              ).map((opt) => (
+                <button
+                  key={opt.id}
+                  type="button"
+                  className={styles.v2SummaryDropdownItem}
+                  role="option"
+                  aria-selected={periodMode === opt.id}
+                  onClick={() => {
+                    setPeriodMode(opt.id)
+                    setPeriodMenuOpen(false)
+                  }}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          ) : null}
+        </div>
       </div>
+
       {periodMode !== 'all-time' ? (
         <div className={styles.v2MonthSwitch} role="group" aria-label="Select calendar month">
           {monthOptions.map((opt) => (
@@ -697,30 +810,39 @@ function V2SummaryCurrencyDetailPage({
               <p key={`${t}-${i}`}>{i === axisTicks.length - 1 ? '0' : t}</p>
             ))}
           </div>
-          <div className={styles.v2SummaryBars}>
-            {chartBuckets.map((b) => {
-              const h = maxBar > 0 ? Math.max(6, Math.round((b.total / maxBar) * 156)) : 6
-              return (
-                <button
-                  key={b.id}
-                  type="button"
-                  className={styles.v2SummaryBarCol}
-                  onMouseEnter={() => setHoveredBucketId(b.id)}
-                  onMouseLeave={() => setHoveredBucketId((prev) => (prev === b.id ? null : prev))}
-                  onFocus={() => setHoveredBucketId(b.id)}
-                  onBlur={() => setHoveredBucketId((prev) => (prev === b.id ? null : prev))}
-                >
-                  {hoveredBucketId === b.id ? (
-                    <span className={styles.v2SummaryBarTooltip}>
-                      <strong>{fmtSignedAmount(b.total, unit)}</strong>
-                      <span>{b.tooltipLabel}</span>
-                    </span>
-                  ) : null}
-                  <span className={styles.v2SummaryBar} style={{ height: `${h}px` }} />
-                  <span className={styles.v2SummaryBarTick}>{b.label}</span>
-                </button>
-              )
-            })}
+          <div className={styles.v2SummaryBarsPlotWrap}>
+            <div className={styles.v2SummaryBars}>
+              {chartBuckets.map((b) => {
+                const h = maxBar > 0 ? Math.max(8, Math.round((b.total / maxBar) * 184)) : 8
+                return (
+                  <button
+                    key={b.id}
+                    type="button"
+                    className={styles.v2SummaryBarCol}
+                    aria-label={b.label}
+                    onMouseEnter={() => setHoveredBucketId(b.id)}
+                    onMouseLeave={() => setHoveredBucketId((prev) => (prev === b.id ? null : prev))}
+                    onFocus={() => setHoveredBucketId(b.id)}
+                    onBlur={() => setHoveredBucketId((prev) => (prev === b.id ? null : prev))}
+                  >
+                    {hoveredBucketId === b.id ? (
+                      <span className={styles.v2SummaryBarTooltip}>
+                        <strong>{fmtSignedAmount(b.total, unit)}</strong>
+                        <span>{b.tooltipLabel}</span>
+                      </span>
+                    ) : null}
+                    <span className={styles.v2SummaryBar} style={{ height: `${h}px` }} />
+                  </button>
+                )
+              })}
+            </div>
+            <div className={styles.v2SummaryChartTicksRow} aria-hidden>
+              {chartBuckets.map((b) => (
+                <div key={`tick-${b.id}`} className={styles.v2SummaryTickCell}>
+                  {b.label}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -735,7 +857,9 @@ function V2SummaryCurrencyDetailPage({
           </div>
         ) : null,
       )}
-      {groupedRows.length === 0 ? <p className={styles.emptyHint}>No payouts this month</p> : null}
+      {groupedRows.length === 0 ? (
+        <p className={styles.emptyHint}>No payouts in this selection</p>
+      ) : null}
     </div>
   )
 }
@@ -1317,6 +1441,7 @@ export function ExnessRewardsScreen({
   if (spreadVariant === 'v4' && v2SummaryCurrencyPage) {
     return (
       <div className={`${styles.screen} ${styles.screenDrillOnly}`} data-node-id="42104:10683">
+        <DrillScreenStatusBar />
         <div className={styles.flexDrillPageRoot}>
           <V2SummaryCurrencyDetailPage
             currency={v2SummaryCurrencyPage}
@@ -1336,6 +1461,7 @@ export function ExnessRewardsScreen({
   if (flexibleDrillFullPage) {
     return (
       <div className={`${styles.screen} ${styles.screenDrillOnly}`} data-node-id="42104:10683">
+        <DrillScreenStatusBar />
         <div className={styles.flexDrillPageRoot}>
           <FlexibleUpcomingDrillIn
             fullPage
