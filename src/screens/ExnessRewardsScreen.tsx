@@ -545,6 +545,8 @@ function V2SummaryUpcomingBlock({
   )
 }
 
+type V2SummaryProgramFilter = 'all' | 'loyalty' | 'rebates'
+
 function V2SummaryCurrencyDetailPage({
   currency,
   totalLabel,
@@ -560,7 +562,7 @@ function V2SummaryCurrencyDetailPage({
   const unit = currency.toUpperCase() as 'USD' | 'EXD'
   const [periodMode, setPeriodMode] = useState<'all-time' | 'month' | 'week'>('all-time')
   const [hoveredBucketId, setHoveredBucketId] = useState<string | null>(null)
-  const [programFilter, setProgramFilter] = useState<'loyalty' | 'rebates'>('rebates')
+  const [programFilter, setProgramFilter] = useState<V2SummaryProgramFilter>('all')
   const [programMenuOpen, setProgramMenuOpen] = useState(false)
   const [periodMenuOpen, setPeriodMenuOpen] = useState(false)
   const programDropdownRef = useRef<HTMLDivElement>(null)
@@ -571,7 +573,10 @@ function V2SummaryCurrencyDetailPage({
     [currency, totalLabel, pendingCount],
   )
   const entries = useMemo(
-    () => allEntries.filter((e) => e.program === programFilter),
+    () =>
+      programFilter === 'all'
+        ? allEntries
+        : allEntries.filter((e) => e.program === programFilter),
     [allEntries, programFilter],
   )
 
@@ -733,7 +738,12 @@ function V2SummaryCurrencyDetailPage({
     }))
   }, [visibleEntries, periodMode, currency, unit])
 
-  const programChipLabel = programFilter === 'loyalty' ? 'Loyalty' : 'Long term rebates'
+  const programChipLabel =
+    programFilter === 'all'
+      ? 'All programs'
+      : programFilter === 'loyalty'
+        ? 'Loyalty'
+        : 'Long term rebates'
   const periodChipLabel =
     periodMode === 'all-time' ? 'All time' : periodMode === 'month' ? 'Month' : 'Week'
 
@@ -757,7 +767,7 @@ function V2SummaryCurrencyDetailPage({
         <div className={styles.v2SummaryDropdown} ref={programDropdownRef}>
           <button
             type="button"
-            className={`${styles.v2SummaryFilterChip} ${programFilter === 'loyalty' ? styles.v2SummaryFilterChipActive : ''}`}
+            className={`${styles.v2SummaryFilterChip} ${programFilter !== 'all' ? styles.v2SummaryFilterChipActive : ''}`}
             aria-expanded={programMenuOpen}
             aria-haspopup="listbox"
             aria-label="Program"
@@ -771,6 +781,18 @@ function V2SummaryCurrencyDetailPage({
           </button>
           {programMenuOpen ? (
             <div className={styles.v2SummaryDropdownMenu} role="listbox" aria-label="Program">
+              <button
+                type="button"
+                className={styles.v2SummaryDropdownItem}
+                role="option"
+                aria-selected={programFilter === 'all'}
+                onClick={() => {
+                  setProgramFilter('all')
+                  setProgramMenuOpen(false)
+                }}
+              >
+                All programs
+              </button>
               <button
                 type="button"
                 className={styles.v2SummaryDropdownItem}
