@@ -179,63 +179,6 @@
   cursor: pointer;
 }
 
-.variantBlock {
-  margin: 0 0 12px;
-  padding: 10px;
-  border-radius: 12px;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  background: rgba(255, 255, 255, 0.72);
-}
-
-.variantTitle {
-  margin: 0;
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--reward-text-primary);
-}
-
-.variantSub {
-  margin: 2px 0 8px;
-  font-size: 11px;
-  color: var(--reward-text-secondary);
-}
-
-.inlineCode {
-  padding: 1px 5px;
-  border-radius: 4px;
-  font-size: 10px;
-  font-family: ui-monospace, monospace;
-  background: rgba(0, 0, 0, 0.06);
-}
-
-.variantMeta {
-  margin: 0;
-  font-size: 11px;
-  color: var(--reward-text-secondary);
-}
-
-.variantButtons {
-  display: grid;
-  gap: 6px;
-}
-
-.variantBtn {
-  margin: 0;
-  padding: 8px 10px;
-  border-radius: 10px;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  background: rgba(255, 255, 255, 0.9);
-  color: var(--reward-text-primary);
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-}
-
-.variantBtnActive {
-  border-color: rgba(20, 29, 34, 0.72);
-  background: #d7dde6;
-}
-
 .snapshot {
   margin: 0;
   padding: 10px 12px;
