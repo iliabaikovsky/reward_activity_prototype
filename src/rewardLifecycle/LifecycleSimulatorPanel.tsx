@@ -52,7 +52,7 @@ export function LifecycleSimulatorPanel({
           type="button"
           className={styles.glassIconBtn}
           disabled={stepIndex <= 0}
-          aria-label="Предыдущий шаг"
+          aria-label="Предыдущее состояние"
           onClick={() => onStepIndexChange(stepIndex - 1)}
         >
           <IconChevronLeft size={20} stroke={2} aria-hidden />
@@ -65,7 +65,7 @@ export function LifecycleSimulatorPanel({
           type="button"
           className={styles.glassIconBtn}
           disabled={stepIndex >= last}
-          aria-label="Следующий шаг"
+          aria-label="Следующее состояние"
           onClick={() => onStepIndexChange(stepIndex + 1)}
         >
           <IconChevronRight size={20} stroke={2} aria-hidden />
@@ -77,13 +77,14 @@ export function LifecycleSimulatorPanel({
         <div className={styles.glassDetailsBody}>
           <h2 className={styles.title}>Симулятор spread rebate</h2>
           <p className={styles.sub}>
-            Пять этапов для прототипа программы (T+60, USD/EXD, on-hold). Экран Rewards и лента
-            синхронизированы с выбранным шагом. Сейчас в фокусе вариант V2 Summary; V2 Flexible можно
-            включить параметром URL <code className={styles.inlineCode}>?v2flexible=1</code>.
+            Два состояния: «Ноль» и «После месяца торговли» (текущий день с T+60, USD/EXD, on-hold).
+            Экран Rewards и лента синхронизированы с выбором. Сейчас в фокусе вариант V2 Summary; V2
+            Flexible можно включить параметром URL{' '}
+            <code className={styles.inlineCode}>?v2flexible=1</code>.
           </p>
 
           <label className={styles.stepMeta} htmlFor="rebate-step-select">
-            Шаг {stepIndex + 1} / {steps.length}
+            Состояние {stepIndex + 1} / {steps.length}
           </label>
           <select
             id="rebate-step-select"

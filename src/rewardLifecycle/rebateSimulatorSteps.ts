@@ -53,114 +53,45 @@ const R_NONE: RebateDemoState = {
   usdAccountSelected: false,
 }
 
-const R_30: RebateDemoState = {
-  pendingCount: 30,
-  pendingExd: '+92.10 EXD',
-  pendingUsd: '+96.50 USD',
-  nextPayoutDate: '7 May 2026',
-  paidExdCount: 0,
-  paidExdAmount: '+0.00 EXD',
-  onHoldUsdCount: 0,
-  onHoldUsdAmount: '+0.00 USD',
-  totalWithOnHoldUsd: '+96.50 USD',
-  showAccountAlert: false,
-  usdAccountSelected: false,
-}
-
-const R_MATURE_NO_ACCT: RebateDemoState = {
+/** Типичный зрелый день: T+60, часть EXD зачислена, USD on-hold снят после выбора счёта, ближайшая выплата завтра. */
+const R_AFTER_MONTH_TODAY: RebateDemoState = {
   pendingCount: 60,
   pendingExd: '+184.20 EXD',
   pendingUsd: '+192.45 USD',
-  nextPayoutDate: '7 May 2026',
+  nextPayoutDate: 'Tomorrow',
   paidExdCount: 5,
   paidExdAmount: '+20.98 EXD',
   onHoldUsdCount: 5,
   onHoldUsdAmount: '+21.40 USD',
   totalWithOnHoldUsd: '+213.85 USD',
-  showAccountAlert: true,
-  usdAccountSelected: false,
-}
-
-const R_MATURE_ACCT_TOMORROW: RebateDemoState = {
-  ...R_MATURE_NO_ACCT,
-  nextPayoutDate: 'Tomorrow',
-  showAccountAlert: false,
-  usdAccountSelected: true,
-}
-
-const R_NEW_DAY_30: RebateDemoState = {
-  pendingCount: 30,
-  pendingExd: '+111.50 EXD',
-  pendingUsd: '+118.20 USD',
-  nextPayoutDate: 'Tomorrow',
-  paidExdCount: 3,
-  paidExdAmount: '+14.60 EXD',
-  onHoldUsdCount: 0,
-  onHoldUsdAmount: '+0.00 USD',
-  totalWithOnHoldUsd: '+118.20 USD',
   showAccountAlert: false,
   usdAccountSelected: true,
 }
 
 /**
- * Пять этапов прототипа spread rebate (вместо старого жизненного цикла на 10 шагов).
+ * Два состояния прототипа spread rebate: пустой экран и зрелый день после месяца торговли.
  */
 export const REBATE_SIMULATOR_STEPS: RebateSimulatorStep[] = [
   {
-    id: 'rebate_0_empty',
-    label: 'Ничего нет',
+    id: 'rebate_0_zero',
+    label: 'Ноль',
     lifecycle: EMPTY_LIFE,
     rebate: R_NONE,
   },
   {
-    id: 'rebate_1_future_30',
-    label: 'Будущие выплаты (~30)',
+    id: 'rebate_1_after_month_today',
+    label: 'После месяца торговли (текущий день)',
     lifecycle: cloneLife({
-      id: 'rebate_demo_wallet',
-      label: 'Будущие выплаты (~30)',
-      docRef: 'Rebate simulator',
-      availableRewardsExd: '0.00 EXD',
-      tradingWalletLabel: 'Account #12345678',
-      tradingWalletValue: '47.80 EXD',
-      tradingWalletMuted: false,
-      tierEarnedExdTowardGoal: 52.8,
-    }),
-    rebate: R_30,
-  },
-  {
-    id: 'rebate_2_mature_no_account',
-    label: 'T+60: первые выплаты, нет счёта + alert',
-    lifecycle: cloneLife({
-      id: 'rebate_demo_mature',
-      label: 'T+60: первые выплаты, нет счёта + alert',
+      id: 'rebate_after_month',
+      label: 'После месяца торговли (текущий день)',
       docRef: 'Rebate simulator',
     }),
-    rebate: R_MATURE_NO_ACCT,
-  },
-  {
-    id: 'rebate_3_account_tomorrow',
-    label: 'Счёт выбран, ближайшая выплата завтра',
-    lifecycle: cloneLife({
-      id: 'rebate_demo_acct',
-      label: 'Счёт выбран, ближайшая выплата завтра',
-      docRef: 'Rebate simulator',
-    }),
-    rebate: R_MATURE_ACCT_TOMORROW,
-  },
-  {
-    id: 'rebate_4_new_day',
-    label: 'Новый день выплат: те же слоты, другая агрегация',
-    lifecycle: cloneLife({
-      id: 'rebate_demo_roll',
-      label: 'Новый день выплат: те же слоты, другая агрегация',
-      docRef: 'Rebate simulator',
-    }),
-    rebate: R_NEW_DAY_30,
+    rebate: R_AFTER_MONTH_TODAY,
   },
 ]
 
-/** Стартовый шаг — как «сделка + cashback pending» (зрелый ворон, без счёта, alert). */
-export const REBATE_SIMULATOR_DEFAULT_INDEX = 2
+/** Старт на «после месяца», чтобы сразу видеть полный прототип. */
+export const REBATE_SIMULATOR_DEFAULT_INDEX = 1
 
 /** Абсолютное значение суммы из строки вида "+96.50 USD" или "+0.00 EXD". */
 export function parseSignedAmount(amount: string): number {
