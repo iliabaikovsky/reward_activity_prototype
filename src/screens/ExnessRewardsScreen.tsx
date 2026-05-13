@@ -106,77 +106,117 @@ function formatSummaryTradingDate(d: Date): string {
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
+/** Понедельник календарной недели, следующей за неделей, в которую попадает `d`. */
+function startOfNextCalendarWeekMonday(d: Date): Date {
+  const x = new Date(d)
+  x.setHours(0, 0, 0, 0)
+  const dow = x.getDay()
+  const daysToSunday = (7 - dow) % 7
+  const mondayAfterThisWeekSunday = new Date(x)
+  mondayAfterThisWeekSunday.setDate(x.getDate() + daysToSunday + 1)
+  return mondayAfterThisWeekSunday
+}
+
+/** Середина следующей недели (ср) — одна дата для Loyalty в прототипе. */
+function loyaltyPayoutMidNextWeek(d: Date): Date {
+  const mon = startOfNextCalendarWeekMonday(d)
+  const wed = new Date(mon)
+  wed.setDate(mon.getDate() + 2)
+  return wed
+}
+
+/**
+ * Демо-строки для V4 summary drill: см. TRANSACTION_SUMMARY_DISPLAY_RULES.md
+ * — USD: одна EXD cashback (завтра), одна Loyalty (ср следующей недели), long term каждый день +30…+60 дн.
+ * — EXD: без EXD cashback; одна Loyalty; те же long term.
+ */
 function buildSummaryPayoutEntries(
   currency: V2SummaryCurrencyPage,
   totalLabel: string,
-  pendingCount: number,
+  _pendingCount: number,
 ): SummaryPayoutEntry[] {
   const total = parseSignedAmount(totalLabel)
   if (total <= 0) return []
-  const horizon = 90
-  const payoutsCount = Math.min(90, Math.max(24, Math.floor(Number(pendingCount)) || 30))
-  const entries: SummaryPayoutEntry[] = []
+
   const now = new Date()
   now.setHours(0, 0, 0, 0)
-  const weights = Array.from({ length: payoutsCount }, (_, i) => {
-    const base = 0.8 + ((i * 37) % 10) / 20
-    const wave = 0.18 * Math.sin((i + 1) * 1.31)
-    return Math.max(0.2, base + wave)
-  })
-  const sumWeights = weights.reduce((s, w) => s + w, 0) || 1
-  let running = 0
-  for (let i = 0; i < payoutsCount; i++) {
-    const isUsd = currency === 'usd'
-    const isExdCashback = isUsd && i % 7 === 0
-    const isLoyaltyExd = !isUsd && i % 6 === 0
-    const isLongTerm = (isUsd && !isExdCashback) || (!isUsd && !isLoyaltyExd)
 
+  const LONG_TERM_START_OFFSET = 30
+  const LONG_TERM_END_OFFSET = 60
+  const longTermDayCount = LONG_TERM_END_OFFSET - LONG_TERM_START_OFFSET + 1
+
+  const entries: SummaryPayoutEntry[] = []
+  const isUsd = currency === 'usd'
+
+  const cashbackShare = isUsd ? 0.05 : 0
+  const loyaltyShare = 0.05
+
+  const round2 = (n: number) => Math.round(n * 100) / 100
+  const cashbackAmt = round2(total * cashbackShare)
+  const loyaltyAmt = round2(total * loyaltyShare)
+  const longTermPool = Math.max(0, round2(total - cashbackAmt - loyaltyAmt))
+
+  const baseDaily = Math.floor((longTermPool * 100) / longTermDayCount) / 100
+  let allocated = 0
+
+  const pushEntry = (partial: Omit<SummaryPayoutEntry, 'id'> & { idSuffix: string }) => {
+    const { idSuffix, ...rest } = partial
+    entries.push({ id: `${currency}-${idSuffix}`, ...rest })
+  }
+
+  if (isUsd && cashbackAmt > 0) {
     const payoutDate = new Date(now)
-    if (isExdCashback) {
-      payoutDate.setDate(now.getDate() + 1)
-    } else {
-      const day = Math.max(1, Math.round(((i + 1) * horizon) / payoutsCount))
-      payoutDate.setDate(now.getDate() + day)
-    }
-
-    const raw = i === payoutsCount - 1 ? total - running : (total * weights[i]) / sumWeights
-    const amount = Math.max(0, Number(raw.toFixed(2)))
-    running += amount
-
-    let title: string
-    let line1: string
-    let program: 'loyalty' | 'rebates'
-    let icon: LifecycleActivityIcon
-
-    if (isExdCashback) {
-      title = 'EXD cashback'
-      line1 = 'For daily trading'
-      program = 'loyalty'
-      icon = 'dollar'
-    } else if (isLoyaltyExd) {
-      title = 'Loyalty rewards'
-      line1 = 'For weekly trading'
-      program = 'loyalty'
-      icon = 'crown'
-    } else {
-      title = 'Long term rebates'
-      program = 'rebates'
-      icon = currency === 'usd' ? 'dollar' : 'crown'
-      const tradeOn = new Date(payoutDate)
-      tradeOn.setDate(tradeOn.getDate() - 60)
-      line1 = `For trading on ${formatSummaryTradingDate(tradeOn)}`
-    }
-
-    entries.push({
-      id: `${currency}-pay-${i + 1}`,
+    payoutDate.setDate(now.getDate() + 1)
+    pushEntry({
+      idSuffix: 'exd-cashback',
       payoutDate,
-      amount,
-      title,
-      line1,
-      icon,
-      program,
+      amount: cashbackAmt,
+      title: 'EXD cashback',
+      line1: 'For daily trading',
+      icon: 'dollar',
+      program: 'loyalty',
     })
   }
+
+  if (loyaltyAmt > 0) {
+    const payoutDate = loyaltyPayoutMidNextWeek(now)
+    pushEntry({
+      idSuffix: 'loyalty-rewards',
+      payoutDate,
+      amount: loyaltyAmt,
+      title: 'Loyalty rewards',
+      line1: 'For weekly trading',
+      icon: 'crown',
+      program: 'loyalty',
+    })
+  }
+
+  for (let i = 0; i < longTermDayCount; i++) {
+    const offset = LONG_TERM_START_OFFSET + i
+    const payoutDate = new Date(now)
+    payoutDate.setDate(now.getDate() + offset)
+
+    let amount = baseDaily
+    if (i === longTermDayCount - 1) {
+      amount = round2(longTermPool - allocated)
+    }
+    amount = Math.max(0, amount)
+    allocated += amount
+
+    const tradeOn = new Date(payoutDate)
+    tradeOn.setDate(tradeOn.getDate() - 60)
+
+    pushEntry({
+      idSuffix: `lt-${offset}`,
+      payoutDate,
+      amount,
+      title: 'Long term rebates',
+      line1: `For trading on ${formatSummaryTradingDate(tradeOn)}`,
+      icon: isUsd ? 'dollar' : 'crown',
+      program: 'rebates',
+    })
+  }
+
   return entries
 }
 
