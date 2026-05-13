@@ -36,8 +36,17 @@
 .drillStatusBarBand {
   flex-shrink: 0;
   width: 100%;
-  background: #1a1f28;
+  background: var(--reward-paper);
   padding-top: env(safe-area-inset-top, 0px);
+}
+
+/* Как Activity feed: тёмный статус только на главном Rewards (hero), drill — светлый верх. */
+.drillStatusBarBand .statusTime {
+  color: #000;
+}
+
+.drillStatusBarBand .statusRight {
+  background: rgba(0, 0, 0, 0.08);
 }
 
 .v2DrillShellFullPage {
