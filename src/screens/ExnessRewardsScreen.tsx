@@ -1,5 +1,4 @@
-import { createPortal } from 'react-dom'
-import { useEffect, useId, useMemo, useRef, useState, type Dispatch, type ReactNode, type SetStateAction } from 'react'
+import { useEffect, useMemo, useState, type Dispatch, type ReactNode, type SetStateAction } from 'react'
 import {
   IconAlertTriangle,
   IconArrowRight,
@@ -27,7 +26,6 @@ import {
   parseSignedAmount,
   rebateNextChunk,
 } from '../rewardLifecycle/rebateSimulatorSteps'
-import { useDeviceFrameEl } from '../context/DeviceFrameContext'
 import styles from './ExnessRewardsScreen.module.css'
 
 function filterV1RebateRowsForDisplay(
@@ -142,94 +140,6 @@ function buildSummaryPayoutEntries(
     })
   }
   return entries
-}
-
-const DEMO_ELIGIBLE_ACCOUNTS = ['MT5 · Standard · 12345678', 'MT5 · Pro · 87654321'] as const
-
-function HoldAccountPickerSheet({
-  open,
-  onClose,
-  onManageAccounts,
-  hasEligibleAccounts,
-}: {
-  open: boolean
-  onClose: () => void
-  onManageAccounts: () => void
-  hasEligibleAccounts: boolean
-}) {
-  const titleId = useId()
-  const deviceFrameEl = useDeviceFrameEl()
-
-  useEffect(() => {
-    if (!open) return
-    const prevBody = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    const scrollEl = deviceFrameEl?.querySelector<HTMLElement>('.device-frame-scroll') ?? null
-    const prevScroll = scrollEl?.style.overflow ?? ''
-    if (scrollEl) scrollEl.style.overflow = 'hidden'
-    return () => {
-      document.body.style.overflow = prevBody
-      if (scrollEl) scrollEl.style.overflow = prevScroll
-    }
-  }, [open, deviceFrameEl])
-
-  useEffect(() => {
-    if (!open) return
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [open, onClose])
-
-  if (!open) return null
-
-  const overlay = (
-    <div className={styles.holdSheetOverlay} role="presentation">
-      <button type="button" className={styles.holdSheetBackdrop} onClick={onClose} aria-label="Close" />
-      <div
-        className={styles.holdSheetPanel}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-      >
-        <div className={styles.holdSheetGrab} aria-hidden />
-        <header className={styles.holdSheetHeader}>
-          <h2 className={styles.holdSheetTitle} id={titleId}>
-            Select account
-          </h2>
-          <button type="button" className={styles.holdSheetCloseBtn} onClick={onClose} aria-label="Close">
-            <IconX size={22} stroke={2} aria-hidden />
-          </button>
-        </header>
-        {hasEligibleAccounts ? (
-          <div className={styles.holdSheetList} role="listbox">
-            {DEMO_ELIGIBLE_ACCOUNTS.map((label) => (
-              <button key={label} type="button" className={styles.holdSheetOption} onClick={onClose}>
-                <span className={styles.holdSheetOptionLabel}>{label}</span>
-              </button>
-            ))}
-          </div>
-        ) : (
-          <div className={styles.holdSheetEmpty}>
-            <p className={styles.holdSheetEmptyTitle}>No accounts to show</p>
-            <p className={styles.holdSheetEmptyDesc}>
-              Eligible trading accounts will appear in this list when they are available. Use{' '}
-              <strong>Manage accounts</strong> to add or restore one.
-            </p>
-            <button type="button" className={styles.holdSheetPrimaryBtn} onClick={onManageAccounts}>
-              Manage accounts
-            </button>
-            <button type="button" className={styles.holdSheetSecondaryBtn} onClick={onClose}>
-              Close
-            </button>
-          </div>
-        )}
-      </div>
-    </div>
-  )
-
-  return deviceFrameEl ? createPortal(overlay, deviceFrameEl) : overlay
 }
 
 function SectionTitle({
@@ -1122,9 +1032,6 @@ export function ExnessRewardsScreen({
   const [v2DrillProgram, setV2DrillProgram] = useState<V2DrillProgramFilter>('all')
   const [v2DrillEquity, setV2DrillEquity] = useState<V2DrillEquityFilter>('all')
   const [v2AlertDismissed, setV2AlertDismissed] = useState(false)
-  const [holdAccountSheetOpen, setHoldAccountSheetOpen] = useState(false)
-  const [holdPickerHasEligibleAccounts, setHoldPickerHasEligibleAccounts] = useState(false)
-  const holdPickerReopenTimerRef = useRef(0)
   const availableExdAmount = parseFloat(
     availableRewardsExd.replace(/,/g, '').trim().split(/\s+/)[0] ?? '0',
   )
@@ -1181,18 +1088,10 @@ export function ExnessRewardsScreen({
     setV2SummaryCurrencyPage(null)
     setV2DrillProgram('all')
     setV2DrillEquity('all')
-    setHoldAccountSheetOpen(false)
-    setHoldPickerHasEligibleAccounts(false)
     if (spreadVariant !== 'v2') {
       setV2AlertDismissed(false)
     }
   }, [spreadVariant])
-
-  useEffect(() => {
-    return () => {
-      window.clearTimeout(holdPickerReopenTimerRef.current)
-    }
-  }, [])
 
   useEffect(() => {
     if (!flexUpcomingDrillOpen) {
@@ -1214,13 +1113,7 @@ export function ExnessRewardsScreen({
 
   useEffect(() => {
     setV2AlertDismissed(false)
-    setHoldAccountSheetOpen(false)
-    setHoldPickerHasEligibleAccounts(false)
   }, [rebateScenarioId])
-
-  useEffect(() => {
-    if (v2SummaryCurrencyPage) setHoldAccountSheetOpen(false)
-  }, [v2SummaryCurrencyPage])
 
   const v1UpcomingRows: LifecycleUpcomingItem[] = useMemo(() => {
     const base: LifecycleUpcomingItem[] = [
@@ -1757,27 +1650,6 @@ export function ExnessRewardsScreen({
           <>
             <div className={styles.sectionSpacer} aria-hidden />
             <SectionTitle title="Upcoming" showChevron={false} />
-            {rebateDemo.showAccountAlert ? (
-              <div className={styles.v2Alert}>
-                <div className={styles.v2AlertIcon}>
-                  <IconAlertTriangle size={20} stroke={2} aria-hidden />
-                </div>
-                <div className={styles.v2AlertBody}>
-                  <p className={styles.v2AlertTitle}>Payout pending</p>
-                  <p className={styles.v2AlertDesc}>
-                    <strong>{rebateDemo.onHoldUsdAmount}</strong> is ready to credit, but there is no active
-                    trading account yet. Create or restore one, then tap <strong>Select account</strong>.
-                  </p>
-                  <button
-                    type="button"
-                    className={styles.v2AlertBtn}
-                    onClick={() => setHoldAccountSheetOpen(true)}
-                  >
-                    Select account
-                  </button>
-                </div>
-              </div>
-            ) : null}
             <V2SummaryUpcomingBlock
               usdAmount={v4SummaryUsdLabel}
               exdAmount={unsignedAmountLabel(rebateDemo.pendingExd)}
@@ -1822,19 +1694,6 @@ export function ExnessRewardsScreen({
 
         <div className={styles.bottomSafe} aria-hidden />
       </div>
-      <HoldAccountPickerSheet
-        open={holdAccountSheetOpen}
-        hasEligibleAccounts={holdPickerHasEligibleAccounts}
-        onClose={() => setHoldAccountSheetOpen(false)}
-        onManageAccounts={() => {
-          window.clearTimeout(holdPickerReopenTimerRef.current)
-          setHoldAccountSheetOpen(false)
-          setHoldPickerHasEligibleAccounts(true)
-          holdPickerReopenTimerRef.current = window.setTimeout(() => {
-            setHoldAccountSheetOpen(true)
-          }, 420)
-        }}
-      />
     </div>
   )
 }
