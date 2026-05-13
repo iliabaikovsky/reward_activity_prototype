@@ -34,6 +34,8 @@
 
 ## 3. Loyalty rewards (начисление EXD по лояльности)
 
+**Только экран EXD («Upcoming rewards»).** На экране **USD («Upcoming cashback»)** строк **`Loyalty rewards` нет** — там только EXD cashback + long term.
+
 | Поле | Правило |
 |------|--------|
 | **Заголовок** | `Loyalty rewards` |
@@ -50,19 +52,20 @@
 |---------|--------|
 | **Чип программы** | Три значения в выпадашке: **All programs** (показать все типы строк), **Loyalty**, **Long term rebates**. Дефолт: **All programs**. Активное оформление чипа (как `v2MonthSwitchBtnActive`), если выбрано **не** All programs. |
 | **Чип периода** | `All time` / `Month` / `Week`. Дефолт: **All time**. Если выбрано **Month** или **Week**, чип периода тоже в активном состоянии. **Подвыбор календарного месяца** (May / Jun / …) **не показывается** — для Month/Week якорь данных — **текущий календарный месяц** устройства/прототипа. |
+| **Гистограммы (summary + V2 drill timeline)** | Если значение бакета **0**, **столбик не рисуем** (нет минимальной «плашки»-заглушки). |
 
 ---
 
 ## 5. Согласованность USD / EXD экранов
 
-- Экран **Upcoming cashback (USD)** и **Upcoming rewards (EXD)** используют **одни и те же правила** long term / loyalty; **EXD cashback** только на USD-экране, **ровно одна** строка.
+- Экран **Upcoming cashback (USD)**: **EXD cashback** (одна строка) + **long term**; **без** Loyalty rewards. Экран **Upcoming rewards (EXD)**: **Loyalty rewards** (одна) + **long term**; **без** EXD cashback.
 
 ---
 
 ## 6. Изменения в коде (чеклист)
 
 - [x] Документ с правилами (этот файл).
-- [x] `buildSummaryPayoutEntries`: одна EXD cashback (USD, завтра); одна Loyalty (ср следующей недели); long term ежедневно +30…+60 дн.; суммы делятся 5% / 5% / 90% (без cashback на EXD).
+- [x] `buildSummaryPayoutEntries`: USD — EXD cashback + long term (5% / 95%); EXD — Loyalty + long term (5% / 90%); графики без столбика при нуле.
 - [x] `V2SummaryCurrencyDetailPage`: убрать ряд `v2MonthSwitch` для месяца при `Month` / `Week`; якорь месяца = `monthOptions[0]`.
 - [x] Чип программы: All programs + Loyalty + Long term rebates; дефолт All programs.
 - [x] Стили: активный чип периода при Month/Week; активный чип программы при фильтре не All programs.

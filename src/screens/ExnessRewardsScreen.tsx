@@ -127,8 +127,8 @@ function loyaltyPayoutMidNextWeek(d: Date): Date {
 
 /**
  * Демо-строки для V4 summary drill: см. TRANSACTION_SUMMARY_DISPLAY_RULES.md
- * — USD: одна EXD cashback (завтра), одна Loyalty (ср следующей недели), long term каждый день +30…+60 дн.
- * — EXD: без EXD cashback; одна Loyalty; те же long term.
+ * — USD: одна EXD cashback (завтра), long term каждый день +30…+60 дн. (без Loyalty rewards).
+ * — EXD: одна Loyalty (ср следующей недели); те же long term; без EXD cashback.
  */
 function buildSummaryPayoutEntries(
   currency: V2SummaryCurrencyPage,
@@ -149,7 +149,7 @@ function buildSummaryPayoutEntries(
   const isUsd = currency === 'usd'
 
   const cashbackShare = isUsd ? 0.05 : 0
-  const loyaltyShare = 0.05
+  const loyaltyShare = isUsd ? 0 : 0.05
 
   const round2 = (n: number) => Math.round(n * 100) / 100
   const cashbackAmt = round2(total * cashbackShare)
@@ -178,7 +178,7 @@ function buildSummaryPayoutEntries(
     })
   }
 
-  if (loyaltyAmt > 0) {
+  if (!isUsd && loyaltyAmt > 0) {
     const payoutDate = loyaltyPayoutMidNextWeek(now)
     pushEntry({
       idSuffix: 'loyalty-rewards',
@@ -422,23 +422,22 @@ function FlexibleUpcomingDrillIn({
             {dayBuckets.map((bucket) => {
               const value = bucket.usd + bucket.exd
               const h =
-                maxBucketValue > 0 ? Math.max(16, Math.round((value / maxBucketValue) * 96)) : 16
+                maxBucketValue > 0 && value > 0 ? Math.round((value / maxBucketValue) * 96) : 0
               const usdShare = value > 0 ? bucket.usd / value : 0
-              const usdHeight = Math.round(h * usdShare)
-              const exdHeight = Math.max(0, h - usdHeight)
+              const usdHeight = h > 0 ? Math.round(h * usdShare) : 0
+              const exdHeight = h > 0 ? Math.max(0, h - usdHeight) : 0
               return (
                 <div key={bucket.id} className={styles.v2TimelineBarWrap}>
-                  <span className={styles.v2TimelineBarStack} style={{ height: `${h}px` }}>
-                    {bucket.usd > 0 ? (
-                      <span className={styles.v2TimelineBarUsd} style={{ height: `${usdHeight}px` }} />
-                    ) : null}
-                    {bucket.exd > 0 ? (
-                      <span className={styles.v2TimelineBarExd} style={{ height: `${exdHeight}px` }} />
-                    ) : null}
-                    {bucket.usd <= 0 && bucket.exd <= 0 ? (
-                      <span className={styles.v2TimelineBarEmpty} />
-                    ) : null}
-                  </span>
+                  {h > 0 ? (
+                    <span className={styles.v2TimelineBarStack} style={{ height: `${h}px` }}>
+                      {bucket.usd > 0 && usdHeight > 0 ? (
+                        <span className={styles.v2TimelineBarUsd} style={{ height: `${usdHeight}px` }} />
+                      ) : null}
+                      {bucket.exd > 0 && exdHeight > 0 ? (
+                        <span className={styles.v2TimelineBarExd} style={{ height: `${exdHeight}px` }} />
+                      ) : null}
+                    </span>
+                  ) : null}
                   <span className={styles.v2TimelineBarLabel}>D{bucket.day}</span>
                 </div>
               )
@@ -875,7 +874,8 @@ function V2SummaryCurrencyDetailPage({
           <div className={styles.v2SummaryBarsPlotWrap}>
             <div className={styles.v2SummaryBars}>
               {chartBuckets.map((b) => {
-                const h = maxBar > 0 ? Math.max(8, Math.round((b.total / maxBar) * 184)) : 8
+                const h =
+                  maxBar > 0 && b.total > 0 ? Math.round((b.total / maxBar) * 184) : 0
                 return (
                   <button
                     key={b.id}
@@ -893,7 +893,7 @@ function V2SummaryCurrencyDetailPage({
                         <span>{b.tooltipLabel}</span>
                       </span>
                     ) : null}
-                    <span className={styles.v2SummaryBar} style={{ height: `${h}px` }} />
+                    {h > 0 ? <span className={styles.v2SummaryBar} style={{ height: `${h}px` }} /> : null}
                   </button>
                 )
               })}
