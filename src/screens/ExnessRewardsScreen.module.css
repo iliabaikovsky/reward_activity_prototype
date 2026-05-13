@@ -893,7 +893,6 @@
 .v2SummaryBarTooltip {
   position: absolute;
   left: 50%;
-  bottom: calc(100% - 16px);
   transform: translateX(-50%);
   display: inline-flex;
   flex-direction: column;
@@ -908,6 +907,7 @@
   line-height: 16px;
   pointer-events: none;
   z-index: 2;
+  /* bottom задаётся inline: верх столбца (h px) или чуть выше нуля при h=0 */
 }
 
 .v2SummaryBarTooltip strong {

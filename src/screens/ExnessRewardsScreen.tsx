@@ -888,7 +888,10 @@ function V2SummaryCurrencyDetailPage({
                     onBlur={() => setHoveredBucketId((prev) => (prev === b.id ? null : prev))}
                   >
                     {hoveredBucketId === b.id ? (
-                      <span className={styles.v2SummaryBarTooltip}>
+                      <span
+                        className={styles.v2SummaryBarTooltip}
+                        style={{ bottom: h > 0 ? h : 8 }}
+                      >
                         <strong>{fmtSignedAmount(b.total, unit)}</strong>
                         <span>{b.tooltipLabel}</span>
                       </span>
