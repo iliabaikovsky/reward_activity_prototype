@@ -710,6 +710,11 @@
   font-family: inherit;
 }
 
+.v2SummaryFilterChipActive {
+  background: #6c8595;
+  color: #fff;
+}
+
 .v2SummaryFilterRow {
   display: flex;
   flex-wrap: wrap;

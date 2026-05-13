@@ -102,6 +102,10 @@ type SummaryPayoutEntry = {
   program: 'loyalty' | 'rebates'
 }
 
+function formatSummaryTradingDate(d: Date): string {
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+}
+
 function buildSummaryPayoutEntries(
   currency: V2SummaryCurrencyPage,
   totalLabel: string,
@@ -122,42 +126,54 @@ function buildSummaryPayoutEntries(
   const sumWeights = weights.reduce((s, w) => s + w, 0) || 1
   let running = 0
   for (let i = 0; i < payoutsCount; i++) {
-    const day = Math.max(1, Math.round(((i + 1) * horizon) / payoutsCount))
+    const isUsd = currency === 'usd'
+    const isExdCashback = isUsd && i % 7 === 0
+    const isLoyaltyExd = !isUsd && i % 6 === 0
+    const isLongTerm = (isUsd && !isExdCashback) || (!isUsd && !isLoyaltyExd)
+
     const payoutDate = new Date(now)
-    payoutDate.setDate(now.getDate() + day)
+    if (isExdCashback) {
+      payoutDate.setDate(now.getDate() + 1)
+    } else {
+      const day = Math.max(1, Math.round(((i + 1) * horizon) / payoutsCount))
+      payoutDate.setDate(now.getDate() + day)
+    }
+
     const raw = i === payoutsCount - 1 ? total - running : (total * weights[i]) / sumWeights
     const amount = Math.max(0, Number(raw.toFixed(2)))
     running += amount
-    const title =
-      currency === 'usd'
-        ? i % 7 === 0
-          ? 'EXD cashback'
-          : 'Cash rebates'
-        : i % 6 === 0
-          ? 'Loyalty rewards'
-          : 'EXD rebates'
-    const program: 'loyalty' | 'rebates' =
-      currency === 'usd'
-        ? title === 'EXD cashback'
-          ? 'loyalty'
-          : 'rebates'
-        : title === 'Loyalty rewards'
-          ? 'loyalty'
-          : 'rebates'
+
+    let title: string
+    let line1: string
+    let program: 'loyalty' | 'rebates'
+    let icon: LifecycleActivityIcon
+
+    if (isExdCashback) {
+      title = 'EXD cashback'
+      line1 = 'For daily trading'
+      program = 'loyalty'
+      icon = 'dollar'
+    } else if (isLoyaltyExd) {
+      title = 'Loyalty rewards'
+      line1 = 'For weekly trading'
+      program = 'loyalty'
+      icon = 'crown'
+    } else {
+      title = 'Long term rebates'
+      program = 'rebates'
+      icon = currency === 'usd' ? 'dollar' : 'crown'
+      const tradeOn = new Date(payoutDate)
+      tradeOn.setDate(tradeOn.getDate() - 60)
+      line1 = `For trading on ${formatSummaryTradingDate(tradeOn)}`
+    }
+
     entries.push({
       id: `${currency}-pay-${i + 1}`,
       payoutDate,
       amount,
       title,
-      line1:
-        currency === 'usd'
-          ? i % 7 === 0
-            ? 'For daily trading'
-            : 'For trading on Dec 15'
-          : i % 6 === 0
-            ? 'For weekly trading'
-            : 'For trading on Dec 16',
-      icon: currency === 'usd' ? 'dollar' : 'crown',
+      line1,
+      icon,
       program,
     })
   }
@@ -503,7 +519,6 @@ function V2SummaryCurrencyDetailPage({
   const title = currency === 'usd' ? 'Upcoming cashback' : 'Upcoming rewards'
   const unit = currency.toUpperCase() as 'USD' | 'EXD'
   const [periodMode, setPeriodMode] = useState<'all-time' | 'month' | 'week'>('all-time')
-  const [monthOffset, setMonthOffset] = useState<0 | 1 | 2>(0)
   const [hoveredBucketId, setHoveredBucketId] = useState<string | null>(null)
   const [programFilter, setProgramFilter] = useState<'loyalty' | 'rebates'>('rebates')
   const [programMenuOpen, setProgramMenuOpen] = useState(false)
@@ -550,7 +565,7 @@ function V2SummaryCurrencyDetailPage({
     })
   }, [])
 
-  const selectedMonth = monthOptions.find((m) => m.offset === monthOffset) ?? monthOptions[0]
+  const selectedMonth = monthOptions[0]
 
   const visibleEntries = useMemo(() => {
     const sorted = [...entries].sort((a, b) => a.payoutDate.getTime() - b.payoutDate.getTime())
@@ -660,9 +675,9 @@ function V2SummaryCurrencyDetailPage({
           ? 'Tomorrow'
           : entry.payoutDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
       const row: V2UpcomingRowData = {
-        id: `${entry.id}-${periodMode}-${monthOffset}-${idx}`,
+        id: `${entry.id}-${periodMode}-${idx}`,
         icon: entry.icon,
-        title: entry.title.replace(/^Cash rebates$/i, currency === 'usd' ? 'Cash rebates' : 'EXD rebates'),
+        title: entry.title,
         amount: fmtSignedAmount(entry.amount, unit),
         line1: entry.line1,
         date: '',
@@ -676,7 +691,7 @@ function V2SummaryCurrencyDetailPage({
       heading,
       rows,
     }))
-  }, [visibleEntries, periodMode, monthOffset, currency, unit])
+  }, [visibleEntries, periodMode, currency, unit])
 
   const programChipLabel = programFilter === 'loyalty' ? 'Loyalty' : 'Long term rebates'
   const periodChipLabel =
@@ -702,7 +717,7 @@ function V2SummaryCurrencyDetailPage({
         <div className={styles.v2SummaryDropdown} ref={programDropdownRef}>
           <button
             type="button"
-            className={styles.v2SummaryFilterChip}
+            className={`${styles.v2SummaryFilterChip} ${programFilter === 'loyalty' ? styles.v2SummaryFilterChipActive : ''}`}
             aria-expanded={programMenuOpen}
             aria-haspopup="listbox"
             aria-label="Program"
@@ -747,7 +762,7 @@ function V2SummaryCurrencyDetailPage({
         <div className={styles.v2SummaryDropdown} ref={periodDropdownRef}>
           <button
             type="button"
-            className={styles.v2SummaryFilterChip}
+            className={`${styles.v2SummaryFilterChip} ${periodMode !== 'all-time' ? styles.v2SummaryFilterChipActive : ''}`}
             aria-expanded={periodMenuOpen}
             aria-haspopup="listbox"
             aria-label="Period"
@@ -786,21 +801,6 @@ function V2SummaryCurrencyDetailPage({
           ) : null}
         </div>
       </div>
-
-      {periodMode !== 'all-time' ? (
-        <div className={styles.v2MonthSwitch} role="group" aria-label="Select calendar month">
-          {monthOptions.map((opt) => (
-            <button
-              key={opt.offset}
-              type="button"
-              className={`${styles.v2MonthSwitchBtn} ${monthOffset === opt.offset ? styles.v2MonthSwitchBtnActive : ''}`}
-              onClick={() => setMonthOffset(opt.offset)}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
-      ) : null}
 
       <div className={styles.v2SummaryChart}>
         <div className={styles.v2SummaryChartHeader}>{unit}</div>
