@@ -31,6 +31,7 @@ type Props = {
   datePreset: ActivityDatePreset
   onDatePresetChange: (v: ActivityDatePreset) => void
   feedGroups: ActivityFeedGroup[]
+  demoTodayIso: string
 }
 
 export function ActivityFeedScreen({
@@ -41,13 +42,14 @@ export function ActivityFeedScreen({
   datePreset,
   onDatePresetChange,
   feedGroups,
+  demoTodayIso,
 }: Props) {
   const [typeSheetOpen, setTypeSheetOpen] = useState(false)
   const [dateSheetOpen, setDateSheetOpen] = useState(false)
 
   const filteredGroups = useMemo(
-    () => filterFeedGroups(feedGroups, typeFilter, datePreset),
-    [feedGroups, typeFilter, datePreset],
+    () => filterFeedGroups(feedGroups, typeFilter, datePreset, demoTodayIso),
+    [feedGroups, typeFilter, datePreset, demoTodayIso],
   )
 
   return (

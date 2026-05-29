@@ -9,10 +9,11 @@
 | Поле | Правило |
 |------|--------|
 | **Заголовок** | `EXD cashback` |
-| **Дата выплаты в данных** | Ровно **одна** строка; выплата **завтра** относительно якоря «сегодня» прототипа (`DEMO_TODAY_ISO`). |
-| **Подзаголовок / line1** | `For daily trading` |
+| **Источник данных** | Строки `lifecycle.upcoming[]` с `icon: 'dollar'` на текущем шаге симулятора. |
+| **Подзаголовок / line1** | Из `lines[0]` item, напр. `For trading on Mar 16`. |
+| **Дата выплаты** | Парсится из колонки `date` (`on Mar 18` → `parseUpcomingPayoutDate`). |
 
-**Группировка по дням:** секция **Tomorrow**.
+**Группировка по дням:** секция **Tomorrow**, если дата = `simulatorTodayIso + 1 day`; иначе короткая дата (`Mar 25`, …).
 
 ---
 
@@ -23,10 +24,12 @@
 | Поле | Правило |
 |------|--------|
 | **Заголовок** | `Loyalty rewards` |
-| **Подзаголовок / line1** | `For trading on {period}` — период ср–вс, напр. `Mar 18–22`. |
-| **Дата выплаты** | **Среда** недели, следующей после окончания периода (см. `demoTimeline.ts`). |
-| **Количество строк** | **До двух** одновременно из‑за накладки по времени (см. §3). |
-| **Сумма** | Вся pending-сумма EXD делится поровну между видимыми слотами. |
+| **Источник данных** | Строки `lifecycle.upcoming[]` с `icon: 'crown'`. |
+| **Подзаголовок / line1** | Из `lines[0]`, напр. `For trading on Mar 18–22`. |
+| **Дата выплаты** | Из `date` (`on Mar 25`). |
+| **Badge** | Опционально из `badge` item (напр. `4` на шаге 3). |
+
+Drill-in **не синтезирует** суммы и периоды — показывает те же строки, что на главном экране Upcoming.
 
 ---
 
@@ -39,11 +42,9 @@
 | **Прошлый период** | Понедельник–вторник недели активации, до среды зачисления | **Эта** среда |
 | **Текущий период** | С понедельника недели открытия периода до даты активации (не включая день активации) | **Следующая** среда |
 
-**Примеры (якорь прототипа 20 Mar 2026, пятница):** одна строка — `Mar 18–22` → `Mar 25`.
+**Пример (шаг 9, 17 Mar 2026, вторник):** две строки в `upcoming[]` — `Mar 11–15` → `Mar 18` и `Mar 18–22` → `Mar 25`.
 
-**Mon–Tue 16–17 Mar 2026:** две строки — `Mar 11–15` → `Mar 18` и `Mar 18–22` → `Mar 25`.
-
-Логика: `getLoyaltyUpcomingSlots()` в `src/rewardLifecycle/demoTimeline.ts`.
+Справочная логика накладки для моков: `getLoyaltyUpcomingSlots()` в `src/rewardLifecycle/demoTimeline.ts` (drill-in больше не вызывает её напрямую).
 
 ---
 
@@ -52,15 +53,15 @@
 | Элемент | Правило |
 |---------|--------|
 | **Hero** | Заголовок + сумма всех видимых строк. |
-| **Список** | Группировка по дате выплаты (`Tomorrow`, `Mar 25`, …). |
+| **Список** | Группировка по дате выплаты (`Tomorrow`, `Mar 25`, …) относительно `demoTodayIso` шага. |
 | **График / фильтры** | **Не показываются** (убраны из прототипа). |
 
 ---
 
 ## 5. Согласованность USD / EXD экранов
 
-- **Upcoming cashback (USD):** одна строка **EXD cashback**.
-- **Upcoming rewards (EXD):** **1–2** строки **Loyalty rewards**; без EXD cashback.
+- **Upcoming cashback (USD):** строки **EXD cashback** из `upcoming[]` (icon dollar).
+- **Upcoming rewards (EXD):** строки **Loyalty rewards** из `upcoming[]` (icon crown); без EXD cashback.
 
 Long term rebates в Upcoming drill-in **не показываются**.
 
@@ -68,7 +69,8 @@ Long term rebates в Upcoming drill-in **не показываются**.
 
 ## 6. Изменения в коде (чеклист)
 
-- [x] Убраны long term rebates из `buildSummaryPayoutEntries`.
+- [x] Убраны long term rebates из drill-in.
 - [x] Убраны график и фильтры из `V2SummaryCurrencyDetailPage`.
-- [x] `getLoyaltyUpcomingSlots` + якорь `parseDemoToday()` для loyalty.
+- [x] `buildDrillEntriesFromUpcoming` — строки из `lifecycle.upcoming[]` + `demoTodayIso` (per-step).
+- [x] Заголовок транзакции cashback в UI: **EXD cashback** (не «Cashback»).
 - [x] Документ с правилами (этот файл).

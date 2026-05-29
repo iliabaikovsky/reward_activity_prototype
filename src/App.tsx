@@ -61,6 +61,7 @@ function App() {
                 tierEarnedExdTowardGoal={lifecycle.tierEarnedExdTowardGoal}
                 upcomingItems={lifecycle.upcoming}
                 activityPreviewItems={lifecycle.activityPreview}
+                demoTodayIso={lifecycle.simulatorTodayIso}
               />
             ) : (
               <ActivityFeedScreen
@@ -71,6 +72,7 @@ function App() {
                 datePreset={activityDatePreset}
                 onDatePresetChange={setActivityDatePreset}
                 feedGroups={lifecycle.feedGroups}
+                demoTodayIso={lifecycle.simulatorTodayIso}
               />
             )}
           </div>

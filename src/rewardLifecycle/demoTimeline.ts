@@ -47,6 +47,15 @@ export function formatDemoTodayLabel(iso = DEMO_TODAY_ISO): string {
   })
 }
 
+/** Парсит колонку даты Upcoming вида `on Mar 25` в локальную полночь. */
+export function parseUpcomingPayoutDate(dateCol: string, year = 2026): Date | null {
+  const trimmed = dateCol.replace(/^on\s+/i, '').trim()
+  const parsed = new Date(`${trimmed}, ${year}`)
+  if (Number.isNaN(parsed.getTime())) return null
+  parsed.setHours(0, 0, 0, 0)
+  return parsed
+}
+
 export type LoyaltyUpcomingSlot = {
   idSuffix: string
   periodLabel: string

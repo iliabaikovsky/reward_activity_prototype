@@ -7,15 +7,29 @@
 
 ### Прототип: симулятор шагов
 
-Справа от рамки телефона — **glass rail** (`LifecycleSimulatorPanel`, данные `LIFECYCLE_STEPS` в `src/rewardLifecycle/lifecycleSteps.ts`). **8 шагов**, старт с **шага 1** — пустое состояние (§0); стрелки **← / →** переключают сценарий. На каждом шаге обновляются: **Available rewards**, второй кошелёк, **Lifetime cashback**, **Upcoming**, превью **Activity feed** на главном экране и полная лента на экране **Activity feed** (с учётом фильтров).
+Справа от рамки телефона — **glass rail** (`LifecycleSimulatorPanel`, данные `LIFECYCLE_STEPS` в `src/rewardLifecycle/lifecycleSteps.ts`). **9 шагов**, старт с **шага 1** — пустое состояние (§0); стрелки **← / →** переключают сценарий. На каждом шаге обновляются: **Available rewards**, второй кошелёк, **Lifetime cashback**, **Upcoming**, превью **Activity feed** на главном экране и полная лента на экране **Activity feed** (с учётом фильтров).
 
-На широком экране под rail — раскрываемый блок **«Что видим»**: якорная дата симуляции и короткое описание шага (`simulatorBlurb` в `lifecycleSteps.ts`). Переключение только стрелками.
+На широком экране под rail — раскрываемый блок **«Что видим»**: дата **«сегодня» для текущего шага** (`simulatorTodayIso`) и короткое описание шага (`simulatorBlurb` в `lifecycleSteps.ts`). Переключение только стрелками.
 
-**Календарь в коде:** якорь **20 Mar 2026** (`DEMO_TODAY_ISO` в `src/rewardLifecycle/demoTimeline.ts`), пресет ленты **This month** = March 2026. **Loyalty в Upcoming:** период в подписи — **среда–воскресенье**; дата справа в формате **`on {среда активации}`** (зачисление в среду следующей недели после конца периода). Пример при «сегодня» 20 Mar: открытый период **Mar 18–22** → **`on Mar 25`**.
+**Календарь в коде:** дефолтный якорь **20 Mar 2026** (`DEMO_TODAY_ISO` в `src/rewardLifecycle/demoTimeline.ts`); на каждом шаге симулятора своя **`simulatorTodayIso`** — «когда пользователь смотрит экран». Пресет ленты **This month** и **Last 7 / 30** считаются относительно даты шага. **Loyalty в Upcoming:** период в подписи — **среда–воскресенье**; дата справа в формате **`on {среда активации}`** (зачисление в среду следующей недели после конца периода). Пример при «сегодня» 20 Mar: открытый период **Mar 18–22** → **`on Mar 25`**.
+
+| # | id | simulatorTodayIso | Обоснование |
+|---|-----|-------------------|-------------|
+| 1 | `empty` | 2026-03-20 | §0, новый пользователь |
+| 2 | `upcoming_loyalty` | 2026-03-20 | пятница в открытом периоде Mar 18–22 |
+| 3 | `upcoming_loyalty_more` | 2026-03-20 | то же |
+| 4 | `activation_1` | 2026-03-18 | среда активации |
+| 5 | `gift` | 2026-03-19 | день подарка |
+| 6 | `transfer` | 2026-03-21 | transfer |
+| 7 | `trade_exd_rebate` | 2026-03-22 | день сделки |
+| 8 | `cashback_settled` | 2026-03-24 | cashback зачислен |
+| 9 | `mature_trader_tuesday` | 2026-03-17 | вторник: накладка 2 loyalty + EXD cashback |
 
 **Промежуточный шаг симулятора** (`upcoming_loyalty_more`): между первым Upcoming **+3.20 EXD** и шагом активации в Available — ещё одна сделка в том же периоде, пачка растёт до **+4.20 EXD** (badge **4**), чтобы в UI было видно изменение Upcoming до перехода к активации.
 
 **Деталка Loyalty (bottom sheet):** для вариантов `loyalty-upcoming` и `loyalty-activated` данные пачки собираются из шага симулятора (`buildLoyaltyModalPack.ts`): те же **сумма**, **период**, **Become available on / Moved to available on**, что на списке; **ордера** — несколько строк, в сумме дающих агрегат (без раздувания до 200). Из ленты открытие передаёт `feedItemId`, чтобы совпадала конкретная транзакция.
+
+**Шаг 9 (`mature_trader_tuesday`, 17 Mar):** месяц торговли — **Lifetime cashback ~38 USD**, на счёте **62.40 EXD**, в Upcoming **две** loyalty (накладка Mar 11–15 → Mar 18 и Mar 18–22 → Mar 25) и **EXD cashback +4.50 USD**; в ленте — EXD cashback за Mar 14–16 и хвост истории (transfer, gift).
 
 ---
 
@@ -289,7 +303,7 @@ Trade
 ## 14. Чеклист для реализации в UI
 
 - [x] Пустое состояние: Upcoming / Available / лента согласованы с §0  
-- [x] Upcoming: отдельные карточки для **Loyalty** (EXD) и **Cashback pending** (USD)  
+- [x] Upcoming: отдельные карточки для **Loyalty** (EXD) и **EXD cashback** pending (USD)  
 - [x] Пачка loyalty: сумма = сумма ордеров; модалка — **Last 3 orders** + полный список  
 - [x] Лента: тип строки ↔ `system type` из §11; фильтры **Type** / **Date**  
 - [x] После `reward_activation` пачка исчезает из Upcoming и появляется одна строка в ленте  

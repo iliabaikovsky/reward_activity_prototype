@@ -57,7 +57,7 @@ export function LifecycleSimulatorPanel({ steps, stepIndex, onStepIndexChange }:
       <details ref={detailsRef} className={styles.glassDetails}>
         <summary className={styles.glassDetailsSummary}>Что видим</summary>
         <div className={styles.glassDetailsBody}>
-          <p className={styles.blurbDate}>{formatDemoTodayLabel()}</p>
+          <p className={styles.blurbDate}>{formatDemoTodayLabel(step.simulatorTodayIso)}</p>
           <p className={styles.blurbLead}>{lead}</p>
           <ul className={styles.blurbList}>
             {bullets.map((line) => (

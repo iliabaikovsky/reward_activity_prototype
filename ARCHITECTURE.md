@@ -8,16 +8,18 @@
 LifecycleSimulatorPanel
         │
         ▼
-  lifecycleSteps.ts  ──► LifecycleStep (available, upcoming, feedGroups, …)
+  lifecycleSteps.ts  ──► LifecycleStep (simulatorTodayIso, available, upcoming, feedGroups, …)
         │
         ▼
       App.tsx  ── route: rewards | activity
+        │         demoTodayIso = lifecycle.simulatorTodayIso
         │
         ├── ExnessRewardsScreen
+        │         drill-in Upcoming ← lifecycle.upcoming[]
         │         onOpenActivityFeed / onOpenRewardModal
         │
         ├── ActivityFeedScreen
-        │         filters (type, date) → activityFeedFilter.ts
+        │         filters (type, date) → activityFeedFilter.ts (todayIso per step)
         │
         └── RewardDetailModal
                   variant + packOverride (buildLoyaltyModalPack.ts)
@@ -31,8 +33,8 @@ LifecycleSimulatorPanel
 | [`src/screens/ExnessRewardsScreen.tsx`](src/screens/ExnessRewardsScreen.tsx) | Главный экран Rewards |
 | [`src/screens/ActivityFeedScreen.tsx`](src/screens/ActivityFeedScreen.tsx) | Полная лента с фильтрами |
 | [`src/components/reward/RewardDetailModal/`](src/components/reward/RewardDetailModal/) | Bottom sheet деталей |
-| [`src/rewardLifecycle/lifecycleSteps.ts`](src/rewardLifecycle/lifecycleSteps.ts) | 8 шагов симулятора + mock data |
-| [`src/rewardLifecycle/demoTimeline.ts`](src/rewardLifecycle/demoTimeline.ts) | Якорная дата, периоды loyalty |
+| [`src/rewardLifecycle/lifecycleSteps.ts`](src/rewardLifecycle/lifecycleSteps.ts) | 9 шагов симулятора + mock data |
+| [`src/rewardLifecycle/demoTimeline.ts`](src/rewardLifecycle/demoTimeline.ts) | Якорная дата, per-step today, периоды loyalty |
 | [`src/rewardLifecycle/buildLoyaltyModalPack.ts`](src/rewardLifecycle/buildLoyaltyModalPack.ts) | Синхронизация modal pack ↔ симулятор |
 | [`src/context/DeviceFrameContext.tsx`](src/context/DeviceFrameContext.tsx) | Portal bottom sheets в рамку 375×812 |
 
@@ -65,7 +67,7 @@ LifecycleSimulatorPanel
 
 ## Regression checklist
 
-1. Симулятор: шаги 1→8, Назад/Далее
+1. Симулятор: шаги 1→9, Назад/Далее
 2. Rewards: wallets, tier progress, Upcoming/Activity preview → modal
 3. Lifetime cashback → Activity feed (filter Cashback)
 4. Activity feed: Type + Date filters

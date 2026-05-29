@@ -1,6 +1,6 @@
 # Exness Rewards — reward activity prototype (CE-3142)
 
-Интерактивный мобильный прототип **Exness Rewards** и **Activity feed**: кошельки EXD, tier progress, Upcoming, bottom sheets с деталями транзакций, симулятор жизненного цикла EXD/Cashback на 8 шагов.
+Интерактивный мобильный прототип **Exness Rewards** и **Activity feed**: кошельки EXD, tier progress, Upcoming, bottom sheets с деталями транзакций, симулятор жизненного цикла EXD/Cashback на 9 шагов.
 
 Стек: **React 18**, **TypeScript**, **Vite 6**, деплой на **Vercel**.
 
@@ -21,7 +21,7 @@ npm run build   # перед деплоем
 | **Exness Rewards** | Hero tier, кошельки, Upcoming, Lifetime cashback, превью ленты |
 | **Activity feed** | Полная лента, фильтры Type / Date (bottom sheet) |
 | **RewardDetailModal** | Детали loyalty/cashback packs, orders drill-down |
-| **Lifecycle simulator** | 8 шагов mock-сценария из `REWARD_LIFECYCLE.md` |
+| **Lifecycle simulator** | 9 шагов mock-сценария из `REWARD_LIFECYCLE.md` |
 
 ## Документация
 

@@ -79,10 +79,67 @@ export const G_MAR24: ActivityFeedGroup = {
   items: [
     item({
       id: 'feed-cb-1',
-      title: 'Cashback',
+      title: 'EXD cashback',
       amount: '+5.00 USD',
       amountTone: 'positive',
       lines: ['For trading on Mar 22', 'Account: #12345678'],
+      time: '08:00',
+      icon: 'dollar',
+      rewardModal: 'cashback-activated',
+      category: 'cashback',
+    }),
+  ],
+}
+
+export const G_MAR16: ActivityFeedGroup = {
+  dateLabel: '16 Mar 2026',
+  dateIso: '2026-03-16',
+  summary: '+4.50 USD',
+  items: [
+    item({
+      id: 'feed-cb-mar16',
+      title: 'EXD cashback',
+      amount: '+4.50 USD',
+      amountTone: 'positive',
+      lines: ['For trading on Mar 16', 'Account: #12345678'],
+      time: '08:00',
+      icon: 'dollar',
+      rewardModal: 'cashback-activated',
+      category: 'cashback',
+    }),
+  ],
+}
+
+export const G_MAR15: ActivityFeedGroup = {
+  dateLabel: '15 Mar 2026',
+  dateIso: '2026-03-15',
+  summary: '+3.80 USD',
+  items: [
+    item({
+      id: 'feed-cb-mar15',
+      title: 'EXD cashback',
+      amount: '+3.80 USD',
+      amountTone: 'positive',
+      lines: ['For trading on Mar 15', 'Account: #12345678'],
+      time: '08:00',
+      icon: 'dollar',
+      rewardModal: 'cashback-activated',
+      category: 'cashback',
+    }),
+  ],
+}
+
+export const G_MAR14: ActivityFeedGroup = {
+  dateLabel: '14 Mar 2026',
+  dateIso: '2026-03-14',
+  summary: '+5.20 USD',
+  items: [
+    item({
+      id: 'feed-cb-mar14',
+      title: 'EXD cashback',
+      amount: '+5.20 USD',
+      amountTone: 'positive',
+      lines: ['For trading on Mar 14', 'Account: #12345678'],
       time: '08:00',
       icon: 'dollar',
       rewardModal: 'cashback-activated',

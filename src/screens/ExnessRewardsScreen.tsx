@@ -17,7 +17,7 @@ import type {
   LifecycleUpcomingItem,
 } from '../rewardLifecycle/lifecycleSteps'
 import type { ActivityTypeFilter } from './activityFeedTypes'
-import { getLoyaltyUpcomingSlots, parseDemoToday } from '../rewardLifecycle/demoTimeline'
+import { parseUpcomingPayoutDate, parseDemoToday } from '../rewardLifecycle/demoTimeline'
 import { parseSignedAmount } from '../rewardLifecycle/rebateSimulatorSteps'
 import styles from './ExnessRewardsScreen.module.css'
 
@@ -80,65 +80,37 @@ type SummaryPayoutEntry = {
   title: string
   line1: string
   icon: RewardEventIconKind
+  countBadge?: string
 }
 
-/**
- * Демо-строки для Upcoming drill-in: см. TRANSACTION_SUMMARY_DISPLAY_RULES.md
- * — USD: одна EXD cashback (завтра).
- * — EXD: до двух Loyalty (накладка Mon–Tue + текущий период); без EXD cashback.
- */
-function buildSummaryPayoutEntries(
+/** Drill-in Upcoming: строки из lifecycle `upcoming[]`, без синтеза. */
+function buildDrillEntriesFromUpcoming(
+  items: LifecycleUpcomingItem[],
   currency: V2SummaryCurrencyPage,
-  totalLabel: string,
+  demoTodayIso: string,
 ): SummaryPayoutEntry[] {
-  const total = parseSignedAmount(totalLabel)
-  if (total <= 0) return []
+  const iconFilter = currency === 'usd' ? 'dollar' : 'crown'
 
-  const today = parseDemoToday()
-  const entries: SummaryPayoutEntry[] = []
-  const isUsd = currency === 'usd'
-  const round2 = (n: number) => Math.round(n * 100) / 100
+  return items
+    .filter((item) => item.icon === iconFilter)
+    .map((item) => {
+      const payoutDate =
+        parseUpcomingPayoutDate(item.date) ?? parseDemoToday(demoTodayIso)
+      const amount =
+        currency === 'usd'
+          ? Math.max(0, parseSignedAmount(item.amount))
+          : Math.max(0, parseExdAmount(item.amount))
 
-  const pushEntry = (partial: Omit<SummaryPayoutEntry, 'id'> & { idSuffix: string }) => {
-    const { idSuffix, ...rest } = partial
-    entries.push({ id: `${currency}-${idSuffix}`, ...rest })
-  }
-
-  if (isUsd) {
-    const payoutDate = new Date(today)
-    payoutDate.setDate(today.getDate() + 1)
-    pushEntry({
-      idSuffix: 'exd-cashback',
-      payoutDate,
-      amount: round2(total),
-      title: 'EXD cashback',
-      line1: 'For daily trading',
-      icon: 'dollar',
+      return {
+        id: item.id,
+        payoutDate,
+        amount,
+        title: item.title,
+        line1: item.lines[0] ?? '',
+        icon: item.icon,
+        countBadge: item.badge,
+      }
     })
-    return entries
-  }
-
-  const loyaltySlots = getLoyaltyUpcomingSlots(today)
-  if (loyaltySlots.length === 0) return entries
-
-  const slotCount = loyaltySlots.length
-  let allocated = 0
-  loyaltySlots.forEach((slot, idx) => {
-    let amount =
-      idx === slotCount - 1 ? round2(total - allocated) : round2(total / slotCount)
-    amount = Math.max(0, amount)
-    allocated += amount
-    pushEntry({
-      idSuffix: slot.idSuffix,
-      payoutDate: slot.payoutDate,
-      amount,
-      title: 'Loyalty rewards',
-      line1: `For trading on ${slot.periodLabel}`,
-      icon: 'crown',
-    })
-  })
-
-  return entries
 }
 
 function SectionTitle({
@@ -192,7 +164,7 @@ function V2SummaryUpcomingBlock({
       ? {
           id: 'summary-cashback',
           icon: 'dollar' as const,
-          title: 'Cashback',
+          title: 'EXD cashback',
           amount: usdAmount,
           onOpen: onOpenUsd,
         }
@@ -225,11 +197,13 @@ function V2SummaryUpcomingBlock({
 
 function V2SummaryCurrencyDetailPage({
   currency,
-  totalLabel,
+  upcomingItems,
+  demoTodayIso,
   onBack,
 }: {
   currency: V2SummaryCurrencyPage
-  totalLabel: string
+  upcomingItems: LifecycleUpcomingItem[]
+  demoTodayIso: string
   onBack: () => void
 }) {
   const title = currency === 'usd' ? 'Upcoming cashback' : 'Upcoming rewards'
@@ -237,10 +211,10 @@ function V2SummaryCurrencyDetailPage({
 
   const entries = useMemo(
     () =>
-      [...buildSummaryPayoutEntries(currency, totalLabel)].sort(
+      [...buildDrillEntriesFromUpcoming(upcomingItems, currency, demoTodayIso)].sort(
         (a, b) => a.payoutDate.getTime() - b.payoutDate.getTime(),
       ),
-    [currency, totalLabel],
+    [upcomingItems, currency, demoTodayIso],
   )
 
   const viewTotal = useMemo(
@@ -249,7 +223,7 @@ function V2SummaryCurrencyDetailPage({
   )
 
   const groupedRows = useMemo(() => {
-    const today = parseDemoToday()
+    const today = parseDemoToday(demoTodayIso)
     const tomorrow = new Date(today)
     tomorrow.setDate(today.getDate() + 1)
     const groups = new Map<string, V2UpcomingRowData[]>()
@@ -265,6 +239,7 @@ function V2SummaryCurrencyDetailPage({
         amount: fmtSignedAmount(entry.amount, unit),
         line1: entry.line1,
         date: '',
+        countBadge: entry.countBadge,
       }
       const arr = groups.get(key)
       if (arr) arr.push(row)
@@ -275,7 +250,7 @@ function V2SummaryCurrencyDetailPage({
       heading,
       rows,
     }))
-  }, [entries, unit])
+  }, [entries, unit, demoTodayIso])
 
   return (
     <div className={styles.v2SummaryDetailPage}>
@@ -457,6 +432,8 @@ type ExnessRewardsScreenProps = {
   lifetimeCashbackUsd: string
   /** Накопительный заработанный EXD для тира (не падает при списании EXD на rebate). */
   tierEarnedExdTowardGoal: number
+  /** Дата «сегодня» текущего шага симулятора (YYYY-MM-DD). */
+  demoTodayIso: string
   upcomingItems: LifecycleUpcomingItem[]
   activityPreviewItems: LifecycleActivityPreviewItem[]
 }
@@ -471,6 +448,7 @@ export function ExnessRewardsScreen({
   tradingWalletMuted,
   lifetimeCashbackUsd,
   tierEarnedExdTowardGoal,
+  demoTodayIso,
   upcomingItems,
   activityPreviewItems,
 }: ExnessRewardsScreenProps) {
@@ -541,11 +519,8 @@ export function ExnessRewardsScreen({
         <div className={styles.flexDrillPageRoot}>
           <V2SummaryCurrencyDetailPage
             currency={v2SummaryCurrencyPage}
-            totalLabel={
-              v2SummaryCurrencyPage === 'usd'
-                ? upcomingUsdTotal(upcomingItems)
-                : upcomingExdTotal(upcomingItems)
-            }
+            upcomingItems={upcomingItems}
+            demoTodayIso={demoTodayIso}
             onBack={() => setV2SummaryCurrencyPage(null)}
           />
         </div>
