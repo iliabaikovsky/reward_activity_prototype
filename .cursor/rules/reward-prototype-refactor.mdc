@@ -1,0 +1,125 @@
+---
+description: Структура и рефакторинг reward activity prototype — слои, UI, симулятор, антипаттерны
+alwaysApply: true
+---
+
+# Reward prototype — структура и рефакторинг
+
+Прототип CE-3142: React 18 + TS + Vite, без бэкенда. Следуй **фактическим** соглашениям репо, не выдумывай новые слои.
+
+## Anti-patterns / не повторять
+
+Перед PR — пройти checklist внизу. Каждый пункт — ошибка, которая уже приводила к рефакторингу.
+
+| # | ❌ Плохо | ✅ Вместо этого | При новой фиче проверь |
+|---|---------|-----------------|------------------------|
+| 1 | `switch (icon) { case 'gift': return <IconGift/> }` в screen/modal | `RewardEventIcon` из `components/ui/` | Новая иконка → `RewardEventIcon` в `domain/reward/types.ts`, не локальный switch |
+| 2 | `FeedRow`, inline `<div className={styles.row}>` в screen | `TransactionRow` + `fromActivityFeedItem` / `fromUpcomingItem` / `fromActivityPreview` | Разметка строки только в `TransactionRow.tsx`; screen передаёт model через adapter |
+| 3 | Копировать `.statusBar`, `.topNav`, `.bottomSafe` в screen CSS | `MobileScreenShell` | Screen = children внутри shell; без дублирования safe-area/nav |
+| 4 | Свой portal, `overflow: hidden`, Escape, focus trap в screen | `BottomSheet` + `useBottomSheet` | Любой filter/detail sheet — shared hooks, не copy-paste |
+| 5 | `PACK_CONFIG` / 500+ строк mock в `.tsx` модалки | `RewardDetailModal/configs/` (`packConfigs`, `simpleConfigs`) | Static контент модалки — только configs; dynamic loyalty — `buildLoyaltyModalPack.ts` |
+| 6 | `const HIDE_WALLET = true` в screen | `domain/reward/featureFlags.ts` | Один файл флагов; скрытие через CSS class `*Hidden`, DOM остаётся |
+| 7 | `parseFloat(exd.replace(' EXD', ''))` в компоненте | `parseExd` из `domain/reward/parseExd.ts` | Парсинг/формат EXD — domain, без React |
+| 8 | `LifecycleActivityIcon` и отдельный `ActivityFeedIcon` union | `RewardEventIcon` в `domain/reward/types.ts` | Один union иконок; adapters мапят source types → `TransactionRowModel` |
+| 9 | `function FilterChip()` внутри `ActivityFeedScreen.tsx` | `components/ui/` если 2+ экрана или переиспользуемый паттерн | Screen-specific hero/tier/wallets — OK в screen; generic UI — в `components/ui/` |
+| 10 | `import from '../RewardDetailModal'` после move | Barrel `RewardDetailModal/index.ts`, grep старых путей | После move/rename: `npm run build`, grep deleted paths |
+| 11 | README «шаблон Figma → Vercel» для CE-3142 | README про Exness Rewards + ссылки на `ARCHITECTURE.md`, `REWARD_LIFECYCLE.md` | Доки описывают **этот** продукт, не generic template |
+
+**Также не делать:** новые npm без запроса; generic modal registry/factory; hero tier в shared UI; React в `domain/`; mock data в `screens/`; правки `.cursor/plans/`.
+
+## Слои и папки
+
+| Путь | Ответственность |
+|------|-----------------|
+| `src/domain/reward/` | Типы, парсеры (`parseExd`), feature flags, адаптеры данных → `TransactionRowModel`. **Без React.** |
+| `src/components/ui/` | Переиспользуемый UI (2+ экрана): `TransactionRow`, `SectionHeader`, `MobileScreenShell`, `BottomSheet`, `RewardEventIcon`. |
+| `src/components/reward/` | Доменные компоненты наград. `RewardDetailModal/` — папка с `configs/`, `parts/`, barrel `index.ts`. |
+| `src/screens/` | **Только композиция**: props из симулятора, callbacks в `App`, screen-local CSS. Фильтры ленты — `activityFeedFilter.ts`, `activityFeedTypes.ts`. |
+| `src/rewardLifecycle/` | Mock data симулятора: `lifecycleSteps.ts`, `feedGroupsData.ts`, `buildLoyaltyModalPack.ts`, `demoTimeline.ts`. |
+| `src/styles.css` | Глобальные `:root` токены + layout shell (`app-shell`, device frame). |
+
+`App.tsx` — маршрут, state симулятора, открытие модалки, `packOverride` через `buildLoyaltyModalPackOverride`.
+
+## Shared UI vs screen-specific
+
+**Вынести в `components/ui/`**, если паттерн повторяется на Rewards и Activity feed (или в 2+ местах):
+- строка транзакции → `TransactionRow` + adapters
+- заголовок секции → `SectionHeader`
+- status bar / nav / safe area → `MobileScreenShell`
+- filter bottom sheet → `BottomSheet` + `useBottomSheet`
+
+**Оставить в screen module**, если уникально для одного экрана:
+- **Hero Exness Rewards** (tier, progress, glow) — только `ExnessRewardsScreen.tsx` + `.module.css`
+- wallet cards, earn banner, lifetime cashback card
+- filter chips и их layout на Activity feed
+
+Modal hero (`DetailHero`) — в `RewardDetailModal/parts/`, не в shared UI.
+
+## Data vs UI
+
+```text
+lifecycleSteps  ──►  upcoming / activityPreview / feedGroups
+feedGroupsData  ──►  переиспользуемые G_MAR* группы
+transactionAdapters  ──►  TransactionRowModel  ──►  TransactionRow
+RewardDetailModal/configs  ──►  статический контент модалки
+buildLoyaltyModalPack  ──►  динамический PackConfig для loyalty (packOverride)
+```
+
+- Mock-цифры и сценарий — `REWARD_LIFECYCLE.md`; якорные даты — `demoTimeline.ts`.
+- Не дублировать разметку строк: данные → adapter → `TransactionRow`.
+
+## Добавить transaction type (лента / preview / upcoming)
+
+1. Расширить `RewardEventIcon` в `domain/reward/types.ts` при новой иконке.
+2. Добавить item в `feedGroupsData.ts` и/или шаг в `lifecycleSteps.ts` с полем `rewardModal`.
+3. При необходимости — новый `RewardModalVariant` (см. ниже).
+
+## Добавить modal variant
+
+1. Union в `components/reward/rewardModalTypes.ts`.
+2. **Pack** (hero + details + orders): `PackVariantKey` + запись в `configs/packConfigs.ts`; обновить `isPackVariant` в `configs/index.ts`.
+3. **Simple** (без orders): `SimpleVariantKey` + `configs/simpleConfigs.ts`.
+4. Loyalty, синхронизированный с симулятором: логика в `buildLoyaltyModalPack.ts`, не копировать orders в static config.
+
+## Добавить шаг симулятора
+
+1. Новый объект в `LIFECYCLE_STEPS` (`lifecycleSteps.ts`): wallets, upcoming, activityPreview, feedGroups.
+2. Переиспользовать группы из `feedGroupsData.ts`; не inline дублировать большие feed blocks.
+3. Обновить `REWARD_LIFECYCLE.md` при смене бизнес-цифр.
+
+## Feature flags
+
+Один файл: `domain/reward/featureFlags.ts` — `export const HIDE_* = true/false`.
+
+Компоненты импортируют флаг и **скрывают через CSS** (класс `*Hidden`), элемент остаётся в DOM. Не размазывать флаги по screens.
+
+## Стили
+
+- Компонент: co-located `*.module.css`.
+- Цвета/spacing/radius — `var(--…)` из `:root` в `styles.css`; новые токены добавлять туда, не хардкодить hex в модулях без причины.
+- Figma node-id — `data-node-id` на корне screen при сверке (`DESIGN.md`).
+
+## Checklist после изменений
+
+1. `npm run build` — без ошибок TypeScript.
+2. Симулятор: шаги 1→10, Назад/Далее.
+3. Rewards: wallets, tier progress, Upcoming/Activity → modal.
+4. Activity feed: Type + Date filters; lifetime cashback → feed с filter Cashback.
+5. Modals: все variants; orders list + drill-down.
+6. Mobile `<480px`: lifecycle rail не перекрывает контент.
+7. Grep: нет дублей icon switch, row markup, `HIDE_*` в screens, inline parseExd.
+
+## Git после крупных изменений (обязательно)
+
+**Крупные изменения** — рефакторинг, новый экран/flow, перенос файлов, >5 затронутых файлов или смена структуры папок.
+
+Если пользователь **не просил** «не коммить» / «без push»:
+
+1. `git status` + `git diff` — без `.env`, `.vercel`, секретов.
+2. `npm run build` — зелёный перед commit.
+3. Осмысленный commit (1 тема = 1 commit).
+4. `git push origin` (ветка `main` или текущая).
+
+Push не удался — описать ошибку, не имитировать успех.
+
+Подробнее: [`REFACTORING.md`](../../REFACTORING.md), [`ARCHITECTURE.md`](../../ARCHITECTURE.md).

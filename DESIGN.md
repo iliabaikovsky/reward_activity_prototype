@@ -29,6 +29,23 @@
 - **Upcoming:** в макете заголовок **без** chevron «провалиться» — в прототипе `showChevron={false}`.
 - **Вьюпорт:** рамка **375×812** (`device-frame`), скролл контента внутри, home indicator снизу рамки.
 
+## Node-id → компонент
+
+| Figma node | Компонент / файл | Примечание |
+|------------|------------------|------------|
+| `42104:10683` | `ExnessRewardsScreen` | `data-node-id` на корне экрана |
+| `42124:14876` | `ActivityFeedScreen` | Фильтры Type / Date, группы по дате |
+| `42137:26421` | `LifecycleSimulatorPanel` | Glass rail, шаги 1–10 |
+| `42104:17559` | `RewardDetailModal` — `loyalty-upcoming` | Pack + Last 3 orders |
+| `42104:17588` | `RewardDetailModal` — `loyalty-activated` | После activation |
+| `42104:17168` | `RewardDetailModal` — `cashback-upcoming` | Cashback pending |
+| `42104:17387` | `RewardDetailModal` — `cashback-activated` | Cashback credited |
+| — | `TransactionRow` | Строки Upcoming / preview / feed |
+| — | `BottomSheet` | Filter sheets (Type, Date) на Activity feed |
+| — | `MobileScreenShell` | Status bar, nav, bottom safe area |
+
+Конфиги модалок: `src/components/reward/RewardDetailModal/configs/`. Динамический loyalty pack: `buildLoyaltyModalPack.ts`.
+
 ## Референсы
 
 - Тикет: CE-3142

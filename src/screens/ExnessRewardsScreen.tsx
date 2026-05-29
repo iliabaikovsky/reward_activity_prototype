@@ -6,14 +6,14 @@ import {
   IconChevronLeft,
   IconChevronRight,
   IconCrown,
-  IconCrownOff,
-  IconCurrencyDollar,
-  IconGift,
   IconInfoCircle,
 } from '@tabler/icons-react'
+import { RewardEventIcon } from '../components/ui/RewardEventIcon'
+import { HIDE_TRANSACTION_BADGES } from '../domain/reward/featureFlags'
+import { parseExdAmount, parseWalletExdBalance } from '../domain/reward/parseExd'
+import type { RewardEventIcon as RewardEventIconKind } from '../domain/reward/types'
 import type { RewardModalVariant } from '../components/reward/rewardModalTypes'
 import type {
-  LifecycleActivityIcon,
   LifecycleActivityPreviewItem,
   LifecycleUpcomingItem,
 } from '../rewardLifecycle/lifecycleSteps'
@@ -22,19 +22,9 @@ import type { RebateDemoState } from '../rewardLifecycle/rebateSimulatorSteps'
 import { hasRebatePendingPayouts, parseSignedAmount } from '../rewardLifecycle/rebateSimulatorSteps'
 import styles from './ExnessRewardsScreen.module.css'
 
-/** Временно скрываем бейдж в разметке (элемент в DOM остаётся). Поставь false, чтобы снова показать. */
-const HIDE_TRANSACTION_BADGES = true
-
+/** Временно скрываем бейдж — см. domain/reward/featureFlags.ts */
 const TIER_EXD_GOAL = 1000
 type V2SummaryCurrencyPage = 'usd' | 'exd'
-
-/** Парсит сумму из строки вида "+3.20 EXD" */
-function parseExdFromAmountLabel(amount: string): number {
-  const m = amount.replace(/,/g, '').match(/([+-]?\d+(?:\.\d+)?)\s*EXD/i)
-  if (!m) return 0
-  const n = parseFloat(m[1])
-  return Number.isFinite(n) ? n : 0
-}
 
 /** Убирает знак +/-, оставляя формат суммы для UI-лейбла. */
 function unsignedAmountLabel(amount: string): string {
@@ -76,7 +66,7 @@ type SummaryPayoutEntry = {
   amount: number
   title: string
   line1: string
-  icon: LifecycleActivityIcon
+  icon: RewardEventIconKind
   program: 'loyalty' | 'rebates'
 }
 
@@ -261,7 +251,7 @@ function V2SummaryUpcomingBlock({
       {rows.map((row) => (
         <button key={row.id} type="button" className={styles.v2SummaryCell} onClick={row.onOpen}>
           <span className={styles.v2SummaryCellIcon}>
-            <RowIconTabler kind={row.icon} />
+            <RewardEventIcon kind={row.icon} />
           </span>
           <span className={styles.v2SummaryCellTitle}>{row.title}</span>
           <span className={styles.v2SummaryCellAmount}>{row.amount}</span>
@@ -669,7 +659,7 @@ type TxProps = {
 
 type V2UpcomingRowData = {
   id: string
-  icon: LifecycleActivityIcon
+  icon: RewardEventIconKind
   title: string
   amount: string
   line1: string
@@ -756,7 +746,7 @@ function V2UpcomingRow({
   const body = (
     <>
       <div className={styles.v2RowIcon}>
-        <RowIconTabler kind={row.icon} />
+        <RewardEventIcon kind={row.icon} />
       </div>
       <div className={styles.v2RowBody}>
         <div className={styles.v2RowHead}>
@@ -789,24 +779,6 @@ function V2UpcomingRow({
   }
 
   return <div className={styles.v2Row}>{body}</div>
-}
-
-function RowIconTabler({ kind }: { kind: LifecycleActivityIcon }) {
-  const common = { size: 24 as const, stroke: 1.75 as const, 'aria-hidden': true as const }
-  switch (kind) {
-    case 'dollar':
-      return <IconCurrencyDollar {...common} />
-    case 'crown':
-      return <IconCrown {...common} />
-    case 'gift':
-      return <IconGift {...common} />
-    case 'transfer':
-      return <IconArrowsRightLeft {...common} />
-    case 'crownOff':
-      return <IconCrownOff {...common} />
-    default:
-      return null
-  }
 }
 
 type ExnessRewardsScreenProps = {
@@ -846,9 +818,7 @@ export function ExnessRewardsScreen({
   const [v2SummaryCurrencyPage, setV2SummaryCurrencyPage] = useState<V2SummaryCurrencyPage | null>(
     null,
   )
-  const availableExdAmount = parseFloat(
-    availableRewardsExd.replace(/,/g, '').trim().split(/\s+/)[0] ?? '0',
-  )
+  const availableExdAmount = parseWalletExdBalance(availableRewardsExd)
   const canTransferToAccount =
     Number.isFinite(availableExdAmount) && availableExdAmount > 0
 
@@ -856,7 +826,7 @@ export function ExnessRewardsScreen({
     () =>
       upcomingItems
         .filter((row) => row.icon === 'crown')
-        .reduce((sum, row) => sum + Math.max(0, parseExdFromAmountLabel(row.amount)), 0),
+        .reduce((sum, row) => sum + Math.max(0, parseExdAmount(row.amount)), 0),
     [upcomingItems],
   )
 
@@ -1060,7 +1030,7 @@ export function ExnessRewardsScreen({
           activityPreviewItems.map((row) => (
             <TransactionRow
               key={row.id}
-              icon={<RowIconTabler kind={row.icon} />}
+              icon={<RewardEventIcon kind={row.icon} />}
               title={row.title}
               amount={row.amount}
               lines={row.lines}

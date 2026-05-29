@@ -1,0 +1,104 @@
+.statusBar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  height: 53px;
+  padding: 0 8px 8px;
+  position: relative;
+  z-index: 1;
+}
+
+.statusBarLight .statusTime {
+  color: #000;
+}
+
+.statusBarOnDark .statusTime {
+  color: var(--reward-text-on-dark);
+}
+
+.statusTime {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.41px;
+  line-height: 22px;
+  width: 54px;
+  text-align: center;
+}
+
+.statusBarLight .statusRight {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.statusBarOnDark .statusRight {
+  background: rgba(237, 240, 242, 0.35);
+}
+
+.statusRight {
+  width: 78px;
+  height: 13px;
+  border-radius: 2px;
+}
+
+.topNavBackOnly {
+  display: flex;
+  align-items: center;
+  min-height: 42px;
+  padding-left: 8px;
+}
+
+.topNavTitleActions {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  min-height: 42px;
+  position: relative;
+  z-index: 1;
+}
+
+.navBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.navBtnLight {
+  color: var(--reward-text-primary);
+}
+
+.navBtnOnDark {
+  color: var(--reward-text-on-dark);
+}
+
+.navTitle {
+  margin: 0;
+  justify-self: center;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 22px;
+  text-align: center;
+  color: var(--reward-text-on-dark);
+}
+
+.topNavTitleActions > div:last-child {
+  justify-self: end;
+  margin-right: 8px;
+}
+
+.bottomSafe {
+  height: 20px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 480px) {
+  .bottomSafe {
+    height: 8px;
+  }
+}

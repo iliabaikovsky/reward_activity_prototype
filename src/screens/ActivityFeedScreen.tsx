@@ -1,20 +1,16 @@
-import { createPortal } from 'react-dom'
-import { useEffect, useId, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import {
-  IconArrowsRightLeft,
   IconCalendar,
-  IconCheck,
   IconChevronDown,
-  IconChevronLeft,
-  IconCrown,
-  IconCrownOff,
-  IconCurrencyDollar,
-  IconGift,
-  IconX,
+  IconCheck,
 } from '@tabler/icons-react'
 import type { RewardModalVariant } from '../components/reward/rewardModalTypes'
-import { useDeviceFrameEl } from '../context/DeviceFrameContext'
-import type { ActivityFeedItem } from '../rewardLifecycle/activityFeedModel'
+import { BottomSheet } from '../components/ui/BottomSheet'
+import { MobileBottomSafe, MobileStatusBar, MobileTopNav } from '../components/ui/MobileScreenShell'
+import { TransactionRow } from '../components/ui/TransactionRow'
+import { HIDE_DAY_SUMMARY } from '../domain/reward/featureFlags'
+import { fromActivityFeedItem } from '../domain/reward/transactionAdapters'
+import type { ActivityFeedGroup } from '../rewardLifecycle/activityFeedModel'
 import {
   DATE_PRESET_LABELS,
   TYPE_FILTER_LABELS,
@@ -24,176 +20,8 @@ import {
 import { filterFeedGroups } from './activityFeedFilter'
 import styles from './ActivityFeedScreen.module.css'
 
-/** Временно скрыть сумму за день в шапке группы. Поставь false — снова покажется. */
-const HIDE_DAY_SUMMARY = true
-
 const TYPE_OPTIONS: ActivityTypeFilter[] = ['all', 'rewards', 'cashback', 'transfers', 'others']
 const DATE_OPTIONS: ActivityDatePreset[] = ['all', 'last7', 'last30', 'thisMonth']
-
-function RowIcon({ type }: { type: ActivityFeedItem['icon'] }) {
-  const common = { size: 24 as const, stroke: 1.75 as const, 'aria-hidden': true as const }
-  switch (type) {
-    case 'dollar':
-      return <IconCurrencyDollar {...common} />
-    case 'crown':
-      return <IconCrown {...common} />
-    case 'gift':
-      return <IconGift {...common} />
-    case 'transfer':
-      return <IconArrowsRightLeft {...common} />
-    case 'crownOff':
-      return <IconCrownOff {...common} />
-    default:
-      return null
-  }
-}
-
-function FeedRow({
-  item,
-  onOpenRewardModal,
-}: {
-  item: ActivityFeedItem
-  onOpenRewardModal?: (variant: RewardModalVariant, feedItemId: string) => void
-}) {
-  const amountClass =
-    item.amountTone === 'positive'
-      ? styles.amountPositive
-      : item.amountTone === 'negative'
-        ? styles.amountNegative
-        : styles.amountNeutral
-
-  const inner = (
-    <>
-      <div className={styles.iconWrap}>
-        <RowIcon type={item.icon} />
-      </div>
-      <div className={styles.body}>
-        <div className={styles.head}>
-          <p className={styles.rowTitle}>{item.title}</p>
-          <p className={`${styles.amount} ${amountClass}`}>{item.amount}</p>
-        </div>
-        <div className={styles.descRow}>
-          <div className={styles.desc}>
-            {item.lines.map((line) => (
-              <p key={line}>{line}</p>
-            ))}
-          </div>
-          <p className={styles.time}>{item.time}</p>
-        </div>
-      </div>
-    </>
-  )
-
-  if (onOpenRewardModal) {
-    return (
-      <button
-        type="button"
-        className={styles.rowClickable}
-        onClick={() => onOpenRewardModal(item.rewardModal, item.id)}
-      >
-        {inner}
-      </button>
-    )
-  }
-
-  return <div className={styles.row}>{inner}</div>
-}
-
-type FilterSheetProps<T extends string> = {
-  title: string
-  open: boolean
-  onClose: () => void
-  options: readonly T[]
-  selected: T
-  onSelect: (v: T) => void
-  labelFor: (v: T) => string
-}
-
-function FilterSheet<T extends string>({
-  title,
-  open,
-  onClose,
-  options,
-  selected,
-  onSelect,
-  labelFor,
-}: FilterSheetProps<T>) {
-  const titleId = useId()
-  const deviceFrameEl = useDeviceFrameEl()
-
-  useEffect(() => {
-    if (!open) return
-    const prevBody = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    const scrollEl = deviceFrameEl?.querySelector<HTMLElement>('.device-frame-scroll') ?? null
-    const prevScroll = scrollEl?.style.overflow ?? ''
-    if (scrollEl) scrollEl.style.overflow = 'hidden'
-    return () => {
-      document.body.style.overflow = prevBody
-      if (scrollEl) scrollEl.style.overflow = prevScroll
-    }
-  }, [open, deviceFrameEl])
-
-  useEffect(() => {
-    if (!open) return
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [open, onClose])
-
-  if (!open) return null
-
-  const overlay = (
-    <div className={styles.sheetOverlay} role="presentation">
-      <button type="button" className={styles.sheetBackdrop} onClick={onClose} aria-label="Close" />
-      <div
-        className={styles.sheetPanel}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-      >
-        <div className={styles.sheetGrab} aria-hidden />
-        <header className={styles.sheetHeader}>
-          <h2 className={styles.sheetTitle} id={titleId}>
-            {title}
-          </h2>
-          <button type="button" className={styles.sheetCloseBtn} onClick={onClose} aria-label="Close">
-            <IconX size={22} stroke={2} aria-hidden />
-          </button>
-        </header>
-        <div className={styles.sheetList} role="listbox">
-          {options.map((opt) => {
-            const isSel = opt === selected
-            return (
-              <button
-                key={opt}
-                type="button"
-                role="option"
-                aria-selected={isSel}
-                className={`${styles.sheetOption} ${isSel ? styles.sheetOptionSelected : ''}`}
-                onClick={() => {
-                  onSelect(opt)
-                  onClose()
-                }}
-              >
-                <span className={styles.sheetOptionLabel}>{labelFor(opt)}</span>
-                {isSel ? (
-                  <IconCheck className={styles.sheetCheck} size={22} stroke={2} aria-hidden />
-                ) : (
-                  <span className={styles.sheetCheckSpacer} aria-hidden />
-                )}
-              </button>
-            )
-          })}
-        </div>
-      </div>
-    </div>
-  )
-
-  return deviceFrameEl ? createPortal(overlay, deviceFrameEl) : overlay
-}
 
 type Props = {
   onBack: () => void
@@ -224,16 +52,9 @@ export function ActivityFeedScreen({
 
   return (
     <div className={styles.screen} data-node-id="42124:14876">
-      <div className={styles.statusBar}>
-        <span className={styles.statusTime}>9:41</span>
-        <span className={styles.statusRight} aria-hidden />
-      </div>
+      <MobileStatusBar theme="light" />
 
-      <header className={styles.topNav}>
-        <button type="button" className={styles.backBtn} onClick={onBack} aria-label="Back">
-          <IconChevronLeft size={24} stroke={2} aria-hidden />
-        </button>
-      </header>
+      <MobileTopNav theme="light" navVariant="backOnly" onBack={onBack} />
 
       <div className={styles.titleBlock}>
         <h1 className={styles.pageTitle}>Activity feed</h1>
@@ -292,10 +113,14 @@ export function ActivityFeedScreen({
                 </p>
               </div>
               {group.items.map((item) => (
-                <FeedRow
+                <TransactionRow
                   key={item.id}
-                  item={item}
-                  onOpenRewardModal={onOpenRewardModal}
+                  {...fromActivityFeedItem(item)}
+                  onClick={
+                    onOpenRewardModal
+                      ? () => onOpenRewardModal(item.rewardModal, item.id)
+                      : undefined
+                  }
                 />
               ))}
             </section>
@@ -303,26 +128,71 @@ export function ActivityFeedScreen({
         )}
       </div>
 
-      <div className={styles.bottomSafe} aria-hidden />
+      <MobileBottomSafe />
 
-      <FilterSheet
+      <BottomSheet
         title="Type"
         open={typeSheetOpen}
         onClose={() => setTypeSheetOpen(false)}
-        options={TYPE_OPTIONS}
-        selected={typeFilter}
-        onSelect={onTypeFilterChange}
-        labelFor={(v) => TYPE_FILTER_LABELS[v]}
-      />
-      <FilterSheet
+      >
+        <div className={styles.sheetList} role="listbox">
+          {TYPE_OPTIONS.map((opt) => {
+            const isSel = opt === typeFilter
+            return (
+              <button
+                key={opt}
+                type="button"
+                role="option"
+                aria-selected={isSel}
+                className={`${styles.sheetOption} ${isSel ? styles.sheetOptionSelected : ''}`}
+                onClick={() => {
+                  onTypeFilterChange(opt)
+                  setTypeSheetOpen(false)
+                }}
+              >
+                <span className={styles.sheetOptionLabel}>{TYPE_FILTER_LABELS[opt]}</span>
+                {isSel ? (
+                  <IconCheck className={styles.sheetCheck} size={22} stroke={2} aria-hidden />
+                ) : (
+                  <span className={styles.sheetCheckSpacer} aria-hidden />
+                )}
+              </button>
+            )
+          })}
+        </div>
+      </BottomSheet>
+
+      <BottomSheet
         title="Date"
         open={dateSheetOpen}
         onClose={() => setDateSheetOpen(false)}
-        options={DATE_OPTIONS}
-        selected={datePreset}
-        onSelect={onDatePresetChange}
-        labelFor={(v) => DATE_PRESET_LABELS[v]}
-      />
+      >
+        <div className={styles.sheetList} role="listbox">
+          {DATE_OPTIONS.map((opt) => {
+            const isSel = opt === datePreset
+            return (
+              <button
+                key={opt}
+                type="button"
+                role="option"
+                aria-selected={isSel}
+                className={`${styles.sheetOption} ${isSel ? styles.sheetOptionSelected : ''}`}
+                onClick={() => {
+                  onDatePresetChange(opt)
+                  setDateSheetOpen(false)
+                }}
+              >
+                <span className={styles.sheetOptionLabel}>{DATE_PRESET_LABELS[opt]}</span>
+                {isSel ? (
+                  <IconCheck className={styles.sheetCheck} size={22} stroke={2} aria-hidden />
+                ) : (
+                  <span className={styles.sheetCheckSpacer} aria-hidden />
+                )}
+              </button>
+            )
+          })}
+        </div>
+      </BottomSheet>
     </div>
   )
 }

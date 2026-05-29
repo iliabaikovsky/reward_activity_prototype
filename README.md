@@ -1,56 +1,49 @@
-# Шаблон: прототип по Figma → Vite + React → Vercel
+# Exness Rewards — reward activity prototype (CE-3142)
 
-Готовая папка для старта любого UI-прототипа: локальная разработка и деплой на Vercel. Рабочий процесс с дизайном — через ссылку на Figma и агента в Cursor (Figma MCP).
+Интерактивный мобильный прототип **Exness Rewards** и **Activity feed**: кошельки EXD, tier progress, Upcoming, bottom sheets с деталями транзакций, симулятор жизненного цикла EXD/Cashback на 10 шагов.
 
-## Важно: где ставить зависимости
+Стек: **React 18**, **TypeScript**, **Vite 6**, деплой на **Vercel**.
 
-**В этом каталоге шаблона не нужно запускать `npm install`** (можно держать его в workshop без `node_modules`).
+## Быстрый старт
 
-1. **Скопируй всю папку** в новое место → там открой проект в Cursor и **только там** выполни `npm install` / `npm run dev` / `npm run build`.
+```bash
+npm install
+npm run dev
+npm run build   # перед деплоем
+```
 
-2. Пошаговый список после копирования — в **`COPY_CHECKLIST.md`**.
+Откройте локально, переключайте шаги симулятора (glass rail справа) и проверяйте экраны Rewards и Activity feed.
 
-## Быстрый старт (после копирования в новый проект)
+## Что внутри
 
-1. **Скопируйте всю папку** `figma-vercel-prototype-template` в новое место и переименуйте (например `my-flow-prototype`).
-2. Откройте **корень копии** в Cursor (чтобы работали `.cursor/rules`).
-3. В **`DESIGN.md`** вставьте ссылку на макет и краткий контекст (экраны, брейкпоинты).
-4. В **`package.json`** поменяйте поле `name` под проект.
-5. В терминале **в корне копии**:
+| Область | Описание |
+|---------|----------|
+| **Exness Rewards** | Hero tier, кошельки, Upcoming, Lifetime cashback, превью ленты |
+| **Activity feed** | Полная лента, фильтры Type / Date (bottom sheet) |
+| **RewardDetailModal** | Детали loyalty/cashback packs, orders drill-down |
+| **Lifecycle simulator** | 10 шагов mock-сценария из `REWARD_LIFECYCLE.md` |
 
-   ```bash
-   npm install
-   npm run dev
-   ```
+## Документация
 
-6. В Cursor напишите агенту, например:  
-   *«Вот ссылка на Figma: … Сверстай экран X по `DESIGN.md`, стек как в шаблоне.»*
+| Файл | Содержание |
+|------|------------|
+| [`ARCHITECTURE.md`](ARCHITECTURE.md) | Поток данных, слои, regression checklist |
+| [`REFACTORING.md`](REFACTORING.md) | Структура после рефакторинга, антипаттерны |
+| [`REWARD_LIFECYCLE.md`](REWARD_LIFECYCLE.md) | Бизнес-сценарий EXD/Cashback и цифры для моков |
+| [`DESIGN.md`](DESIGN.md) | Figma node-id → компоненты, чеклист сверки |
+| [`DEPLOY.md`](DEPLOY.md) | Vercel, Basic Auth |
+| [`FIGMA_CURSOR.md`](FIGMA_CURSOR.md) | Figma MCP и агент в Cursor |
 
-7. Деплой: см. **`DEPLOY.md`** — автодеплой через **Git push** (подключи репо в Vercel) или разово **`npm run deploy`** (после `npx vercel login`).
+Cursor rule для структуры кода: [`.cursor/rules/reward-prototype-refactor.mdc`](.cursor/rules/reward-prototype-refactor.mdc).
 
-## Что уже настроено
+## Figma
 
-| Файл / папка | Назначение |
-|--------------|------------|
-| `vercel.json` | Vite, `dist`, SPA-rewrite на `index.html` |
-| `DEPLOY.md` | Vercel CLI и веб-импорт |
-| `DESIGN.md` | **Ваши** ссылка на Figma, node-id, заметки |
-| `FIGMA_CURSOR.md` | Как работать с агентом и Figma MCP |
-| `COPY_CHECKLIST.md` | Что сделать после копирования папки |
-| `.cursor/rules/` | Подсказки агенту для этого типа проекта |
+Макет: [Reward activity update — CE-3142](https://www.figma.com/design/zjgmQn0VBkQOTQdhAHF8G0/Reward-activity-update---CE-3142?node-id=42104-10683) — подробности в **`DESIGN.md`**.
 
-## Стек
+## Деплой
 
-- React 18 + TypeScript  
-- Vite 6  
-- Vercel (preview / production)
+См. **`DEPLOY.md`**: Git push → Vercel или `npm run deploy` после `npx vercel login`.
 
-Опционально можно добавить иконки (`@tabler/icons-react`) или другие библиотеки — как в вашем основном прототипе.
+---
 
-## После копирования шаблона
-
-- Обновите `<title>` в `index.html`.
-- Подключите шрифты из Figma в `index.html` или через `@font-face` в `src/styles.css`.
-- Замените заглушку в `src/App.tsx` на реальные экраны.
-
-Подробный сценарий «кинул ссылку — сделали» — в **`FIGMA_CURSOR.md`**.
+Этот репозиторий — **продуктовый прототип CE-3142**, не generic шаблон. Для форка «пустого» Figma → Vercel шаблона см. заметку в [`COPY_CHECKLIST.md`](COPY_CHECKLIST.md).

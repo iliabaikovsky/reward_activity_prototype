@@ -1,0 +1,154 @@
+.row {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--reward-border);
+}
+
+.row:last-child {
+  border-bottom: none;
+}
+
+.rowClickable {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  width: 100%;
+  margin: 0;
+  padding: 16px 0;
+  border: none;
+  border-bottom: 1px solid var(--reward-border);
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  color: inherit;
+  cursor: pointer;
+  border-radius: 0;
+}
+
+.rowClickable:last-child {
+  border-bottom: none;
+}
+
+.rowClickable:focus-visible {
+  outline: 2px solid var(--reward-info-content);
+  outline-offset: 2px;
+}
+
+.iconWrap {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: 1000px;
+  background: var(--reward-steel);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--reward-text-primary);
+}
+
+.body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+}
+
+.title {
+  flex: 1;
+  margin: 0;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--reward-text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.titleWithBadge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.titleWithBadge .title {
+  flex: 0 1 auto;
+}
+
+.badge {
+  flex-shrink: 0;
+  min-width: 20px;
+  padding: 2px 6px;
+  border-radius: 100px;
+  background: #141d22;
+  color: #fff;
+  font-size: 12px;
+  line-height: 16px;
+  text-align: center;
+}
+
+.badgeHidden {
+  display: none !important;
+}
+
+.amount {
+  margin: 0;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--reward-text-primary);
+  white-space: nowrap;
+}
+
+.amountPositive {
+  color: var(--activity-amount-positive, #0d7a4f);
+}
+
+.amountNeutral {
+  color: var(--reward-text-primary);
+}
+
+.amountNegative {
+  color: var(--reward-text-primary);
+}
+
+.descRow {
+  display: flex;
+  gap: 4px;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.desc {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.desc p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--reward-text-secondary);
+}
+
+.trailing {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--reward-text-secondary);
+  text-align: right;
+  white-space: nowrap;
+}

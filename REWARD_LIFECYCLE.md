@@ -286,13 +286,13 @@ Trade
 
 ## 14. Чеклист для реализации в UI
 
-- [ ] Пустое состояние: Upcoming / Available / лента согласованы с §0  
-- [ ] Upcoming: отдельные карточки для **Loyalty** (EXD) и **Cashback pending** (USD)  
-- [ ] Пачка loyalty: сумма = сумма ордеров; модалка — **Last 3 orders** + полный список  
-- [ ] Лента: тип строки ↔ `system type` из §11; фильтры **Type** / **Date**  
-- [ ] После `reward_activation` пачка исчезает из Upcoming и появляется одна строка в ленте  
-- [ ] `cashback` снимает соответствующий pending в Upcoming  
-- [ ] `special_reward` увеличивает Available и виден в ленте (и в демо-модалке при клике)
+- [x] Пустое состояние: Upcoming / Available / лента согласованы с §0  
+- [x] Upcoming: отдельные карточки для **Loyalty** (EXD) и **Cashback pending** (USD)  
+- [x] Пачка loyalty: сумма = сумма ордеров; модалка — **Last 3 orders** + полный список  
+- [x] Лента: тип строки ↔ `system type` из §11; фильтры **Type** / **Date**  
+- [x] После `reward_activation` пачка исчезает из Upcoming и появляется одна строка в ленте  
+- [x] `cashback` снимает соответствующий pending в Upcoming  
+- [x] `special_reward` увеличивает Available и виден в ленте (и в демо-модалке при клике)
 
 ---
 

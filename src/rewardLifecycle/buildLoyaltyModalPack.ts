@@ -1,20 +1,9 @@
-import type { PackConfig, OrderInPack } from '../components/reward/RewardDetailModal'
+import type { PackConfig, OrderInPack } from '../components/reward/RewardDetailModal/configs'
 import type { RewardModalVariant } from '../components/reward/rewardModalTypes'
+import { formatExd, parseExdAbsolute } from '../domain/reward/parseExd'
 import type { ActivityFeedItem } from './activityFeedModel'
 import { UPCOMING_ACTIVATION_DATETIME } from './demoTimeline'
 import type { LifecycleActivityPreviewItem, LifecycleStep, LifecycleUpcomingItem } from './lifecycleSteps'
-
-function parseExdTotal(amount: string): number {
-  const m = amount.replace(/,/g, '').match(/([+-]?\d+(?:\.\d+)?)\s*EXD/i)
-  if (!m) return 0
-  const n = parseFloat(m[1])
-  return Number.isFinite(n) ? Math.abs(n) : 0
-}
-
-function formatExd(n: number): string {
-  const sign = n >= 0 ? '+' : ''
-  return `${sign}${n.toFixed(2)} EXD`
-}
 
 /** Разбить сумму на `parts` частей с точной суммой в центах */
 function splitExdTotal(total: number, parts: number): number[] {
@@ -148,7 +137,7 @@ function packFromUpcomingLike(
 }
 
 export function buildLoyaltyPackFromUpcomingRow(row: LifecycleUpcomingItem): PackConfig {
-  const total = parseExdTotal(row.amount)
+  const total = parseExdAbsolute(row.amount)
   return packFromUpcomingLike(
     total,
     row.badge,
@@ -161,7 +150,7 @@ export function buildLoyaltyPackFromUpcomingRow(row: LifecycleUpcomingItem): Pac
 }
 
 export function buildLoyaltyPackFromActivityPreview(row: LifecycleActivityPreviewItem): PackConfig {
-  const total = parseExdTotal(row.amount)
+  const total = parseExdAbsolute(row.amount)
   const periodLabel = extractActivatedPeriodFromLines(row.lines)
   const count = inferOrderCount(total, undefined)
   const parts = splitExdTotal(total, count)
@@ -185,7 +174,7 @@ export function buildLoyaltyPackFromFeedItem(
   groupDateLabel: string,
   time: string,
 ): PackConfig {
-  const total = parseExdTotal(item.amount)
+  const total = parseExdAbsolute(item.amount)
   const periodLabel = extractActivatedPeriodFromLines(item.lines)
   const count = inferOrderCount(total, undefined)
   const parts = splitExdTotal(total, count)
