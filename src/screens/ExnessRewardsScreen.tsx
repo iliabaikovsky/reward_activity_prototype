@@ -52,19 +52,25 @@ function fmtSignedAmount(value: number, currency: 'USD' | 'EXD'): string {
 }
 
 /** Upcoming USD: сумма строк cashback (icon dollar) из lifecycle. */
-function upcomingUsdTotal(items: LifecycleUpcomingItem[]): string {
-  const sum = items
+function upcomingUsdSum(items: LifecycleUpcomingItem[]): number {
+  return items
     .filter((row) => row.icon === 'dollar')
     .reduce((acc, row) => acc + Math.max(0, parseSignedAmount(row.amount)), 0)
-  return fmtSignedAmount(sum, 'USD')
+}
+
+function upcomingUsdTotal(items: LifecycleUpcomingItem[]): string {
+  return fmtSignedAmount(upcomingUsdSum(items), 'USD')
 }
 
 /** Upcoming EXD: сумма строк loyalty (icon crown) из lifecycle. */
-function upcomingExdTotal(items: LifecycleUpcomingItem[]): string {
-  const sum = items
+function upcomingExdSum(items: LifecycleUpcomingItem[]): number {
+  return items
     .filter((row) => row.icon === 'crown')
     .reduce((acc, row) => acc + Math.max(0, parseExdAmount(row.amount)), 0)
-  return fmtSignedAmount(sum, 'EXD')
+}
+
+function upcomingExdTotal(items: LifecycleUpcomingItem[]): string {
+  return fmtSignedAmount(upcomingExdSum(items), 'EXD')
 }
 
 type SummaryPayoutEntry = {
@@ -167,32 +173,40 @@ function SectionTitle({
 }
 
 function V2SummaryUpcomingBlock({
+  showUsd,
+  showExd,
   usdAmount,
   exdAmount,
   onOpenUsd,
   onOpenExd,
 }: {
+  showUsd: boolean
+  showExd: boolean
   usdAmount: string
   exdAmount: string
   onOpenUsd: () => void
   onOpenExd: () => void
 }) {
   const rows = [
-    {
-      id: 'summary-cashback',
-      icon: 'dollar' as const,
-      title: 'Cashback',
-      amount: usdAmount,
-      onOpen: onOpenUsd,
-    },
-    {
-      id: 'summary-rewards',
-      icon: 'crown' as const,
-      title: 'Rewards',
-      amount: exdAmount,
-      onOpen: onOpenExd,
-    },
-  ]
+    showUsd
+      ? {
+          id: 'summary-cashback',
+          icon: 'dollar' as const,
+          title: 'Cashback',
+          amount: usdAmount,
+          onOpen: onOpenUsd,
+        }
+      : null,
+    showExd
+      ? {
+          id: 'summary-rewards',
+          icon: 'crown' as const,
+          title: 'Rewards',
+          amount: exdAmount,
+          onOpen: onOpenExd,
+        }
+      : null,
+  ].filter((row): row is NonNullable<typeof row> => row !== null)
   return (
     <div className={styles.v2SummaryList}>
       {rows.map((row) => (
@@ -496,6 +510,12 @@ export function ExnessRewardsScreen({
         maximumFractionDigits: 2,
       })
 
+  const upcomingUsd = useMemo(() => upcomingUsdSum(upcomingItems), [upcomingItems])
+  const upcomingExd = useMemo(() => upcomingExdSum(upcomingItems), [upcomingItems])
+  const showUpcomingUsd = upcomingUsd > 0
+  const showUpcomingExd = upcomingExd > 0
+  const showUpcomingSection = showUpcomingUsd || showUpcomingExd
+
   const v4SummaryUsdLabel = useMemo(
     () => unsignedAmountLabel(upcomingUsdTotal(upcomingItems)),
     [upcomingItems],
@@ -650,13 +670,19 @@ export function ExnessRewardsScreen({
         </div>
 
         <div className={styles.sectionSpacer} aria-hidden />
-        <SectionTitle title="Upcoming" showChevron={false} />
-        <V2SummaryUpcomingBlock
-          usdAmount={v4SummaryUsdLabel}
-          exdAmount={v4SummaryExdLabel}
-          onOpenUsd={() => setV2SummaryCurrencyPage('usd')}
-          onOpenExd={() => setV2SummaryCurrencyPage('exd')}
-        />
+        {showUpcomingSection ? (
+          <>
+            <SectionTitle title="Upcoming" showChevron={false} />
+            <V2SummaryUpcomingBlock
+              showUsd={showUpcomingUsd}
+              showExd={showUpcomingExd}
+              usdAmount={v4SummaryUsdLabel}
+              exdAmount={v4SummaryExdLabel}
+              onOpenUsd={() => setV2SummaryCurrencyPage('usd')}
+              onOpenExd={() => setV2SummaryCurrencyPage('exd')}
+            />
+          </>
+        ) : null}
 
         <div className={styles.sectionSpacer} aria-hidden />
         <SectionTitle
