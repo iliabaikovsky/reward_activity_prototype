@@ -18,8 +18,7 @@ import type {
 } from '../rewardLifecycle/lifecycleSteps'
 import type { ActivityTypeFilter } from './activityFeedTypes'
 import { getLoyaltyUpcomingSlots, parseDemoToday } from '../rewardLifecycle/demoTimeline'
-import type { RebateDemoState } from '../rewardLifecycle/rebateSimulatorSteps'
-import { hasRebatePendingPayouts, parseSignedAmount } from '../rewardLifecycle/rebateSimulatorSteps'
+import { parseSignedAmount } from '../rewardLifecycle/rebateSimulatorSteps'
 import styles from './ExnessRewardsScreen.module.css'
 
 /** Временно скрываем бейдж — см. domain/reward/featureFlags.ts */
@@ -52,12 +51,20 @@ function fmtSignedAmount(value: number, currency: 'USD' | 'EXD'): string {
   return `+${value.toFixed(2)} ${currency}`
 }
 
-/** Upcoming USD в V2 Summary: без on-hold суммы (hold показывается только в алерте). */
-function rebatePendingUsdExcludingHold(rebate: RebateDemoState): string {
-  if (!rebate.showAccountAlert) return rebate.pendingUsd
-  const pending = parseSignedAmount(rebate.pendingUsd)
-  const hold = parseSignedAmount(rebate.onHoldUsdAmount)
-  return fmtSignedAmount(Math.max(0, pending - hold), 'USD')
+/** Upcoming USD: сумма строк cashback (icon dollar) из lifecycle. */
+function upcomingUsdTotal(items: LifecycleUpcomingItem[]): string {
+  const sum = items
+    .filter((row) => row.icon === 'dollar')
+    .reduce((acc, row) => acc + Math.max(0, parseSignedAmount(row.amount)), 0)
+  return fmtSignedAmount(sum, 'USD')
+}
+
+/** Upcoming EXD: сумма строк loyalty (icon crown) из lifecycle. */
+function upcomingExdTotal(items: LifecycleUpcomingItem[]): string {
+  const sum = items
+    .filter((row) => row.icon === 'crown')
+    .reduce((acc, row) => acc + Math.max(0, parseExdAmount(row.amount)), 0)
+  return fmtSignedAmount(sum, 'EXD')
 }
 
 type SummaryPayoutEntry = {
@@ -424,12 +431,10 @@ function V2UpcomingRow({
 }
 
 type ExnessRewardsScreenProps = {
-  /** Сброс локального UI при смене сценария симулятора. */
-  rebateScenarioId: string
-  rebateDemo: RebateDemoState
+  /** Сброс локального UI при смене шага симулятора. */
+  simulatorStepId: string
   /** `category: 'cashback'` — с Lifetime cashback; без opts — с Activity feed */
   onOpenActivityFeed?: (opts?: { category?: ActivityTypeFilter }) => void
-  onOpenRebateLedger?: () => void
   onOpenRewardModal?: (variant: RewardModalVariant, feedItemId?: string) => void
   availableRewardsExd: string
   tradingWalletLabel: string
@@ -443,10 +448,8 @@ type ExnessRewardsScreenProps = {
 }
 
 export function ExnessRewardsScreen({
-  rebateScenarioId,
-  rebateDemo,
+  simulatorStepId,
   onOpenActivityFeed,
-  onOpenRebateLedger,
   onOpenRewardModal,
   availableRewardsExd,
   tradingWalletLabel,
@@ -494,13 +497,18 @@ export function ExnessRewardsScreen({
       })
 
   const v4SummaryUsdLabel = useMemo(
-    () => unsignedAmountLabel(rebatePendingUsdExcludingHold(rebateDemo)),
-    [rebateDemo],
+    () => unsignedAmountLabel(upcomingUsdTotal(upcomingItems)),
+    [upcomingItems],
+  )
+
+  const v4SummaryExdLabel = useMemo(
+    () => unsignedAmountLabel(upcomingExdTotal(upcomingItems)),
+    [upcomingItems],
   )
 
   useEffect(() => {
     setV2SummaryCurrencyPage(null)
-  }, [rebateScenarioId])
+  }, [simulatorStepId])
 
   useEffect(() => {
     scrollDeviceFrameToTop()
@@ -515,8 +523,8 @@ export function ExnessRewardsScreen({
             currency={v2SummaryCurrencyPage}
             totalLabel={
               v2SummaryCurrencyPage === 'usd'
-                ? rebatePendingUsdExcludingHold(rebateDemo)
-                : rebateDemo.pendingExd
+                ? upcomingUsdTotal(upcomingItems)
+                : upcomingExdTotal(upcomingItems)
             }
             onBack={() => setV2SummaryCurrencyPage(null)}
           />
@@ -645,7 +653,7 @@ export function ExnessRewardsScreen({
         <SectionTitle title="Upcoming" showChevron={false} />
         <V2SummaryUpcomingBlock
           usdAmount={v4SummaryUsdLabel}
-          exdAmount={unsignedAmountLabel(rebateDemo.pendingExd)}
+          exdAmount={v4SummaryExdLabel}
           onOpenUsd={() => setV2SummaryCurrencyPage('usd')}
           onOpenExd={() => setV2SummaryCurrencyPage('exd')}
         />

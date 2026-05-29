@@ -3,22 +3,17 @@ import { RewardDetailModal } from './components/reward/RewardDetailModal'
 import type { RewardModalVariant } from './components/reward/rewardModalTypes'
 import { buildLoyaltyModalPackOverride } from './rewardLifecycle/buildLoyaltyModalPack'
 import { LifecycleSimulatorPanel } from './rewardLifecycle/LifecycleSimulatorPanel'
-import {
-  REBATE_SIMULATOR_DEFAULT_INDEX,
-  REBATE_SIMULATOR_STEPS,
-} from './rewardLifecycle/rebateSimulatorSteps'
+import { LIFECYCLE_STEPS } from './rewardLifecycle/lifecycleSteps'
 import { DeviceFrameProvider } from './context/DeviceFrameContext'
 import { ActivityFeedScreen } from './screens/ActivityFeedScreen'
 import type { ActivityDatePreset, ActivityTypeFilter } from './screens/activityFeedTypes'
 import { ExnessRewardsScreen } from './screens/ExnessRewardsScreen'
-import { SpreadRebateLedgerScreen } from './screens/SpreadRebateLedgerScreen'
 
-type Route = 'rewards' | 'activity' | 'rebateLedger'
+type Route = 'rewards' | 'activity'
 
 function App() {
-  const [rebateStepIndex, setRebateStepIndex] = useState(REBATE_SIMULATOR_DEFAULT_INDEX)
-  const rebateScenario = REBATE_SIMULATOR_STEPS[rebateStepIndex]
-  const lifecycle = rebateScenario.lifecycle
+  const [lifecycleStepIndex, setLifecycleStepIndex] = useState(0)
+  const lifecycle = LIFECYCLE_STEPS[lifecycleStepIndex]
 
   const [route, setRoute] = useState<Route>('rewards')
   const [rewardModal, setRewardModal] = useState<{
@@ -35,7 +30,7 @@ function App() {
 
   useEffect(() => {
     scrollRef.current?.scrollTo(0, 0)
-  }, [rebateStepIndex])
+  }, [lifecycleStepIndex])
 
   const openActivity = (opts?: { category?: ActivityTypeFilter; datePreset?: ActivityDatePreset }) => {
     setActivityTypeFilter(opts?.category ?? 'all')
@@ -53,18 +48,10 @@ function App() {
       <div className="demo-workbench">
         <DeviceFrameProvider>
           <div className="device-frame-scroll" ref={scrollRef}>
-            {route === 'rebateLedger' ? (
-              <SpreadRebateLedgerScreen
-                onBack={() => setRoute('rewards')}
-                rebateDemo={rebateScenario.rebate}
-                rebateScenarioId={rebateScenario.id}
-              />
-            ) : route === 'rewards' ? (
+            {route === 'rewards' ? (
               <ExnessRewardsScreen
-                rebateScenarioId={rebateScenario.id}
-                rebateDemo={rebateScenario.rebate}
+                simulatorStepId={lifecycle.id}
                 onOpenActivityFeed={(opts) => openActivity(opts)}
-                onOpenRebateLedger={() => setRoute('rebateLedger')}
                 onOpenRewardModal={(v, id) => setRewardModal({ variant: v, feedItemId: id })}
                 availableRewardsExd={lifecycle.availableRewardsExd}
                 tradingWalletLabel={lifecycle.tradingWalletLabel}
@@ -98,9 +85,9 @@ function App() {
         </DeviceFrameProvider>
         <div className="demo-workbench-simulator">
           <LifecycleSimulatorPanel
-            steps={REBATE_SIMULATOR_STEPS}
-            stepIndex={rebateStepIndex}
-            onStepIndexChange={setRebateStepIndex}
+            steps={LIFECYCLE_STEPS}
+            stepIndex={lifecycleStepIndex}
+            onStepIndexChange={setLifecycleStepIndex}
           />
         </div>
       </div>
