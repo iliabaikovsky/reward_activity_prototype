@@ -1,8 +1,7 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import {
   IconArrowRight,
   IconArrowsRightLeft,
-  IconChevronDown,
   IconChevronLeft,
   IconChevronRight,
   IconCrown,
@@ -18,6 +17,7 @@ import type {
   LifecycleUpcomingItem,
 } from '../rewardLifecycle/lifecycleSteps'
 import type { ActivityTypeFilter } from './activityFeedTypes'
+import { getLoyaltyUpcomingSlots, parseDemoToday } from '../rewardLifecycle/demoTimeline'
 import type { RebateDemoState } from '../rewardLifecycle/rebateSimulatorSteps'
 import { hasRebatePendingPayouts, parseSignedAmount } from '../rewardLifecycle/rebateSimulatorSteps'
 import styles from './ExnessRewardsScreen.module.css'
@@ -67,123 +67,63 @@ type SummaryPayoutEntry = {
   title: string
   line1: string
   icon: RewardEventIconKind
-  program: 'loyalty' | 'rebates'
-}
-
-function formatSummaryTradingDate(d: Date): string {
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-}
-
-/** Понедельник календарной недели, следующей за неделей, в которую попадает `d`. */
-function startOfNextCalendarWeekMonday(d: Date): Date {
-  const x = new Date(d)
-  x.setHours(0, 0, 0, 0)
-  const dow = x.getDay()
-  const daysToSunday = (7 - dow) % 7
-  const mondayAfterThisWeekSunday = new Date(x)
-  mondayAfterThisWeekSunday.setDate(x.getDate() + daysToSunday + 1)
-  return mondayAfterThisWeekSunday
-}
-
-/** Середина следующей недели (ср) — одна дата для Loyalty в прототипе. */
-function loyaltyPayoutMidNextWeek(d: Date): Date {
-  const mon = startOfNextCalendarWeekMonday(d)
-  const wed = new Date(mon)
-  wed.setDate(mon.getDate() + 2)
-  return wed
 }
 
 /**
- * Демо-строки для V4 summary drill: см. TRANSACTION_SUMMARY_DISPLAY_RULES.md
- * — USD: одна EXD cashback (завтра), long term каждый день +30…+60 дн. (без Loyalty rewards).
- * — EXD: одна Loyalty (ср следующей недели); те же long term; без EXD cashback.
+ * Демо-строки для Upcoming drill-in: см. TRANSACTION_SUMMARY_DISPLAY_RULES.md
+ * — USD: одна EXD cashback (завтра).
+ * — EXD: до двух Loyalty (накладка Mon–Tue + текущий период); без EXD cashback.
  */
 function buildSummaryPayoutEntries(
   currency: V2SummaryCurrencyPage,
   totalLabel: string,
-  _pendingCount: number,
 ): SummaryPayoutEntry[] {
   const total = parseSignedAmount(totalLabel)
   if (total <= 0) return []
 
-  const now = new Date()
-  now.setHours(0, 0, 0, 0)
-
-  const LONG_TERM_START_OFFSET = 30
-  const LONG_TERM_END_OFFSET = 60
-  const longTermDayCount = LONG_TERM_END_OFFSET - LONG_TERM_START_OFFSET + 1
-
+  const today = parseDemoToday()
   const entries: SummaryPayoutEntry[] = []
   const isUsd = currency === 'usd'
-
-  const cashbackShare = isUsd ? 0.05 : 0
-  const loyaltyShare = isUsd ? 0 : 0.05
-
   const round2 = (n: number) => Math.round(n * 100) / 100
-  const cashbackAmt = round2(total * cashbackShare)
-  const loyaltyAmt = round2(total * loyaltyShare)
-  const longTermPool = Math.max(0, round2(total - cashbackAmt - loyaltyAmt))
-
-  const baseDaily = Math.floor((longTermPool * 100) / longTermDayCount) / 100
-  let allocated = 0
 
   const pushEntry = (partial: Omit<SummaryPayoutEntry, 'id'> & { idSuffix: string }) => {
     const { idSuffix, ...rest } = partial
     entries.push({ id: `${currency}-${idSuffix}`, ...rest })
   }
 
-  if (isUsd && cashbackAmt > 0) {
-    const payoutDate = new Date(now)
-    payoutDate.setDate(now.getDate() + 1)
+  if (isUsd) {
+    const payoutDate = new Date(today)
+    payoutDate.setDate(today.getDate() + 1)
     pushEntry({
       idSuffix: 'exd-cashback',
       payoutDate,
-      amount: cashbackAmt,
+      amount: round2(total),
       title: 'EXD cashback',
       line1: 'For daily trading',
       icon: 'dollar',
-      program: 'loyalty',
     })
+    return entries
   }
 
-  if (!isUsd && loyaltyAmt > 0) {
-    const payoutDate = loyaltyPayoutMidNextWeek(now)
-    pushEntry({
-      idSuffix: 'loyalty-rewards',
-      payoutDate,
-      amount: loyaltyAmt,
-      title: 'Loyalty rewards',
-      line1: 'For weekly trading',
-      icon: 'crown',
-      program: 'loyalty',
-    })
-  }
+  const loyaltySlots = getLoyaltyUpcomingSlots(today)
+  if (loyaltySlots.length === 0) return entries
 
-  for (let i = 0; i < longTermDayCount; i++) {
-    const offset = LONG_TERM_START_OFFSET + i
-    const payoutDate = new Date(now)
-    payoutDate.setDate(now.getDate() + offset)
-
-    let amount = baseDaily
-    if (i === longTermDayCount - 1) {
-      amount = round2(longTermPool - allocated)
-    }
+  const slotCount = loyaltySlots.length
+  let allocated = 0
+  loyaltySlots.forEach((slot, idx) => {
+    let amount =
+      idx === slotCount - 1 ? round2(total - allocated) : round2(total / slotCount)
     amount = Math.max(0, amount)
     allocated += amount
-
-    const tradeOn = new Date(payoutDate)
-    tradeOn.setDate(tradeOn.getDate() - 60)
-
     pushEntry({
-      idSuffix: `lt-${offset}`,
-      payoutDate,
+      idSuffix: slot.idSuffix,
+      payoutDate: slot.payoutDate,
       amount,
-      title: 'Long term rebates',
-      line1: `For trading on ${formatSummaryTradingDate(tradeOn)}`,
-      icon: isUsd ? 'dollar' : 'crown',
-      program: 'rebates',
+      title: 'Loyalty rewards',
+      line1: `For trading on ${slot.periodLabel}`,
+      icon: 'crown',
     })
-  }
+  })
 
   return entries
 }
@@ -262,182 +202,43 @@ function V2SummaryUpcomingBlock({
   )
 }
 
-type V2SummaryProgramFilter = 'all' | 'loyalty' | 'rebates'
-
 function V2SummaryCurrencyDetailPage({
   currency,
   totalLabel,
-  pendingCount,
   onBack,
 }: {
   currency: V2SummaryCurrencyPage
   totalLabel: string
-  pendingCount: number
   onBack: () => void
 }) {
   const title = currency === 'usd' ? 'Upcoming cashback' : 'Upcoming rewards'
   const unit = currency.toUpperCase() as 'USD' | 'EXD'
-  const [periodMode, setPeriodMode] = useState<'all-time' | 'month' | 'week'>('all-time')
-  const [hoveredBucketId, setHoveredBucketId] = useState<string | null>(null)
-  const [programFilter, setProgramFilter] = useState<V2SummaryProgramFilter>('all')
-  const [programMenuOpen, setProgramMenuOpen] = useState(false)
-  const [periodMenuOpen, setPeriodMenuOpen] = useState(false)
-  const programDropdownRef = useRef<HTMLDivElement>(null)
-  const periodDropdownRef = useRef<HTMLDivElement>(null)
 
-  const allEntries = useMemo(
-    () => buildSummaryPayoutEntries(currency, totalLabel, pendingCount),
-    [currency, totalLabel, pendingCount],
-  )
   const entries = useMemo(
     () =>
-      programFilter === 'all'
-        ? allEntries
-        : allEntries.filter((e) => e.program === programFilter),
-    [allEntries, programFilter],
+      [...buildSummaryPayoutEntries(currency, totalLabel)].sort(
+        (a, b) => a.payoutDate.getTime() - b.payoutDate.getTime(),
+      ),
+    [currency, totalLabel],
   )
-
-  useEffect(() => {
-    if (!programMenuOpen && !periodMenuOpen) return
-    const onDocDown = (e: MouseEvent) => {
-      const t = e.target as Node
-      if (programMenuOpen && programDropdownRef.current && !programDropdownRef.current.contains(t)) {
-        setProgramMenuOpen(false)
-      }
-      if (periodMenuOpen && periodDropdownRef.current && !periodDropdownRef.current.contains(t)) {
-        setPeriodMenuOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', onDocDown)
-    return () => document.removeEventListener('mousedown', onDocDown)
-  }, [programMenuOpen, periodMenuOpen])
-  const monthOptions = useMemo(() => {
-    const base = new Date()
-    base.setDate(1)
-    base.setHours(0, 0, 0, 0)
-    return ([0, 1, 2] as const).map((offset) => {
-      const m = new Date(base)
-      m.setMonth(base.getMonth() + offset)
-      return {
-        offset,
-        month: m.getMonth(),
-        year: m.getFullYear(),
-        label: m.toLocaleDateString('en-US', { month: 'short' }),
-      }
-    })
-  }, [])
-
-  const selectedMonth = monthOptions[0]
-
-  const visibleEntries = useMemo(() => {
-    const sorted = [...entries].sort((a, b) => a.payoutDate.getTime() - b.payoutDate.getTime())
-    if (periodMode === 'all-time') {
-      const start = new Date(monthOptions[0].year, monthOptions[0].month, 1)
-      const end = new Date(monthOptions[0].year, monthOptions[0].month + 2, 0)
-      return sorted.filter((entry) => entry.payoutDate >= start && entry.payoutDate <= end)
-    }
-    return sorted.filter(
-      (entry) =>
-        entry.payoutDate.getMonth() === selectedMonth.month &&
-        entry.payoutDate.getFullYear() === selectedMonth.year,
-    )
-  }, [entries, monthOptions, periodMode, selectedMonth.month, selectedMonth.year])
 
   const viewTotal = useMemo(
-    () => visibleEntries.reduce((sum, entry) => sum + entry.amount, 0),
-    [visibleEntries],
+    () => entries.reduce((sum, entry) => sum + entry.amount, 0),
+    [entries],
   )
 
-  const chartBuckets = useMemo(() => {
-    if (periodMode === 'week') {
-      const labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-      const weekdayTotals = new Array(7).fill(0) as number[]
-      visibleEntries.forEach((entry) => {
-        const jsDay = entry.payoutDate.getDay()
-        const mondayFirst = jsDay === 0 ? 6 : jsDay - 1
-        weekdayTotals[mondayFirst] += entry.amount
-      })
-      return labels.map((label, idx) => ({
-        id: `wkday-${idx}`,
-        label,
-        total: weekdayTotals[idx],
-        tooltipLabel: `${selectedMonth.label} · ${label}`,
-      }))
-    }
-
-    if (periodMode === 'month') {
-      const monthName = selectedMonth.label
-      const monthDays = new Date(selectedMonth.year, selectedMonth.month + 1, 0).getDate()
-      const ranges = [
-        { start: 1, end: 7 },
-        { start: 8, end: 14 },
-        { start: 15, end: 22 },
-        { start: 23, end: monthDays },
-      ]
-      return ranges
-        .filter((range) => range.start <= monthDays)
-        .map((range, idx) => {
-          const total = visibleEntries
-            .filter((entry) => {
-              const day = entry.payoutDate.getDate()
-              return day >= range.start && day <= range.end
-            })
-            .reduce((sum, entry) => sum + entry.amount, 0)
-          return {
-            id: `month-${idx}`,
-            label: `${monthName} ${range.start}-${range.end}`,
-            total,
-            tooltipLabel: `${monthName} ${range.start}-${range.end}`,
-          }
-        })
-    }
-
-    const baseMonth = monthOptions[0]
-    return Array.from({ length: 4 }, (_, idx) => {
-      const monthShift = Math.floor(idx / 2)
-      const firstHalf = idx % 2 === 0
-      const d = new Date(baseMonth.year, baseMonth.month, 1)
-      d.setMonth(d.getMonth() + monthShift)
-      const y = d.getFullYear()
-      const m = d.getMonth()
-      const monthDays = new Date(y, m + 1, 0).getDate()
-      const start = firstHalf ? 1 : 15
-      const end = firstHalf ? Math.min(14, monthDays) : monthDays
-      const monthName = d.toLocaleDateString('en-US', { month: 'short' })
-      const total = visibleEntries
-        .filter((entry) => {
-          return (
-            entry.payoutDate.getFullYear() === y &&
-            entry.payoutDate.getMonth() === m &&
-            entry.payoutDate.getDate() >= start &&
-            entry.payoutDate.getDate() <= end
-          )
-        })
-        .reduce((sum, entry) => sum + entry.amount, 0)
-      return {
-        id: `all-${idx}`,
-        label: `${monthName} ${start}-${end}`,
-        total,
-        tooltipLabel: `${monthName} ${start}-${end}`,
-      }
-    })
-  }, [monthOptions, periodMode, selectedMonth.label, selectedMonth.month, selectedMonth.year, visibleEntries])
-
-  const maxBar = chartBuckets.reduce((m, b) => Math.max(m, b.total), 0)
-  const axisMax = Math.max(5, Math.ceil(maxBar))
-  const axisTicks = [5, 4, 3, 2, 1, 0].map((n) => ((axisMax * n) / 5).toFixed(2))
-
   const groupedRows = useMemo(() => {
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
+    const today = parseDemoToday()
+    const tomorrow = new Date(today)
+    tomorrow.setDate(today.getDate() + 1)
     const groups = new Map<string, V2UpcomingRowData[]>()
-    visibleEntries.forEach((entry, idx) => {
-      const key =
-        entry.payoutDate.getTime() - today.getTime() <= 24 * 60 * 60 * 1000
-          ? 'Tomorrow'
-          : entry.payoutDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    entries.forEach((entry, idx) => {
+      const isTomorrow = entry.payoutDate.getTime() === tomorrow.getTime()
+      const key = isTomorrow
+        ? 'Tomorrow'
+        : entry.payoutDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
       const row: V2UpcomingRowData = {
-        id: `${entry.id}-${periodMode}-${idx}`,
+        id: `${entry.id}-${idx}`,
         icon: entry.icon,
         title: entry.title,
         amount: fmtSignedAmount(entry.amount, unit),
@@ -453,16 +254,7 @@ function V2SummaryCurrencyDetailPage({
       heading,
       rows,
     }))
-  }, [visibleEntries, periodMode, currency, unit])
-
-  const programChipLabel =
-    programFilter === 'all'
-      ? 'All programs'
-      : programFilter === 'loyalty'
-        ? 'Loyalty'
-        : 'Long term rebates'
-  const periodChipLabel =
-    periodMode === 'all-time' ? 'All time' : periodMode === 'month' ? 'Month' : 'Week'
+  }, [entries, unit])
 
   return (
     <div className={styles.v2SummaryDetailPage}>
@@ -480,156 +272,6 @@ function V2SummaryCurrencyDetailPage({
         </p>
       </div>
 
-      <div className={styles.v2SummaryFilterRow}>
-        <div className={styles.v2SummaryDropdown} ref={programDropdownRef}>
-          <button
-            type="button"
-            className={`${styles.v2SummaryFilterChip} ${programFilter !== 'all' ? styles.v2SummaryFilterChipActive : ''}`}
-            aria-expanded={programMenuOpen}
-            aria-haspopup="listbox"
-            aria-label="Program"
-            onClick={() => {
-              setProgramMenuOpen((o) => !o)
-              setPeriodMenuOpen(false)
-            }}
-          >
-            {programChipLabel}
-            <IconChevronDown size={16} stroke={2} aria-hidden />
-          </button>
-          {programMenuOpen ? (
-            <div className={styles.v2SummaryDropdownMenu} role="listbox" aria-label="Program">
-              <button
-                type="button"
-                className={styles.v2SummaryDropdownItem}
-                role="option"
-                aria-selected={programFilter === 'all'}
-                onClick={() => {
-                  setProgramFilter('all')
-                  setProgramMenuOpen(false)
-                }}
-              >
-                All programs
-              </button>
-              <button
-                type="button"
-                className={styles.v2SummaryDropdownItem}
-                role="option"
-                aria-selected={programFilter === 'loyalty'}
-                onClick={() => {
-                  setProgramFilter('loyalty')
-                  setProgramMenuOpen(false)
-                }}
-              >
-                Loyalty
-              </button>
-              <button
-                type="button"
-                className={styles.v2SummaryDropdownItem}
-                role="option"
-                aria-selected={programFilter === 'rebates'}
-                onClick={() => {
-                  setProgramFilter('rebates')
-                  setProgramMenuOpen(false)
-                }}
-              >
-                Long term rebates
-              </button>
-            </div>
-          ) : null}
-        </div>
-
-        <div className={styles.v2SummaryDropdown} ref={periodDropdownRef}>
-          <button
-            type="button"
-            className={`${styles.v2SummaryFilterChip} ${periodMode !== 'all-time' ? styles.v2SummaryFilterChipActive : ''}`}
-            aria-expanded={periodMenuOpen}
-            aria-haspopup="listbox"
-            aria-label="Period"
-            onClick={() => {
-              setPeriodMenuOpen((o) => !o)
-              setProgramMenuOpen(false)
-            }}
-          >
-            {periodChipLabel}
-            <IconChevronDown size={16} stroke={2} aria-hidden />
-          </button>
-          {periodMenuOpen ? (
-            <div className={styles.v2SummaryDropdownMenu} role="listbox" aria-label="Period">
-              {(
-                [
-                  { id: 'all-time' as const, label: 'All time' },
-                  { id: 'month' as const, label: 'Month' },
-                  { id: 'week' as const, label: 'Week' },
-                ] as const
-              ).map((opt) => (
-                <button
-                  key={opt.id}
-                  type="button"
-                  className={styles.v2SummaryDropdownItem}
-                  role="option"
-                  aria-selected={periodMode === opt.id}
-                  onClick={() => {
-                    setPeriodMode(opt.id)
-                    setPeriodMenuOpen(false)
-                  }}
-                >
-                  {opt.label}
-                </button>
-              ))}
-            </div>
-          ) : null}
-        </div>
-      </div>
-
-      <div className={styles.v2SummaryChart}>
-        <div className={styles.v2SummaryChartHeader}>{unit}</div>
-        <div className={styles.v2SummaryChartBody}>
-          <div className={styles.v2SummaryAxis}>
-            {axisTicks.map((t, i) => (
-              <p key={`${t}-${i}`}>{i === axisTicks.length - 1 ? '0' : t}</p>
-            ))}
-          </div>
-          <div className={styles.v2SummaryBarsPlotWrap}>
-            <div className={styles.v2SummaryBars}>
-              {chartBuckets.map((b) => {
-                const h =
-                  maxBar > 0 && b.total > 0 ? Math.round((b.total / maxBar) * 184) : 0
-                return (
-                  <button
-                    key={b.id}
-                    type="button"
-                    className={styles.v2SummaryBarCol}
-                    aria-label={b.label}
-                    onMouseEnter={() => setHoveredBucketId(b.id)}
-                    onMouseLeave={() => setHoveredBucketId((prev) => (prev === b.id ? null : prev))}
-                    onFocus={() => setHoveredBucketId(b.id)}
-                    onBlur={() => setHoveredBucketId((prev) => (prev === b.id ? null : prev))}
-                  >
-                    {hoveredBucketId === b.id ? (
-                      <span
-                        className={styles.v2SummaryBarTooltip}
-                        style={{ bottom: h > 0 ? h : 8 }}
-                      >
-                        <strong>{fmtSignedAmount(b.total, unit)}</strong>
-                        <span>{b.tooltipLabel}</span>
-                      </span>
-                    ) : null}
-                    {h > 0 ? <span className={styles.v2SummaryBar} style={{ height: `${h}px` }} /> : null}
-                  </button>
-                )
-              })}
-            </div>
-            <div className={styles.v2SummaryChartTicksRow} aria-hidden>
-              {chartBuckets.map((b) => (
-                <div key={`tick-${b.id}`} className={styles.v2SummaryTickCell}>
-                  {b.label}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-
       {groupedRows.map((group) =>
         group.rows.length > 0 ? (
           <div key={group.id} className={styles.v2SummaryDetailGroup}>
@@ -641,7 +283,7 @@ function V2SummaryCurrencyDetailPage({
         ) : null,
       )}
       {groupedRows.length === 0 ? (
-        <p className={styles.emptyHint}>No payouts in this selection</p>
+        <p className={styles.emptyHint}>No upcoming payouts</p>
       ) : null}
     </div>
   )
@@ -876,7 +518,6 @@ export function ExnessRewardsScreen({
                 ? rebatePendingUsdExcludingHold(rebateDemo)
                 : rebateDemo.pendingExd
             }
-            pendingCount={rebateDemo.pendingCount}
             onBack={() => setV2SummaryCurrencyPage(null)}
           />
         </div>
