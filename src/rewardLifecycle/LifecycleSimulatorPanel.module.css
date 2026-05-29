@@ -142,22 +142,31 @@
   border-top: 1px solid rgba(0, 0, 0, 0.06);
 }
 
-.title {
-  margin: 12px 0 4px;
-  font-size: 14px;
-  font-weight: 700;
-}
-
-.sub {
-  margin: 0;
-  font-size: 12px;
-  color: var(--reward-text-secondary);
-}
-
-.stepMeta {
-  margin: 8px 0 0;
+.blurbDate {
+  margin: 12px 0 6px;
   font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
   color: var(--reward-text-secondary);
+}
+
+.blurbLead {
+  margin: 0 0 8px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--reward-text-primary);
+}
+
+.blurbList {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--reward-text-secondary);
+}
+
+.blurbList li + li {
+  margin-top: 4px;
 }
 
 /* —— Узкий экран: плавающий виджет + полный экран телефона (styles.css) —— */

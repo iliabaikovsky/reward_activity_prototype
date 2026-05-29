@@ -38,6 +38,15 @@ export const UPCOMING_ACTIVATION_DATETIME: Record<string, string> = {
   'on Apr 1': '1 Apr 2026, 18:43',
 }
 
+/** Короткая подпись якорной даты прототипа для UI, напр. «20 Mar 2026». */
+export function formatDemoTodayLabel(iso = DEMO_TODAY_ISO): string {
+  return parseDemoToday(iso).toLocaleDateString('en-GB', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  })
+}
+
 export type LoyaltyUpcomingSlot = {
   idSuffix: string
   periodLabel: string

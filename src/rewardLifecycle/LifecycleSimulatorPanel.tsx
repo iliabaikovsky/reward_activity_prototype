@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef } from 'react'
 import { IconChevronLeft, IconChevronRight } from '@tabler/icons-react'
+import { formatDemoTodayLabel } from './demoTimeline'
 import type { LifecycleStep } from './lifecycleSteps'
 import styles from './LifecycleSimulatorPanel.module.css'
 
@@ -13,6 +14,7 @@ export function LifecycleSimulatorPanel({ steps, stepIndex, onStepIndexChange }:
   const step = steps[stepIndex]
   const last = steps.length - 1
   const detailsRef = useRef<HTMLDetailsElement>(null)
+  const { lead, bullets } = step.simulatorBlurb
 
   useLayoutEffect(() => {
     const mq = window.matchMedia('(min-width: 481px)')
@@ -53,15 +55,15 @@ export function LifecycleSimulatorPanel({ steps, stepIndex, onStepIndexChange }:
       </div>
 
       <details ref={detailsRef} className={styles.glassDetails}>
-        <summary className={styles.glassDetailsSummary}>Справка</summary>
+        <summary className={styles.glassDetailsSummary}>Что видим</summary>
         <div className={styles.glassDetailsBody}>
-          <h2 className={styles.title}>Симулятор жизненного цикла</h2>
-          <p className={styles.sub}>
-            Шаг {stepIndex + 1} из {steps.length}. Соответствие сценарию —{' '}
-            <strong>REWARD_LIFECYCLE.md</strong>. Стрелки переключают состояние экрана Rewards и
-            ленты Activity.
-          </p>
-          <p className={styles.stepMeta}>{step.docRef}</p>
+          <p className={styles.blurbDate}>{formatDemoTodayLabel()}</p>
+          <p className={styles.blurbLead}>{lead}</p>
+          <ul className={styles.blurbList}>
+            {bullets.map((line) => (
+              <li key={line}>{line}</li>
+            ))}
+          </ul>
         </div>
       </details>
     </aside>

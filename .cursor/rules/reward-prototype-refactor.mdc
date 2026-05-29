@@ -102,7 +102,7 @@ buildLoyaltyModalPack  ──►  динамический PackConfig для loy
 ## Checklist после изменений
 
 1. `npm run build` — без ошибок TypeScript.
-2. Симулятор: шаги 1→10, Назад/Далее.
+2. Симулятор: шаги 1→8, Назад/Далее.
 3. Rewards: wallets, tier progress, Upcoming/Activity → modal.
 4. Activity feed: Type + Date filters; lifetime cashback → feed с filter Cashback.
 5. Modals: все variants; orders list + drill-down.
