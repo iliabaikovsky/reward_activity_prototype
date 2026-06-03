@@ -10,6 +10,7 @@
 | [`FINTECH_TRANSACTION_DETAIL_UX.md`](../research/FINTECH_TRANSACTION_DETAIL_UX.md) | Mobbin-benchmark: transaction/reward **detail** в fintech (Revolut, Wise, Coinbase, …) |
 | [`TRANSACTION_DETAIL_FINTECH_GAP_ANALYSIS.md`](../research/TRANSACTION_DETAIL_FINTECH_GAP_ANALYSIS.md) | Сверка Kind ID Exness × fintech patterns, P0/P1 рекомендации |
 | [`REWARD_LIFECYCLE.md`](REWARD_LIFECYCLE.md) | Бизнес-сценарий, цифры моков, 9 шагов симулятора |
+| [`EXD_EARNING_MATH.md`](EXD_EARNING_MATH.md) | Формула EXD за сделку, EXD spent, rate, booster, агрегация |
 | [`UX_MAP.md`](../architecture/UX_MAP.md) | Назначение блоков UI и сквозные UX-правила |
 | [`ARCHITECTURE.md`](../architecture/ARCHITECTURE.md) | Поток данных и модули |
 
@@ -204,7 +205,7 @@ flowchart TB
 | Уровень | Поля |
 |---------|------|
 | List row | `title`: **Loyalty reward** (одна сделка); `amount`: доля EXD; `meta`: Account, Order |
-| Order detail | **When** Earned on / Posted on → **Account** → Order › (`x2` chip в list) → **Booster** tier chip → Earning rate › `5.34%` |
+| Order detail | **When** → **Account** → Order › → **Earning rate** `5.34%` + info icon → **Booster** tier chip → **Calculation** `Details` › — sheets: [`REWARD_CALCULATION_UX.md`](../research/REWARD_CALCULATION_UX.md) · earning rate [`EARNING_RATE_EXPLAINER_UX.md`](../research/EARNING_RATE_EXPLAINER_UX.md) (формула: [`EXD_EARNING_MATH.md`](EXD_EARNING_MATH.md)) |
 
 ---
 
@@ -383,7 +384,21 @@ List: `EXD → Cashback`, amount **negative** EXD. Detail `chip`: **Debited** / 
 | cashback (any pack chip) | EXD → Cashback | `chip` **Debited** / neutral |
 | cashback (leg detail) | EXD → Cashback | When (**Debited on**, UTC) → From account → Why (**For trading with EXD on**) → Other (Order ›) |
 
-**Helpers:** [`packDetailRows.ts`](../../src/components/reward/RewardDetailModal/configs/packDetailRows.ts) (pack hero), [`loyaltyOrderDetailRows.ts`](../../src/components/reward/RewardDetailModal/configs/loyaltyOrderDetailRows.ts), [`cashbackOrderDetailRows.ts`](../../src/components/reward/RewardDetailModal/configs/cashbackOrderDetailRows.ts). **Chevron** — UI only, навигация planned (G6).
+**Helpers:** [`packDetailRows.ts`](../../src/components/reward/RewardDetailModal/configs/packDetailRows.ts) (pack hero), [`loyaltyOrderDetailRows.ts`](../../src/components/reward/RewardDetailModal/configs/loyaltyOrderDetailRows.ts), [`cashbackOrderDetailRows.ts`](../../src/components/reward/RewardDetailModal/configs/cashbackOrderDetailRows.ts).
+
+### 4.9 Closed order sheet (Figma 42413:31780)
+
+**Триггер:** Order › в order detail (loyalty или EXD → Cashback). Второй `ModalSheet` (`stacked`); **X** и chevron у **Rewards** → назад к order detail.
+
+| Блок | Источник данных |
+|------|-----------------|
+| Торговые поля (symbol, prices, swap…) | Статичный демо [`closedOrderDemo.ts`](../../src/components/reward/RewardDetailModal/configs/closedOrderDemo.ts) |
+| **Rewards → EXD earned** | Сумма loyalty legs с тем же Order ID; часы если chip leg **Upcoming** |
+| **Rewards → Cashback from EXD** | Сумма `cashbackUsdLeg` / USD split по legs с тем же Order ID; часы если pack **не Credited** |
+
+**Registry:** [`buildTradingOrderRegistryForStep`](../../src/rewardLifecycle/buildTradingOrderRegistry.ts) — только `step.upcoming` (не feed/preview: иначе суммирование чужих пачек на тот же Order ID). В модалке: `loyalty-upcoming` / `cashback-upcoming` → registry шага; activated/credited → только открытая `packOverride`. Static `PACK_CONFIG` — ingest пачки один раз. Order base: Mar 9–15 → `9088801+`, Mar 16–22 / linked cashback → `9100821+`.
+
+**Связка order ID:** dynamic шаг `trade_exd_rebate` — loyalty и cashback upcoming на base `9100820` → order **9100821** (демо: +1.00 EXD и **−5.00 EXD** → 5.00 USD, 1:1). Шаг 8: credited `prev-cb` в registry для closed order.
 
 ---
 
@@ -479,6 +494,7 @@ List: `EXD → Cashback`, amount **negative** EXD. Detail `chip`: **Debited** / 
 | [`packConfigs.ts`](../../src/components/reward/RewardDetailModal/configs/packConfigs.ts) | Static pack content |
 | [`simpleConfigs.ts`](../../src/components/reward/RewardDetailModal/configs/simpleConfigs.ts) | Simple modals |
 | [`buildLoyaltyModalPack.ts`](../../src/rewardLifecycle/buildLoyaltyModalPack.ts) | Dynamic pack ↔ simulator |
+| [`buildTradingOrderRegistry.ts`](../../src/rewardLifecycle/buildTradingOrderRegistry.ts) | Order ID → Rewards для closed order |
 | [`feedGroupsData.ts`](../../src/rewardLifecycle/feedGroupsData.ts) | Feed item mocks |
 | [`lifecycleSteps.ts`](../../src/rewardLifecycle/lifecycleSteps.ts) | Upcoming + preview per step |
 | [`ExnessRewardsScreen.tsx`](../../src/screens/ExnessRewardsScreen.tsx) | Drill-in, summary cells |
@@ -502,7 +518,7 @@ List: `EXD → Cashback`, amount **negative** EXD. Detail `chip`: **Debited** / 
 | G3 | `cashback-activated-jan12` not wired | low (remove or use) |
 | G4 | Simple modals: static amounts ≠ list mocks (transfer) | medium |
 | G5 | Spread rebate not in TRANSACTIONS master table §2 | planned §6 |
-| G6 | Loyalty order: Order / Earning rate chevron без навигации | low — UI only |
+| G6 | ~~Order › → closed order~~; ~~Earning rate › — TBD~~ | Order + [Earning rate sheet](../research/EARNING_RATE_EXPLAINER_UX.md) v1 done |
 | G7 | ~~Cashback order detail Pack/conversion~~ | resolved — `cashbackOrderDetailRows` |
 
 ---

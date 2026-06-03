@@ -46,6 +46,8 @@ export type LifecycleActivityPreviewItem = {
   amount: string
   lines: string[]
   date: string
+  /** Число ордеров в пачке (как badge у Upcoming). */
+  badge?: string
   rewardModal: RewardModalVariant
 }
 
@@ -176,7 +178,8 @@ export const LIFECYCLE_STEPS: LifecycleStep[] = [
     simulatorBlurb: {
       lead: `Неделя закрылась, loyalty активировалась (${LOY_ACTIVATION_PREV_SHORT}).`,
       bullets: [
-        'Upcoming очистился',
+        'Активировалась пачка Mar 9–15 (+3.20 EXD, 3 ордера)',
+        'Upcoming пустой (пачка Mar 9–15 ушла в ленту)',
         '+2.80 EXD в Available (+3.20, затем −0.40 adjustment)',
         'В ленте: Loyalty rewards и EXD adjustment',
       ],
@@ -205,6 +208,7 @@ export const LIFECYCLE_STEPS: LifecycleStep[] = [
         amount: '+3.20 EXD',
         lines: ['To Available rewards', `For trading on ${LOY_PERIOD_PREV_LABEL}`],
         date: `${LOY_ACTIVATION_PREV_SHORT}, 23:58`,
+        badge: '3',
         rewardModal: 'loyalty-activated',
       },
     ],

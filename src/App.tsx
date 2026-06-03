@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { RewardDetailModal } from './components/reward/RewardDetailModal'
 import type { RewardModalVariant } from './components/reward/rewardModalTypes'
 import { buildRewardModalPackOverride } from './rewardLifecycle/buildLoyaltyModalPack'
+import { buildTradingOrderRegistryForStep } from './rewardLifecycle/buildTradingOrderRegistry'
 import { LifecycleSimulatorPanel } from './rewardLifecycle/LifecycleSimulatorPanel'
 import { LIFECYCLE_STEPS } from './rewardLifecycle/lifecycleSteps'
 import { DeviceFrameProvider } from './context/DeviceFrameContext'
@@ -43,6 +44,11 @@ function App() {
     return buildRewardModalPackOverride(lifecycle, rewardModal.variant, rewardModal.itemId)
   }, [lifecycle, rewardModal])
 
+  const tradingOrderRegistry = useMemo(
+    () => buildTradingOrderRegistryForStep(lifecycle),
+    [lifecycle],
+  )
+
   return (
     <main className="app-shell app-shell--device">
       <div className="demo-workbench">
@@ -81,6 +87,7 @@ function App() {
             <RewardDetailModal
               variant={rewardModal.variant}
               packOverride={rewardPackOverride}
+              tradingOrderRegistry={tradingOrderRegistry}
               onClose={() => setRewardModal(null)}
             />
           ) : null}

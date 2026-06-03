@@ -115,7 +115,8 @@ export const PACK_CONFIG: Record<PackVariantKey, PackConfig> = {
         title: 'EXD → Cashback',
         amount: '-1.04 EXD',
         amountClass: 'negative',
-        meta: ['Account: #12345678', 'Order: 12345682'],
+        cashbackUsdLeg: 1.23,
+        meta: ['Account: #12345678', 'Order: 9100821'],
         date: 'Jan 15, 16:06',
         detail: {
           navTitle: 'EXD → Cashback',
@@ -123,7 +124,7 @@ export const PACK_CONFIG: Record<PackVariantKey, PackConfig> = {
           heroIcon: 'dollar',
           amount: '-1.04 EXD',
           amountTone: 'negative',
-          details: cashbackOrderDetailRows('Mar 22', '12345682', 'Mar 22, 2026, 16:06 UTC'),
+          details: cashbackOrderDetailRows('Mar 22', '9100821', 'Mar 22, 2026, 16:06 UTC'),
         },
       },
       {
@@ -132,7 +133,8 @@ export const PACK_CONFIG: Record<PackVariantKey, PackConfig> = {
         title: 'EXD → Cashback',
         amount: '-1.04 EXD',
         amountClass: 'negative',
-        meta: ['Account: #12345678', 'Order: 12345683'],
+        cashbackUsdLeg: 1.23,
+        meta: ['Account: #12345678', 'Order: 9100822'],
         date: 'Jan 15, 16:06',
         detail: {
           navTitle: 'EXD → Cashback',
@@ -140,7 +142,7 @@ export const PACK_CONFIG: Record<PackVariantKey, PackConfig> = {
           heroIcon: 'dollar',
           amount: '-1.04 EXD',
           amountTone: 'negative',
-          details: cashbackOrderDetailRows('Mar 22', '12345683', 'Mar 22, 2026, 16:06 UTC'),
+          details: cashbackOrderDetailRows('Mar 22', '9100822', 'Mar 22, 2026, 16:06 UTC'),
         },
       },
       {
@@ -149,7 +151,8 @@ export const PACK_CONFIG: Record<PackVariantKey, PackConfig> = {
         title: 'EXD → Cashback',
         amount: '-1.04 EXD',
         amountClass: 'negative',
-        meta: ['Account: #12345678', 'Order: 12345684'],
+        cashbackUsdLeg: 1.24,
+        meta: ['Account: #12345678', 'Order: 9100823'],
         date: 'Jan 15, 16:06',
         detail: {
           navTitle: 'EXD → Cashback',
@@ -157,7 +160,7 @@ export const PACK_CONFIG: Record<PackVariantKey, PackConfig> = {
           heroIcon: 'dollar',
           amount: '-1.04 EXD',
           amountTone: 'negative',
-          details: cashbackOrderDetailRows('Mar 22', '12345684', 'Mar 22, 2026, 16:06 UTC'),
+          details: cashbackOrderDetailRows('Mar 22', '9100823', 'Mar 22, 2026, 16:06 UTC'),
         },
       },
     ],

@@ -1,4 +1,5 @@
 import type { ChipTone, DetailRow } from '../../../domain/reward/types'
+import { CALCULATION_ROW_LABEL, CALCULATION_ROW_VALUE } from './rewardCalculationExplainer'
 
 const CASHBACK_ACCOUNT = '#12345678'
 
@@ -19,5 +20,11 @@ export function cashbackOrderDetailRows(
     { label: 'From account', value: CASHBACK_ACCOUNT },
     { label: 'For trading with EXD on', value: tradeDay },
     { label: 'Order', value: orderNum, chevron: true },
+    {
+      label: CALCULATION_ROW_LABEL,
+      value: CALCULATION_ROW_VALUE,
+      chevron: true,
+      valueDisplay: 'navDetail',
+    },
   ]
 }

@@ -24,7 +24,47 @@ import { CB_PENDING_TRADE_DAY_SHORT, UPCOMING_ACTIVATION_DATETIME } from './demo
 import type { LifecycleActivityPreviewItem, LifecycleStep, LifecycleUpcomingItem } from './lifecycleSteps'
 import { parseSignedAmount } from './rebateSimulatorSteps'
 
-const EXD_TO_USD_RATE = 1.185
+import { EXD_TO_USD_CASHBACK_RATE } from '../domain/reward/tradingOrder'
+
+/** Текущий открытый период (Mar 16–22) — связываем с cashback на шаге trade_exd_rebate. */
+const TRADING_ORDER_BASE = 9100820
+/** Предыдущий закрытый период (Mar 9–15) — активация на шаге 4. */
+const TRADING_ORDER_BASE_PREV = 9088800
+const LEGACY_CASHBACK_ORDER_BASE = 12345680
+
+function resolveTradingOrderBase(periodLabel: string): number {
+  if (periodLabel.includes('Mar 9') && periodLabel.includes('15')) {
+    return TRADING_ORDER_BASE_PREV
+  }
+  return TRADING_ORDER_BASE
+}
+
+/** Upcoming cashback rows that share Order ID with loyalty legs on the same step. */
+const CASHBACK_LINKED_UPCOMING_IDS = new Set(['up-cb-pend'])
+
+/** Credited cashback preview tied to trade_exd_rebate order #9100821 (step 8 registry). */
+const CASHBACK_LINKED_PREVIEW_IDS = new Set(['prev-cb'])
+
+/** Feed row for Mar 24 credit of the same trade (step 8+). */
+const CASHBACK_LINKED_FEED_IDS = new Set(['feed-cb-1'])
+
+function shouldLinkCashbackToTradingOrders(upcomingId: string): boolean {
+  return CASHBACK_LINKED_UPCOMING_IDS.has(upcomingId)
+}
+
+function shouldLinkCashbackPreview(previewId: string): boolean {
+  return CASHBACK_LINKED_PREVIEW_IDS.has(previewId)
+}
+
+function shouldLinkCashbackFeed(feedItemId: string): boolean {
+  return CASHBACK_LINKED_FEED_IDS.has(feedItemId)
+}
+
+function cashbackOrderBuildOptions(link: boolean): { orderBase?: number; exdDebitMatchesUsd?: boolean } {
+  return link
+    ? { orderBase: TRADING_ORDER_BASE, exdDebitMatchesUsd: true }
+    : {}
+}
 
 function extractAccountFromLines(lines: string[]): string {
   for (const l of lines) {
@@ -189,7 +229,7 @@ function buildOrders(
 ): OrderInPack[] {
   const orderListDate = periodEndListDate(periodLabel)
   const orderModalDate = periodEndModalDateTime(periodLabel)
-  const baseOrder = 9100820
+  const baseOrder = resolveTradingOrderBase(periodLabel)
 
   return parts.map((amt, i) => {
     const orderNum = String(baseOrder + i + 1)
@@ -264,12 +304,15 @@ function buildCashbackOrders(
   orderListDate: string,
   debitedOnModal: string,
   idPrefix: string,
+  options?: { orderBase?: number; exdDebitMatchesUsd?: boolean },
 ): OrderInPack[] {
-  const baseOrder = 12345680
+  const baseOrder = options?.orderBase ?? LEGACY_CASHBACK_ORDER_BASE
 
   return usdParts.map((usdLeg, i) => {
     const orderNum = String(baseOrder + i + 1)
-    const exdDebited = Math.round((usdLeg / EXD_TO_USD_RATE) * 100) / 100
+    const exdDebited = options?.exdDebitMatchesUsd
+      ? usdLeg
+      : Math.round((usdLeg / EXD_TO_USD_CASHBACK_RATE) * 100) / 100
     const detailRows = cashbackOrderDetailRows(tradeDay, orderNum, debitedOnModal)
 
     return {
@@ -278,6 +321,7 @@ function buildCashbackOrders(
       title: 'EXD → Cashback',
       amount: formatExdDebit(exdDebited),
       amountClass: 'negative' as const,
+      cashbackUsdLeg: usdLeg,
       meta: ['Account: #12345678', `Order: ${orderNum}`],
       date: orderListDate,
       detail: {
@@ -295,11 +339,19 @@ function buildCashbackOrders(
 export function buildCashbackPackFromUpcomingRow(row: LifecycleUpcomingItem): PackConfig {
   const totalUsd = Math.max(0, parseSignedAmount(row.amount))
   const tradeDay = extractTradingDay(row.lines)
-  const count = inferCashbackOrderCount(totalUsd)
+  const linkLoyaltyOrder = shouldLinkCashbackToTradingOrders(row.id)
+  const count = linkLoyaltyOrder ? 1 : inferCashbackOrderCount(totalUsd)
   const usdParts = splitUsdTotal(totalUsd, count)
   const orderListDate = tradeDayListDate(row.lines)
   const debitedOn = tradeDayModalDateTime(tradeDay)
-  const orders = buildCashbackOrders(usdParts, tradeDay, orderListDate, debitedOn, row.id)
+  const orders = buildCashbackOrders(
+    usdParts,
+    tradeDay,
+    orderListDate,
+    debitedOn,
+    row.id,
+    cashbackOrderBuildOptions(linkLoyaltyOrder),
+  )
 
   return {
     navTitle: 'EXD cashback',
@@ -319,7 +371,8 @@ export function buildCashbackPackFromFeedItem(
 ): PackConfig {
   const totalUsd = Math.max(0, parseSignedAmount(item.amount))
   const tradeDay = resolveCashbackTradeDay(item.lines, dateIso)
-  const count = inferCashbackOrderCount(totalUsd)
+  const linkTrading = shouldLinkCashbackFeed(item.id)
+  const count = linkTrading ? 1 : inferCashbackOrderCount(totalUsd)
   const usdParts = splitUsdTotal(totalUsd, count)
   const creditedOn = formatModalDateTimeUtcFromDateAndTime(groupDateLabel, time)
   const orderListDate = formatListDateTimeLoose(`${groupDateLabel.replace(/,\s*$/, '')}, ${time}`)
@@ -330,6 +383,7 @@ export function buildCashbackPackFromFeedItem(
     orderListDate,
     debitedOn,
     `sim-feed-${item.id}`,
+    cashbackOrderBuildOptions(linkTrading),
   )
 
   return {
@@ -350,12 +404,20 @@ export function buildCashbackPackFromFeedItem(
 export function buildCashbackPackFromActivityPreview(row: LifecycleActivityPreviewItem): PackConfig {
   const totalUsd = Math.max(0, parseSignedAmount(row.amount))
   const tradeDay = resolveCashbackTradeDay(row.lines, undefined, row.date)
-  const count = inferCashbackOrderCount(totalUsd)
+  const linkTrading = shouldLinkCashbackPreview(row.id)
+  const count = linkTrading ? 1 : inferCashbackOrderCount(totalUsd)
   const usdParts = splitUsdTotal(totalUsd, count)
   const creditedOn = formatModalDateTimeUtcLoose(row.date)
   const orderListDate = formatListDateTimeLoose(row.date)
   const debitedOn = tradeDayModalDateTime(tradeDay)
-  const orders = buildCashbackOrders(usdParts, tradeDay, orderListDate, debitedOn, 'sim-cb-a')
+  const orders = buildCashbackOrders(
+    usdParts,
+    tradeDay,
+    orderListDate,
+    debitedOn,
+    `sim-${row.id}`,
+    cashbackOrderBuildOptions(linkTrading),
+  )
 
   return {
     navTitle: 'EXD cashback',
@@ -441,7 +503,7 @@ export function buildLoyaltyModalPackOverride(
 export function buildLoyaltyPackFromActivityPreview(row: LifecycleActivityPreviewItem): PackConfig {
   const total = parseExdAbsolute(row.amount)
   const periodLabel = extractActivatedPeriodFromLines(row.lines)
-  const count = inferOrderCount(total, undefined)
+  const count = inferOrderCount(total, row.badge)
   const parts = splitExdTotal(total, count)
   const orders = buildOrders(parts, periodLabel, 'activated', 'sim-loy-a')
 

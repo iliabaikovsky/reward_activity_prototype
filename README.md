@@ -32,6 +32,7 @@ npm run build   # перед деплоем
 | [`docs/architecture/ARCHITECTURE.md`](docs/architecture/ARCHITECTURE.md) | Поток данных, слои, regression checklist |
 | [`docs/architecture/REFACTORING.md`](docs/architecture/REFACTORING.md) | Структура после рефакторинга, антипаттерны |
 | [`docs/product/REWARD_LIFECYCLE.md`](docs/product/REWARD_LIFECYCLE.md) | Бизнес-сценарий EXD/Cashback и цифры для моков |
+| [`docs/product/EXD_EARNING_MATH.md`](docs/product/EXD_EARNING_MATH.md) | Формула начисления EXD (spread, rate, booster, EXD spent) |
 | [`docs/product/TRANSACTIONS_CATALOG.md`](docs/product/TRANSACTIONS_CATALOG.md) | Каталог типов транзакций и полей детализации |
 | [`docs/design/DESIGN.md`](docs/design/DESIGN.md) | Figma node-id → компоненты, чеклист сверки |
 | [`docs/deploy/DEPLOY.md`](docs/deploy/DEPLOY.md) | Vercel, Basic Auth |

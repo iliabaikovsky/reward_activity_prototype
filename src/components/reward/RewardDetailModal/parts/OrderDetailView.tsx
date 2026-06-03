@@ -4,9 +4,17 @@ import styles from '../RewardDetailModal.module.css'
 
 type Props = {
   order: OrderInPack
+  onOrderClick?: (orderNum: string) => void
+  onEarningRateClick?: () => void
+  onCalculationClick?: () => void
 }
 
-export function OrderDetailContent({ order }: Props) {
+export function OrderDetailContent({
+  order,
+  onOrderClick,
+  onEarningRateClick,
+  onCalculationClick,
+}: Props) {
   return (
     <div className={styles.scroll}>
       <DetailHero
@@ -16,7 +24,12 @@ export function OrderDetailContent({ order }: Props) {
         chipText={order.detail.chip.text}
         chipClass={chipClassFor(order.detail.chip.tone, styles)}
       />
-      <DetailFieldList rows={order.detail.details} />
+      <DetailFieldList
+        rows={order.detail.details}
+        onOrderClick={onOrderClick}
+        onEarningRateClick={onEarningRateClick}
+        onCalculationClick={onCalculationClick}
+      />
     </div>
   )
 }

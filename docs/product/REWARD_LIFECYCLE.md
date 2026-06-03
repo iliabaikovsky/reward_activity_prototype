@@ -64,9 +64,11 @@
 
 ## 1. Правила начисления (константы для примеров)
 
+Полная формула loyalty, earning rate, booster и расхождения с моками: [`EXD_EARNING_MATH.md`](EXD_EARNING_MATH.md).
+
 | Правило | Формула (пример) |
 |---------|------------------|
-| Loyalty reward за сделку | **EXD = 10% × spread** (в USD) |
+| Loyalty reward за сделку | **Целевая:** `(spread − EXD spent) × earning_rate × booster` — см. [`EXD_EARNING_MATH.md`](EXD_EARNING_MATH.md). **В моках симулятора пока:** **EXD ≈ 10% × spread** (упрощение) |
 | EXD как rebate на сделке | **EXD spend = 50% × spread** → событие **EXD → Cashback** |
 | Cashback pending | Отражает ожидаемый **USD** к зачислению на счёт после settlement |
 
@@ -128,6 +130,8 @@
 | Activity feed | **ещё +1** строка в тот же календарный день |
 
 В симуляторе шаг **`activation_1`** объединяет оба события; отдельного шага «только корректировка» нет.
+
+**Прототип (шаг 4 симулятора):** активируется пачка **Mar 9–15** (+3.20 EXD, **3** ордера `9088801+`); **Upcoming пустой** (как в §3 — по активированной пачке). Отдельная пачка **Mar 16–22** (+4.20 EXD) — только на шагах **2–3** (симулятор «20 Mar»); на шаге **7** — новые pending после сделки 22 Mar.
 
 ---
 
@@ -201,6 +205,10 @@
 | Loyalty rewards | **+1.0 EXD** | копится к следующей неделе |
 
 **Activity feed:** по этой сделке **пока без** финального Cashback (см. следующий шаг).
+
+**Прототип (симулятор `trade_exd_rebate`):** одна сделка → Order **#9100821**: loyalty **+1.0 EXD** (Upcoming), cashback **−5.0 EXD** → **5.00 USD** pending (1:1 в связанном моке). Closed order — обе строки Rewards с часами.
+
+**Шаг 8 (`cashback_settled`):** тот же **#9100821** — **Cashback from EXD 5.00 USD** без часов (зачислен); loyalty **1.00 EXD** с часами до Mar 25. Registry: upcoming + preview `prev-cb`.
 
 ---
 

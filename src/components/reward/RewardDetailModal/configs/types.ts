@@ -11,6 +11,8 @@ export type OrderInPack = {
   amountClass?: 'negative'
   meta: string[]
   date: string
+  /** USD leg для registry (cashback order); совпадает с hero pack split. */
+  cashbackUsdLeg?: number
   detail: {
     navTitle: string
     chip: { text: string; tone: ChipTone }

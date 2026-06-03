@@ -1,0 +1,235 @@
+.sheetBody {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.header {
+  flex-shrink: 0;
+  display: grid;
+  grid-template-columns: 44px 1fr 44px;
+  align-items: center;
+  min-height: 42px;
+  padding: 8px 8px 4px;
+}
+
+.closeBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--reward-text-primary);
+  cursor: pointer;
+}
+
+.closeBtn:focus-visible {
+  outline: 2px solid var(--reward-info-content);
+  outline-offset: 2px;
+}
+
+.navTitle {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+  text-align: center;
+  color: var(--reward-text-primary);
+}
+
+.headerSpacer {
+  width: 40px;
+  height: 40px;
+}
+
+.scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0 16px 32px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.summary {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 0 0 16px 32px;
+  position: relative;
+}
+
+.pairIcon {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 1000px;
+  background: var(--reward-steel);
+  border: 1px solid var(--reward-border);
+}
+
+.summaryTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.symbol {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+  color: var(--reward-text-primary);
+}
+
+.pnlSuccess {
+  margin: 0;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--reward-success-content);
+}
+
+.pnlNegative {
+  margin: 0;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--reward-error-content, #e5484d);
+}
+
+.summaryBottom {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.lotLine {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.lotBuy {
+  color: var(--reward-info-content);
+}
+
+.lotMuted {
+  color: var(--reward-text-secondary);
+}
+
+.closePrice {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--reward-text-secondary);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 48px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--reward-border);
+}
+
+.rowButton {
+  width: 100%;
+  margin: 0;
+  border: none;
+  background: transparent;
+  font: inherit;
+  text-align: inherit;
+  color: inherit;
+  cursor: pointer;
+  border-radius: 8px;
+}
+
+.rowButton:focus-visible {
+  outline: 2px solid var(--reward-info-content);
+  outline-offset: 2px;
+}
+
+.rowLabel {
+  margin: 0;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--reward-text-primary);
+}
+
+.rowValueWrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.rowValue {
+  margin: 0;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--reward-text-secondary);
+}
+
+.rowValuePrimary {
+  color: var(--reward-text-primary);
+}
+
+.closedByChip {
+  padding: 2px 8px;
+  border-radius: 1000px;
+  font-size: 12px;
+  line-height: 16px;
+  background: var(--reward-steel);
+  color: var(--reward-text-secondary);
+}
+
+.rewardsSectionTitle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 32px 0 0;
+  padding: 0 0 12px;
+  width: 100%;
+  border: none;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  color: inherit;
+  cursor: pointer;
+  border-radius: 8px;
+}
+
+.rewardsSectionTitle:focus-visible {
+  outline: 2px solid var(--reward-info-content);
+  outline-offset: 2px;
+}
+
+.rewardsHeading {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 28px;
+  color: var(--reward-text-primary);
+}
+
+.chevron {
+  flex-shrink: 0;
+  color: var(--reward-text-secondary);
+}
+
+.clockIcon {
+  flex-shrink: 0;
+  color: var(--reward-text-secondary);
+}

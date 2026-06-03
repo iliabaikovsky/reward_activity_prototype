@@ -4,7 +4,7 @@
 
 **Не входит:** retail receipts (7-Eleven, Shell), e-commerce (Etsy), delivery (Snoonu). Их не используем как эталон для Exness Rewards.
 
-**Сверка с продуктом:** [`TRANSACTION_DETAIL_FINTECH_GAP_ANALYSIS.md`](TRANSACTION_DETAIL_FINTECH_GAP_ANALYSIS.md) · [`TRANSACTIONS_CATALOG.md`](../product/TRANSACTIONS_CATALOG.md)
+**Сверка с продуктом:** [`TRANSACTION_DETAIL_FINTECH_GAP_ANALYSIS.md`](TRANSACTION_DETAIL_FINTECH_GAP_ANALYSIS.md) · [`TRANSACTIONS_CATALOG.md`](../product/TRANSACTIONS_CATALOG.md) · [`EARNING_RATE_EXPLAINER_UX.md`](EARNING_RATE_EXPLAINER_UX.md) (earning rate sheet v1)
 
 ---
 

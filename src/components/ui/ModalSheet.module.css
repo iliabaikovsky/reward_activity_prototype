@@ -9,6 +9,10 @@
   pointer-events: auto;
 }
 
+.overlayStacked {
+  z-index: 60;
+}
+
 .backdrop {
   position: absolute;
   inset: 0;
@@ -83,5 +87,23 @@
   }
   to {
     transform: translateY(0);
+  }
+}
+
+.panelClosing {
+  animation: sheetSlideDown 0.32s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+
+.overlayClosing .backdrop {
+  opacity: 0;
+  transition: opacity 0.28s ease-out;
+}
+
+@keyframes sheetSlideDown {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(100%);
   }
 }

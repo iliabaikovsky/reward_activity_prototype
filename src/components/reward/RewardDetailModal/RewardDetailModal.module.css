@@ -196,7 +196,25 @@
   border-bottom: 1px solid var(--reward-border);
 }
 
-.detailRow:last-of-type {
+button.detailRow {
+  width: 100%;
+  margin: 0;
+  border: none;
+  border-bottom: 1px solid var(--reward-border);
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  color: inherit;
+  cursor: pointer;
+  border-radius: 8px;
+}
+
+button.detailRow:focus-visible {
+  outline: 2px solid var(--reward-info-content);
+  outline-offset: 2px;
+}
+
+.details > .detailRow:last-child {
   border-bottom: none;
 }
 
@@ -228,7 +246,21 @@
   word-break: break-word;
 }
 
+.detailNavValue {
+  margin: 0;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--reward-text-secondary);
+  text-align: right;
+  white-space: nowrap;
+}
+
 .detailChevron {
+  flex-shrink: 0;
+  color: var(--reward-text-secondary);
+}
+
+.detailInfoIcon {
   flex-shrink: 0;
   color: var(--reward-text-secondary);
 }

@@ -16,8 +16,10 @@ export type HeroIcon = RewardEventIcon
 export type DetailRow = {
   label: string
   value: string
-  /** Шеврон: будущая навигация (order drill-down, earning rate info). */
+  /** Шеврон: навигация (order, calculation details). */
   chevron?: boolean
-  /** `boosterTier` — info chip (Figma Booster cell). */
-  valueDisplay?: 'text' | 'boosterTier'
+  /** Info icon: earning rate explainer (Figma 42413:32765). */
+  infoIcon?: boolean
+  /** `boosterTier` — info chip; `navDetail` — trailing Details + chevron (Figma). */
+  valueDisplay?: 'text' | 'boosterTier' | 'navDetail'
 }

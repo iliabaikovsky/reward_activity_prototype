@@ -25,3 +25,7 @@ export function isPackVariant(v: RewardModalVariant): v is keyof typeof PACK_CON
     v === 'cashback-activated-jan12'
   )
 }
+
+export function isUpcomingPackVariant(v: RewardModalVariant): boolean {
+  return v === 'loyalty-upcoming' || v === 'cashback-upcoming'
+}

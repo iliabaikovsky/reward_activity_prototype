@@ -9,12 +9,27 @@ import {
   SIMPLE_CONFIG,
   expandOrdersForDemo,
   isPackVariant,
+  isUpcomingPackVariant,
   type PackConfig,
 } from './configs'
 import { DetailFieldList, DetailHero, chipClassFor } from './parts/DetailHero'
+import { EARNING_RATE_VALUE } from './configs/loyaltyOrderDetailRows'
+import { ClosedOrderSheet } from './parts/ClosedOrderSheet'
+import { EarningRateSheet } from './parts/EarningRateSheet'
+import { CashbackCalculationSheet } from './parts/CashbackCalculationSheet'
+import { RebateShareSheet } from './parts/RebateShareSheet'
+import { RewardCalculationSheet } from './parts/RewardCalculationSheet'
 import { OrderDetailContent } from './parts/OrderDetailView'
 import { OrdersListView } from './parts/OrdersListView'
 import { OrdersSection } from './parts/OrdersSection'
+import type { TradingOrderRegistry } from '../../../domain/reward/tradingOrder'
+import { buildCashbackRebateCalculation } from '../../../domain/reward/cashbackRebateCalculation'
+import { buildLoyaltyRewardCalculation } from '../../../domain/reward/loyaltyRewardCalculation'
+import {
+  ingestPackIntoRegistry,
+  parseTradingOrderNum,
+} from '../../../rewardLifecycle/tradingOrderRegistry'
+import { CALCULATION_ROW_LABEL } from './configs/rewardCalculationExplainer'
 import styles from './RewardDetailModal.module.css'
 
 export type { OrderInPack, PackConfig } from './configs'
@@ -29,10 +44,21 @@ type Props = {
   variant: RewardModalVariant
   onClose: () => void
   packOverride?: PackConfig | null
+  tradingOrderRegistry?: TradingOrderRegistry
 }
 
-export function RewardDetailModal({ variant, onClose, packOverride }: Props) {
+export function RewardDetailModal({
+  variant,
+  onClose,
+  packOverride,
+  tradingOrderRegistry = {},
+}: Props) {
   const [route, setRoute] = useState<PackModalRoute>({ screen: 'pack' })
+  const [sheetOpen, setSheetOpen] = useState(true)
+  const [closedOrderNum, setClosedOrderNum] = useState<string | null>(null)
+  const [earningRateOpen, setEarningRateOpen] = useState(false)
+  const [calculationKind, setCalculationKind] = useState<'loyalty' | 'cashback' | null>(null)
+  const [rebateShareOpen, setRebateShareOpen] = useState(false)
   const touchStartRef = useRef<{ x: number; y: number } | null>(null)
 
   const pack =
@@ -69,17 +95,116 @@ export function RewardDetailModal({ variant, onClose, packOverride }: Props) {
     })
   }, [])
 
+  const requestSheetClose = useCallback(() => {
+    setSheetOpen(false)
+  }, [])
+
   const handleDismiss = useCallback(() => {
     if (route.screen !== 'pack') {
       popRoute()
       return
     }
-    onClose()
-  }, [onClose, popRoute, route.screen])
+    requestSheetClose()
+  }, [popRoute, requestSheetClose, route.screen])
 
   useEffect(() => {
     setRoute({ screen: 'pack' })
+    setClosedOrderNum(null)
+    setEarningRateOpen(false)
+    setCalculationKind(null)
+    setRebateShareOpen(false)
+    setSheetOpen(true)
   }, [variant, packOverride])
+
+  const registryForModal = useMemo(() => {
+    if (packOverride != null) {
+      if (isUpcomingPackVariant(variant)) {
+        return { ...tradingOrderRegistry }
+      }
+      const fromOpenPack: TradingOrderRegistry = {}
+      ingestPackIntoRegistry(fromOpenPack, packOverride)
+      return fromOpenPack
+    }
+    const merged: TradingOrderRegistry = { ...tradingOrderRegistry }
+    if (pack) ingestPackIntoRegistry(merged, pack)
+    return merged
+  }, [tradingOrderRegistry, pack, packOverride, variant])
+
+  const closedOrderRewards = useMemo(() => {
+    if (!closedOrderNum) return undefined
+    return registryForModal[closedOrderNum]
+  }, [closedOrderNum, registryForModal])
+
+  const openClosedOrder = useCallback((orderNum: string) => {
+    setClosedOrderNum(orderNum)
+  }, [])
+
+  const openEarningRate = useCallback(() => {
+    setEarningRateOpen(true)
+  }, [])
+
+  const earningRateValue = useMemo(() => {
+    if (!selectedOrder) return EARNING_RATE_VALUE
+    const row = selectedOrder.detail.details.find((r) => r.label === 'Earning rate')
+    return row?.value ?? EARNING_RATE_VALUE
+  }, [selectedOrder])
+
+  const showEarningRateExplainer =
+    selectedOrder?.title === 'Loyalty reward' &&
+    selectedOrder.detail.details.some((r) => r.label === 'Earning rate' && r.infoIcon)
+
+  const showCalculationExplainer =
+    (selectedOrder?.title === 'Loyalty reward' ||
+      selectedOrder?.title === 'EXD → Cashback') &&
+    selectedOrder.detail.details.some(
+      (r) => r.label === CALCULATION_ROW_LABEL && r.chevron,
+    )
+
+  const openCalculationForOrder = useCallback(() => {
+    if (selectedOrder?.title === 'Loyalty reward') {
+      setCalculationKind('loyalty')
+    } else if (selectedOrder?.title === 'EXD → Cashback') {
+      setCalculationKind('cashback')
+    }
+  }, [selectedOrder?.title])
+
+  const loyaltyCalculation = useMemo(() => {
+    if (!selectedOrder || selectedOrder.title !== 'Loyalty reward') return null
+    const details = selectedOrder.detail.details
+    const orderNum =
+      parseTradingOrderNum(selectedOrder) ??
+      details.find((r) => r.label === 'Order')?.value ??
+      ''
+    const account = details.find((r) => r.label === 'Account')?.value ?? ''
+    const rateRow =
+      details.find((r) => r.label === 'Earning rate')?.value ?? EARNING_RATE_VALUE
+    const boosterValue = details.find((r) => r.label === 'Booster')?.value ?? ''
+
+    return buildLoyaltyRewardCalculation({
+      amountExd: selectedOrder.detail.amount,
+      orderNum,
+      account,
+      earningRateValue: rateRow,
+      boosterValue,
+      rewards: orderNum ? registryForModal[orderNum] : undefined,
+    })
+  }, [selectedOrder, registryForModal])
+
+  const cashbackCalculation = useMemo(() => {
+    if (!selectedOrder || selectedOrder.title !== 'EXD → Cashback') return null
+    const orderNum =
+      parseTradingOrderNum(selectedOrder) ??
+      selectedOrder.detail.details.find((r) => r.label === 'Order')?.value ??
+      ''
+
+    return buildCashbackRebateCalculation({
+      amountExd: selectedOrder.detail.amount,
+      cashbackUsdLeg: selectedOrder.cashbackUsdLeg,
+      orderNum,
+      packCredited: pack?.chip.text === 'Credited',
+      rewards: orderNum ? registryForModal[orderNum] : undefined,
+    })
+  }, [selectedOrder, pack?.chip.text, registryForModal])
 
   useEffect(() => {
     if (route.screen === 'orderDetail' && !selectedOrder) {
@@ -140,11 +265,18 @@ export function RewardDetailModal({ variant, onClose, packOverride }: Props) {
 
   return (
     <ModalSheet
-      open
-      onClose={handleDismiss}
-      onScrimDismiss={onClose}
+      open={sheetOpen}
+      onClose={onClose}
+      onScrimDismiss={requestSheetClose}
       titleId={titleId}
       detent="large"
+      escapeEnabled={
+        closedOrderNum == null &&
+        !earningRateOpen &&
+        calculationKind == null &&
+        !rebateShareOpen
+      }
+      onEscape={handleDismiss}
     >
       <div
         className={styles.sheetBody}
@@ -153,7 +285,7 @@ export function RewardDetailModal({ variant, onClose, packOverride }: Props) {
       >
         <header className={styles.header}>
           {route.screen === 'pack' ? (
-            <button type="button" className={styles.closeBtn} onClick={onClose} aria-label="Close">
+            <button type="button" className={styles.closeBtn} onClick={requestSheetClose} aria-label="Close">
               <IconX size={24} stroke={2} aria-hidden />
             </button>
           ) : (
@@ -195,11 +327,51 @@ export function RewardDetailModal({ variant, onClose, packOverride }: Props) {
             ) : null}
 
             {route.screen === 'orderDetail' && selectedOrder ? (
-              <OrderDetailContent order={selectedOrder} />
+              <OrderDetailContent
+                order={selectedOrder}
+                onOrderClick={openClosedOrder}
+                onEarningRateClick={showEarningRateExplainer ? openEarningRate : undefined}
+                onCalculationClick={showCalculationExplainer ? openCalculationForOrder : undefined}
+              />
             ) : null}
           </div>
         </div>
       </div>
+
+      <ClosedOrderSheet
+        open={closedOrderNum != null}
+        orderNum={closedOrderNum ?? ''}
+        rewards={closedOrderRewards}
+        onClose={() => setClosedOrderNum(null)}
+        onRewardsBack={() => setClosedOrderNum(null)}
+      />
+
+      <EarningRateSheet
+        open={earningRateOpen}
+        rateValue={earningRateValue}
+        onClose={() => setEarningRateOpen(false)}
+      />
+
+      <RewardCalculationSheet
+        open={calculationKind === 'loyalty'}
+        calculation={loyaltyCalculation}
+        onClose={() => setCalculationKind(null)}
+        onEarningRateClick={showEarningRateExplainer ? openEarningRate : undefined}
+      />
+
+      <CashbackCalculationSheet
+        open={calculationKind === 'cashback'}
+        calculation={cashbackCalculation}
+        onClose={() => setCalculationKind(null)}
+        onRebateShareClick={() => setRebateShareOpen(true)}
+      />
+
+      <RebateShareSheet
+        open={rebateShareOpen}
+        sharePercent={cashbackCalculation?.rebateSharePercent ?? 50}
+        maxSharePercent={cashbackCalculation?.maxSharePercent ?? 50}
+        onClose={() => setRebateShareOpen(false)}
+      />
     </ModalSheet>
   )
 }

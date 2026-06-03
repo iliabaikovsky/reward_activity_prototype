@@ -1,8 +1,9 @@
-import { IconChevronRight } from '@tabler/icons-react'
+import { IconChevronRight, IconInfoCircle } from '@tabler/icons-react'
 import { BoosterBadge } from '../../../ui/BoosterBadge'
 import { RewardEventIcon } from '../../../ui/RewardEventIcon'
 import type { ChipTone, HeroIcon } from '../../../domain/reward/types'
 import type { DetailRow } from '../configs/types'
+import { CALCULATION_ROW_LABEL } from '../configs/rewardCalculationExplainer'
 import styles from '../RewardDetailModal.module.css'
 
 type HeroProps = {
@@ -25,27 +26,87 @@ export function DetailHero({ heroIcon, amount, chipText, chipClass }: HeroProps)
   )
 }
 
-export function DetailFieldList({ rows }: { rows: DetailRow[] }) {
+type DetailFieldListProps = {
+  rows: DetailRow[]
+  onOrderClick?: (orderNum: string) => void
+  onEarningRateClick?: () => void
+  onCalculationClick?: () => void
+}
+
+export function DetailFieldList({
+  rows,
+  onOrderClick,
+  onEarningRateClick,
+  onCalculationClick,
+}: DetailFieldListProps) {
   return (
     <div className={styles.details}>
-      {rows.map((row) => (
-        <div
-          key={row.label}
-          className={`${styles.detailRow} ${row.chevron ? styles.detailRowNav : ''}`}
-        >
-          <p className={styles.detailLabel}>{row.label}</p>
-          <div className={styles.detailValueWrap}>
-            {row.valueDisplay === 'boosterTier' ? (
-              <BoosterBadge variant="tier">{row.value}</BoosterBadge>
-            ) : (
-              <p className={styles.detailValue}>{row.value}</p>
-            )}
-            {row.chevron ? (
-              <IconChevronRight size={20} stroke={2} className={styles.detailChevron} aria-hidden />
-            ) : null}
-          </div>
-        </div>
-      ))}
+      {rows.map((row) => {
+        const isOrderNav = row.label === 'Order' && row.chevron && onOrderClick
+        const isEarningRateNav =
+          row.label === 'Earning rate' && row.infoIcon && onEarningRateClick
+        const isCalculationNav =
+          row.label === CALCULATION_ROW_LABEL && row.chevron && onCalculationClick
+        const isNav = isOrderNav || isEarningRateNav || isCalculationNav
+        const RowTag = isNav ? 'button' : 'div'
+        const isNavDetail = row.valueDisplay === 'navDetail'
+
+        return (
+          <RowTag
+            key={row.label}
+            type={isNav ? 'button' : undefined}
+            className={styles.detailRow}
+            onClick={
+              isOrderNav
+                ? () => onOrderClick!(row.value)
+                : isEarningRateNav
+                  ? onEarningRateClick
+                  : isCalculationNav
+                    ? onCalculationClick
+                    : undefined
+            }
+          >
+            <p className={styles.detailLabel}>{row.label}</p>
+            <div className={styles.detailValueWrap}>
+              {row.valueDisplay === 'boosterTier' ? (
+                <BoosterBadge variant="tier">{row.value}</BoosterBadge>
+              ) : isNavDetail ? (
+                <>
+                  <p className={styles.detailNavValue}>{row.value}</p>
+                  {row.chevron ? (
+                    <IconChevronRight
+                      size={20}
+                      stroke={2}
+                      className={styles.detailChevron}
+                      aria-hidden
+                    />
+                  ) : null}
+                </>
+              ) : (
+                <>
+                  <p className={styles.detailValue}>{row.value}</p>
+                  {row.chevron ? (
+                    <IconChevronRight
+                      size={20}
+                      stroke={2}
+                      className={styles.detailChevron}
+                      aria-hidden
+                    />
+                  ) : null}
+                  {row.infoIcon ? (
+                    <IconInfoCircle
+                      size={20}
+                      stroke={2}
+                      className={styles.detailInfoIcon}
+                      aria-hidden
+                    />
+                  ) : null}
+                </>
+              )}
+            </div>
+          </RowTag>
+        )
+      })}
     </div>
   )
 }

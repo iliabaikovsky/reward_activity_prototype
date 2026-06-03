@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { useDeviceFrameEl } from '../../context/DeviceFrameContext'
 
 /** Scroll lock для body и `.device-frame-scroll` при открытом sheet. */
-export function useBottomSheet(open: boolean, onClose: () => void) {
+export function useBottomSheet(open: boolean, onClose: () => void, escapeEnabled = true) {
   const deviceFrameEl = useDeviceFrameEl()
 
   useEffect(() => {
@@ -19,13 +19,13 @@ export function useBottomSheet(open: boolean, onClose: () => void) {
   }, [open, deviceFrameEl])
 
   useEffect(() => {
-    if (!open) return
+    if (!open || !escapeEnabled) return
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [open, onClose])
+  }, [open, onClose, escapeEnabled])
 }
 
 export { useDeviceFrameEl }

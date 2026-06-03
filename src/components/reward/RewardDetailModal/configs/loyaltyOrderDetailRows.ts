@@ -1,9 +1,10 @@
 import type { DetailRow } from '../../../domain/reward/types'
+import { CALCULATION_ROW_LABEL, CALCULATION_ROW_VALUE } from './rewardCalculationExplainer'
 import { PACK_DEFAULT_ACCOUNT } from './packDetailRows'
 
 export const LOYALTY_LIST_BOOSTER_BADGE = 'x2'
 const LOYALTY_BOOSTER_TIER = 'Ultimate · x2'
-const EARNING_RATE_VALUE = '5.34%'
+export const EARNING_RATE_VALUE = '5.34%'
 
 /** Loyalty order detail: When → To account → Why → Other */
 export function loyaltyOrderDetailRows(
@@ -17,7 +18,13 @@ export function loyaltyOrderDetailRows(
     { label: whenLabel, value: whenValue },
     { label: 'Account', value: PACK_DEFAULT_ACCOUNT },
     { label: 'Order', value: orderNum, chevron: true },
+    { label: 'Earning rate', value: EARNING_RATE_VALUE, infoIcon: true },
     { label: 'Booster', value: LOYALTY_BOOSTER_TIER, valueDisplay: 'boosterTier' },
-    { label: 'Earning rate', value: EARNING_RATE_VALUE, chevron: true },
+    {
+      label: CALCULATION_ROW_LABEL,
+      value: CALCULATION_ROW_VALUE,
+      chevron: true,
+      valueDisplay: 'navDetail',
+    },
   ]
 }
