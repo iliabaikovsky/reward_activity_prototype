@@ -8,7 +8,7 @@ alwaysApply: true
 ## Контекст
 
 - Стек: **React 18**, **TypeScript**, **Vite**, деплой **Vercel** (`vercel.json`, `dist`, SPA rewrites).
-- Пользователь даёт **ссылку на Figma** и/или заполняет **`DESIGN.md`**.
+- Пользователь даёт **ссылку на Figma** и/или заполняет **`docs/design/DESIGN.md`**.
 
 ## Figma
 
@@ -20,11 +20,11 @@ alwaysApply: true
 
 - Компоненты по смыслу дробить; стили — CSS-модули или общий `styles.css` + токены в `:root` (как в дизайне).
 - Сборку проверяет пользователь **в скопированном проекте** после `npm install`: **`npm run build`** должен проходить. В самом шаблоне в workshop зависимости не обязательны.
-- Обновляй **`DESIGN.md`**, если зафиксировали новые node-id или экраны.
+- Обновляй **`docs/design/DESIGN.md`**, если зафиксировали новые node-id или экраны.
 
 ## Деплой
 
-- Инструкции в **`DEPLOY.md`**. Не коммить `.vercel` (в `.gitignore`).
+- Инструкции в **`docs/deploy/DEPLOY.md`**. Не коммить `.vercel` (в `.gitignore`).
 
 ## Git после правок (обязательно)
 

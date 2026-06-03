@@ -13,4 +13,11 @@ export type ChipTone = 'warning' | 'success' | 'neutral' | 'negative'
 /** Иконка hero в modal (alias для RewardEventIcon). */
 export type HeroIcon = RewardEventIcon
 
-export type DetailRow = { label: string; value: string }
+export type DetailRow = {
+  label: string
+  value: string
+  /** Шеврон: будущая навигация (order drill-down, earning rate info). */
+  chevron?: boolean
+  /** `boosterTier` — info chip (Figma Booster cell). */
+  valueDisplay?: 'text' | 'boosterTier'
+}

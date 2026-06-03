@@ -1,11 +1,11 @@
 /**
- * Демо-временная шкала симулятора (см. REWARD_LIFECYCLE.md).
+ * Демо-временная шкала симулятора (см. docs/product/REWARD_LIFECYCLE.md).
  *
- * **Loyalty rewards:** период начисления **среда–воскресенье** (включительно),
- * активация в **Available rewards** — в **среду следующей недели** после окончания периода.
+ * **Loyalty rewards (Upcoming):** агрегат pending EXD за **календарную неделю пн–вс**;
+ * зачисление в Available rewards — в **среду после** этой недели (первая среда за воскресеньем периода).
  *
  * Якорь «сегодня» для UI и фильтров Activity feed — **20 Mar 2026** (пятница),
- * внутри открытого периода Mar 18–22.
+ * внутри открытого периода Mar 16–22 → зачисление `on Mar 25`.
  *
  * **Накладка:** в понедельник–вторник недели активации прошлого периода в Upcoming
  * могут быть **две** строки Loyalty: прошлая неделя (зачисление в эту среду) и текущая
@@ -13,25 +13,28 @@
  */
 export const DEMO_TODAY_ISO = '2026-03-20'
 
-/** Предыдущий закрытый период (ср–вс) → активация в следующую среду */
-export const LOY_PERIOD_PREV_LABEL = 'Mar 11–15'
+/** Предыдущий закрытый период (пн–вс) → активация в среду */
+export const LOY_PERIOD_PREV_LABEL = 'Mar 9–15'
 export const LOY_ACTIVATION_PREV_SHORT = 'Mar 18'
 
-/** Текущий открытый период при «сегодня» 20 Mar (ср–вс) */
-export const LOY_PERIOD_OPEN_LABEL = 'Mar 18–22'
+/** Текущий открытый период при «сегодня» 20 Mar (пн–вс) */
+export const LOY_PERIOD_OPEN_LABEL = 'Mar 16–22'
 export const LOY_ACTIVATION_OPEN_SHORT = 'Mar 25'
 
 /** Следующий период после активации открытой недели */
-export const LOY_PERIOD_NEXT_LABEL = 'Mar 25–29'
+export const LOY_PERIOD_NEXT_LABEL = 'Mar 24–29'
 export const LOY_ACTIVATION_NEXT_SHORT = 'Apr 1'
 
-/** День сделки для Cashback pending в Upcoming: одна строка «For trading on …» */
+/** День сделки для cashback (модалка `For trading on`, моки). */
 export const CB_PENDING_TRADE_DAY_SHORT = 'Mar 22'
+
+/** Subtitle в list row для cashback (Upcoming / feed / preview). */
+export const CB_LIST_SUBTITLE = 'For trading with EXD'
 
 /** Дата в колонке справа у Upcoming loyalty: `on Mar 25` */
 export const upcomingLoyaltyDate = (activationShort: string) => `on ${activationShort}`
 
-/** Поле «Become available on» в деталке пачки (Upcoming) */
+/** Поле «Available on» в деталке пачки (Upcoming) */
 export const UPCOMING_ACTIVATION_DATETIME: Record<string, string> = {
   'on Mar 18': '18 Mar 2026, 18:43',
   'on Mar 25': '25 Mar 2026, 18:43',
@@ -86,11 +89,12 @@ function formatPeriodLabel(start: Date, end: Date): string {
   return `${startStr}–${endStr}`
 }
 
+/** Пн–вс недели заработка для зачисления в среду `activationWed`. */
 function periodBoundsForActivation(activationWed: Date): { start: Date; end: Date } {
-  const start = new Date(activationWed)
-  start.setDate(activationWed.getDate() - 7)
   const end = new Date(activationWed)
   end.setDate(activationWed.getDate() - 3)
+  const start = new Date(end)
+  start.setDate(end.getDate() - 6)
   return { start, end }
 }
 

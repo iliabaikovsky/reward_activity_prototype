@@ -28,30 +28,9 @@
   min-height: 0;
   width: 100%;
   box-sizing: border-box;
-  padding: 8px 16px max(24px, env(safe-area-inset-bottom, 0px));
+  padding: 0 16px max(24px, env(safe-area-inset-bottom, 0px));
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-}
-
-.drillStatusBarBand {
-  flex-shrink: 0;
-  width: 100%;
-  background: var(--reward-paper);
-  padding-top: env(safe-area-inset-top, 0px);
-}
-
-/* Как Activity feed: тёмный статус только на главном Rewards (hero), drill — светлый верх. */
-.drillStatusBarBand .statusTime {
-  color: #000;
-}
-
-.drillStatusBarBand .statusRight {
-  background: rgba(0, 0, 0, 0.08);
-}
-
-.v2DrillShellFullPage {
-  flex: 1 1 auto;
-  min-height: 0;
 }
 
 /* —— Hero —— */
@@ -346,6 +325,7 @@
   min-width: 0;
   max-width: none;
   box-sizing: border-box;
+  overflow: visible;
 }
 
 .walletsScroll {
@@ -363,7 +343,7 @@
   scroll-snap-type: x mandatory;
   scroll-padding-left: 16px;
   scroll-padding-right: 16px;
-  padding: 18px 16px 26px 16px;
+  padding: 18px 16px var(--wallet-scroll-shadow-pad) 16px;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-x: contain;
@@ -467,9 +447,17 @@
   padding: 12px;
 }
 
-.sectionSpacer {
-  height: 32px;
-  flex-shrink: 0;
+/* Shadow pad lives inside walletsScroll; gap to next title = stack gap total */
+.walletsSection + .sectionBlock {
+  margin-top: calc(var(--section-stack-gap) - var(--wallet-scroll-shadow-pad));
+}
+
+.sectionBlock + .sectionBlock {
+  margin-top: var(--section-stack-gap);
+}
+
+.sectionBlock {
+  min-width: 0;
 }
 
 .emptyHint {
@@ -520,7 +508,6 @@
   border-radius: 8px;
   overflow: hidden;
   background: #d8e4f0;
-  margin-bottom: 8px;
 }
 
 .bannerText {
@@ -662,29 +649,24 @@
   gap: 12px;
 }
 
-.v2SummaryDetailTop {
-  display: flex;
-  align-items: center;
-  min-height: 42px;
-  position: relative;
-}
-
-.v2SummaryDetailNavTitle {
-  margin: 0;
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 16px;
-  line-height: 24px;
-  font-weight: 590;
-  color: var(--reward-text-primary);
-  white-space: nowrap;
-}
-
 .v2SummaryDetailHero {
   display: flex;
   flex-direction: column;
+  padding-top: 20px;
+}
+
+.v2SummaryDetailTotalRow {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
   gap: 2px;
+}
+
+.v2SummaryDetailTotalLabel {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--reward-text-secondary);
 }
 
 .v2SummaryDetailLabel {
@@ -1119,28 +1101,6 @@
   flex-shrink: 0;
   width: 66px;
   min-height: 20px;
-}
-
-.v2InnerHeader {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding-bottom: 12px;
-}
-
-.v2InnerBack {
-  width: 36px;
-  height: 36px;
-  border-radius: 100px;
-  border: 1px solid var(--reward-border);
-  background: #fff;
-  color: var(--reward-text-primary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0;
-  padding: 0;
-  cursor: pointer;
 }
 
 .v2InnerTitle {

@@ -1,3 +1,5 @@
+import { IconChevronRight } from '@tabler/icons-react'
+import { BoosterBadge } from '../../../ui/BoosterBadge'
 import { RewardEventIcon } from '../../../ui/RewardEventIcon'
 import type { ChipTone, HeroIcon } from '../../../domain/reward/types'
 import type { DetailRow } from '../configs/types'
@@ -11,21 +13,13 @@ type HeroProps = {
   chipClass: string
 }
 
-export function DetailHero({ heroIcon, amount, amountTone, chipText, chipClass }: HeroProps) {
+export function DetailHero({ heroIcon, amount, chipText, chipClass }: HeroProps) {
   return (
     <div className={styles.hero}>
       <div className={styles.heroIcon}>
         <RewardEventIcon kind={heroIcon} size={28} stroke={1.75} />
       </div>
-      <p
-        className={
-          amountTone === 'negative'
-            ? `${styles.heroAmount} ${styles.heroAmountNegative}`
-            : styles.heroAmount
-        }
-      >
-        {amount}
-      </p>
+      <p className={styles.heroAmount}>{amount}</p>
       <span className={`${styles.chip} ${chipClass}`}>{chipText}</span>
     </div>
   )
@@ -35,9 +29,21 @@ export function DetailFieldList({ rows }: { rows: DetailRow[] }) {
   return (
     <div className={styles.details}>
       {rows.map((row) => (
-        <div key={row.label} className={styles.detailRow}>
+        <div
+          key={row.label}
+          className={`${styles.detailRow} ${row.chevron ? styles.detailRowNav : ''}`}
+        >
           <p className={styles.detailLabel}>{row.label}</p>
-          <p className={styles.detailValue}>{row.value}</p>
+          <div className={styles.detailValueWrap}>
+            {row.valueDisplay === 'boosterTier' ? (
+              <BoosterBadge variant="tier">{row.value}</BoosterBadge>
+            ) : (
+              <p className={styles.detailValue}>{row.value}</p>
+            )}
+            {row.chevron ? (
+              <IconChevronRight size={20} stroke={2} className={styles.detailChevron} aria-hidden />
+            ) : null}
+          </div>
         </div>
       ))}
     </div>

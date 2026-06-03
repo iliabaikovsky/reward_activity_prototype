@@ -1,0 +1,42 @@
+---
+description: Куда класть markdown — docs/ по папкам, не в корень репо
+alwaysApply: true
+---
+
+# Документация — структура `docs/`
+
+Новые и переносимые **`.md`** (кроме `README.md` в корне) — в **`docs/`**, по смыслу. Не плодить файлы в корне репозитория.
+
+## Куда класть
+
+| Папка | Что сюда | Примеры |
+|-------|----------|---------|
+| `docs/product/` | Продукт, Kind ID, copy, lifecycle, каталоги транзакций | `TRANSACTIONS_CATALOG`, `REWARD_LIFECYCLE`, `TRANSACTION_SUMMARY_*` |
+| `docs/research/` | Внешние бенчмарки, gap analysis, Mobbin/Figma-исследования | `FINTECH_TRANSACTION_DETAIL_UX`, `*_GAP_ANALYSIS` |
+| `docs/architecture/` | Слои кода, рефакторинг, UX-map, потоки данных | `ARCHITECTURE`, `REFACTORING`, `UX_MAP` |
+| `docs/design/` | Figma, сверка UI, чеклисты копирайта | `DESIGN`, `FIGMA_CURSOR`, `COPY_CHECKLIST`, `DESIGN_*` |
+| `docs/deploy/` | Деплой, окружения | `DEPLOY` |
+| `docs/specs/` | Разовые/веточные спеки фич (не ядро CE-3142) | `*_SPEC`, `TASK_*`, прототипные варианты |
+
+**Корень репо:** только `README.md` (точка входа + таблица ссылок на `docs/`). Остальное — исключение до миграции (см. ниже).
+
+## Правила для агента
+
+1. **Новый документ** → сразу в подходящую папку `docs/<кластер>/`, имя `SCREAMING_SNAKE.md` или `kebab-case.md` как у соседей в той же папке.
+2. **Связанные доки** — относительные ссылки (`../product/TRANSACTIONS_CATALOG.md`), в §0 «Связанные документы» указывать актуальный путь.
+3. **Перенос из корня** — при явном запросе или при касании файла батчем: перенести + обновить ссылки в `README.md`, `.cursor/rules`, других `docs/**` (grep по старому имени).
+4. **Не дублировать** матрицы полей между `docs/product/*` и `docs/research/*` — research ссылается на product catalog.
+5. **Не трогать** `.cursor/plans/` — планы сессий остаются там, где Cursor их создаёт.
+
+## Корень репо
+
+В корне только **`README.md`** (и этот индекс через [`docs/README.md`](../docs/README.md)). Все прочие `.md` — под `docs/`.
+
+При переносе/переименовании: обновить ссылки в `README.md`, `docs/**`, `.cursor/rules`; grep по имени файла без пути.
+
+## Чеклист после нового/перенесённого doc
+
+- [ ] Файл в `docs/<кластер>/`, не в корне (кроме README)
+- [ ] Строка в `README.md` → «Документация», если документ входит в основной набор
+- [ ] Cross-links из `TRANSACTIONS_CATALOG` / architecture rules обновлены
+- [ ] Нет битых относительных путей (grep имя файла)

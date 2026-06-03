@@ -45,10 +45,16 @@ export function MobileTopNav({
 
   return (
     <header className={styles.topNavTitleActions}>
-      <button type="button" className={btnClass} aria-label="Back">
+      <button type="button" className={btnClass} onClick={onBack} aria-label="Back">
         <IconChevronLeft size={24} stroke={2} aria-hidden />
       </button>
-      {title ? <h1 className={styles.navTitle}>{title}</h1> : null}
+      {title ? (
+        <h1
+          className={`${styles.navTitle} ${theme === 'light' ? styles.navTitleLight : styles.navTitleOnDark}`}
+        >
+          {title}
+        </h1>
+      ) : null}
       <div>{actions ?? <span className={btnClass} aria-hidden />}</div>
     </header>
   )

@@ -1,0 +1,23 @@
+.badge {
+  flex-shrink: 0;
+  min-width: 20px;
+  padding: 2px 8px;
+  border-radius: 1000px;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 400;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* Figma Badge (iOS) info — list title x2 */
+.multiplier {
+  color: var(--reward-info-branded-content);
+  background: var(--reward-info-ultralight-badge);
+}
+
+/* Figma Chip (iOS) info — Booster row в деталке */
+.tier {
+  color: var(--reward-info-branded-content);
+  background: var(--reward-info-ultralight-badge);
+}

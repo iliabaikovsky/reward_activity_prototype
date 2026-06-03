@@ -9,12 +9,13 @@ export const ORDERS_PREVIEW_COUNT = 3
 function cloneOrderWithOrderNumber(src: OrderInPack, id: string, orderNum: string): OrderInPack {
   const next = structuredClone(src) as OrderInPack
   next.id = id
+  next.listBoosterBadge = src.listBoosterBadge
   next.meta = [src.meta[0] ?? 'Account: #12345678', `Order: ${orderNum}`]
   next.detail = {
     ...next.detail,
     details: next.detail.details.map((row) => {
       if (row.label === 'Order') return { ...row, value: orderNum }
-      if (row.label === 'Line ref.') return { ...row, value: `LY-ORD-${orderNum}` }
+      if (row.label === 'Order') return { ...row, value: orderNum, chevron: true as const }
       if (row.label === 'Conversion ref.') return { ...row, value: `CB-CONV-${orderNum}` }
       return row
     }),

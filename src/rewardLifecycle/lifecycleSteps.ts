@@ -2,22 +2,28 @@ import type { RewardModalVariant } from '../components/reward/rewardModalTypes'
 import type { RewardEventIcon } from '../domain/reward/types'
 import type { ActivityFeedGroup } from './activityFeedModel'
 import {
-  G_MAR14,
-  G_MAR15,
-  G_MAR16,
   G_MAR18,
   G_MAR19,
   G_MAR21,
   G_MAR24,
+  G_MAR25,
+  G_MAR26,
+  G_APR1,
+  G_APR19,
+  G_APR20,
 } from './feedGroupsData'
 import {
-  CB_PENDING_TRADE_DAY_SHORT,
+  CB_LIST_SUBTITLE,
   LOY_ACTIVATION_OPEN_SHORT,
   LOY_ACTIVATION_PREV_SHORT,
   LOY_PERIOD_OPEN_LABEL,
   LOY_PERIOD_PREV_LABEL,
   upcomingLoyaltyDate,
 } from './demoTimeline'
+
+/** Период loyalty для шага 9 (~Apr 20, месяц после старта Mar 20). */
+const LOY_PERIOD_MATURE_LABEL = 'Apr 13–19'
+const LOY_ACTIVATION_MATURE_SHORT = 'Apr 22'
 
 export type LifecycleUpcomingItem = {
   id: string
@@ -74,7 +80,7 @@ export type LifecycleStep = {
 
 /**
  * Шаги симулятора (индекс = фаза пути пользователя).
- * Даты от якоря **20 Mar 2026**; loyalty — период ср–вс, активация в следующую среду.
+ * Даты от якоря **20 Mar 2026**; loyalty — агрегат пн–вс, зачисление в среду после недели.
  * На каждом шаге своя `simulatorTodayIso` — «когда пользователь смотрит экран».
  */
 export const LIFECYCLE_STEPS: LifecycleStep[] = [
@@ -330,7 +336,7 @@ export const LIFECYCLE_STEPS: LifecycleStep[] = [
         icon: 'dollar',
         title: 'EXD cashback',
         amount: '+5.00 USD',
-        lines: [`For trading on ${CB_PENDING_TRADE_DAY_SHORT}`],
+        lines: [CB_LIST_SUBTITLE],
         date: 'on Mar 23',
         rewardModal: 'cashback-upcoming',
       },
@@ -410,7 +416,7 @@ export const LIFECYCLE_STEPS: LifecycleStep[] = [
         icon: 'dollar',
         title: 'EXD cashback',
         amount: '+5.00 USD',
-        lines: ['For trading on Mar 22', 'Account: #12345678'],
+        lines: [CB_LIST_SUBTITLE, 'Account: #12345678'],
         date: 'Mar 24, 08:00',
         rewardModal: 'cashback-activated',
       },
@@ -437,15 +443,15 @@ export const LIFECYCLE_STEPS: LifecycleStep[] = [
   },
   {
     id: 'mature_trader_tuesday',
-    label: 'Месяц торговли, вторник',
-    docRef: '§10 · 17 Mar — накладка loyalty + EXD cashback',
-    simulatorTodayIso: '2026-03-17',
+    label: 'Месяц торговли',
+    docRef: '§10 · 20 Apr — ~месяц после старта (20 Mar)',
+    simulatorTodayIso: '2026-04-20',
     simulatorBlurb: {
-      lead: 'Месяц торговли, вторник — две loyalty в Upcoming.',
+      lead: 'Прошёл ~месяц с первых шагов (20 Mar → 20 Apr).',
       bullets: [
-        'Lifetime cashback ~38 USD за месяц',
-        'EXD cashback капает каждый торговый день',
-        'Накладка Mar 11–15 (→ Mar 18) и Mar 18–22 (→ Mar 25)',
+        'Lifetime cashback ~38 USD за месяц ежедневной торговли',
+        'На счёте 62.40 EXD',
+        `В Upcoming: loyalty ${LOY_PERIOD_MATURE_LABEL} → ${LOY_ACTIVATION_MATURE_SHORT} и EXD cashback за Apr 20`,
       ],
     },
     availableRewardsExd: '0.00 EXD',
@@ -456,21 +462,13 @@ export const LIFECYCLE_STEPS: LifecycleStep[] = [
     tierEarnedExdTowardGoal: 54.8,
     upcoming: [
       {
-        id: 'up-loy-prev-mature',
+        id: 'up-loy-mature',
         icon: 'crown',
         title: 'Loyalty rewards',
-        amount: '+2.80 EXD',
-        lines: [`For trading on ${LOY_PERIOD_PREV_LABEL}`],
-        date: upcomingLoyaltyDate(LOY_ACTIVATION_PREV_SHORT),
-        rewardModal: 'loyalty-upcoming',
-      },
-      {
-        id: 'up-loy-open-mature',
-        icon: 'crown',
-        title: 'Loyalty rewards',
-        amount: '+1.20 EXD',
-        lines: [`For trading on ${LOY_PERIOD_OPEN_LABEL}`],
-        date: upcomingLoyaltyDate(LOY_ACTIVATION_OPEN_SHORT),
+        amount: '+3.40 EXD',
+        lines: [`For trading on ${LOY_PERIOD_MATURE_LABEL}`],
+        date: upcomingLoyaltyDate(LOY_ACTIVATION_MATURE_SHORT),
+        badge: '4',
         rewardModal: 'loyalty-upcoming',
       },
       {
@@ -478,28 +476,37 @@ export const LIFECYCLE_STEPS: LifecycleStep[] = [
         icon: 'dollar',
         title: 'EXD cashback',
         amount: '+4.50 USD',
-        lines: ['For trading on Mar 16'],
-        date: upcomingLoyaltyDate(LOY_ACTIVATION_PREV_SHORT),
+        lines: [CB_LIST_SUBTITLE],
+        date: 'on Apr 21',
         rewardModal: 'cashback-upcoming',
       },
     ],
     activityPreview: [
       {
-        id: 'prev-cb-mar16-mature',
+        id: 'prev-cb-apr19-mature',
         icon: 'dollar',
         title: 'EXD cashback',
-        amount: '+4.50 USD',
-        lines: ['For trading on Mar 16', 'Account: #12345678'],
-        date: 'Mar 16, 08:00',
+        amount: '+4.60 USD',
+        lines: [CB_LIST_SUBTITLE, 'Account: #12345678'],
+        date: 'Apr 20, 08:00',
         rewardModal: 'cashback-activated',
       },
       {
-        id: 'prev-cb-mar15-mature',
+        id: 'prev-cb-apr18-mature',
         icon: 'dollar',
         title: 'EXD cashback',
-        amount: '+3.80 USD',
-        lines: ['For trading on Mar 15', 'Account: #12345678'],
-        date: 'Mar 15, 08:00',
+        amount: '+4.80 USD',
+        lines: [CB_LIST_SUBTITLE, 'Account: #12345678'],
+        date: 'Apr 19, 08:00',
+        rewardModal: 'cashback-activated',
+      },
+      {
+        id: 'prev-cb-apr17-mature',
+        icon: 'dollar',
+        title: 'EXD cashback',
+        amount: '+4.20 USD',
+        lines: [CB_LIST_SUBTITLE, 'Account: #12345678'],
+        date: 'Apr 18, 08:00',
         rewardModal: 'cashback-activated',
       },
       {
@@ -511,16 +518,7 @@ export const LIFECYCLE_STEPS: LifecycleStep[] = [
         date: 'Mar 21, 09:30',
         rewardModal: 'transfer-exd',
       },
-      {
-        id: 'prev-gift-mature',
-        icon: 'gift',
-        title: 'Birthday gift',
-        amount: '+50.00 EXD',
-        lines: ['Best wishes! ✨'],
-        date: 'Mar 19, 16:15',
-        rewardModal: 'promo-gift',
-      },
     ],
-    feedGroups: [G_MAR21, G_MAR19, G_MAR18, G_MAR16, G_MAR15, G_MAR14],
+    feedGroups: [G_APR20, G_APR19, G_APR1, G_MAR26, G_MAR25, G_MAR24],
   },
 ]

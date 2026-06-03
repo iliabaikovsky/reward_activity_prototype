@@ -1,3 +1,4 @@
+import { formatListDateTimeLoose } from './formatListDateTime'
 import type { ActivityFeedItem } from '../../rewardLifecycle/activityFeedModel'
 import type {
   LifecycleActivityPreviewItem,
@@ -12,7 +13,7 @@ export function fromActivityFeedItem(item: ActivityFeedItem): TransactionRowMode
     amount: item.amount,
     amountTone: item.amountTone,
     lines: item.lines,
-    trailing: item.time,
+    trailing: formatListDateTimeLoose(item.time),
   }
 }
 
@@ -22,7 +23,7 @@ export function fromUpcomingItem(item: LifecycleUpcomingItem): TransactionRowMod
     title: item.title,
     amount: item.amount,
     lines: item.lines,
-    trailing: item.date,
+    trailing: formatListDateTimeLoose(item.date),
     badge: item.badge,
   }
 }
@@ -33,7 +34,7 @@ export function fromActivityPreview(item: LifecycleActivityPreviewItem): Transac
     title: item.title,
     amount: item.amount,
     lines: item.lines,
-    trailing: item.date,
+    trailing: formatListDateTimeLoose(item.date),
   }
 }
 

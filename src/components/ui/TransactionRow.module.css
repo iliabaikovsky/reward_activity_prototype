@@ -110,18 +110,6 @@
   white-space: nowrap;
 }
 
-.amountPositive {
-  color: var(--activity-amount-positive, #0d7a4f);
-}
-
-.amountNeutral {
-  color: var(--reward-text-primary);
-}
-
-.amountNegative {
-  color: var(--reward-text-primary);
-}
-
 .descRow {
   display: flex;
   gap: 4px;

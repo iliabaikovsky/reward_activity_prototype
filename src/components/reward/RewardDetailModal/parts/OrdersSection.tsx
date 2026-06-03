@@ -1,4 +1,5 @@
-import { IconChevronRight } from '@tabler/icons-react'
+import { formatListDateTimeLoose } from '../../../../domain/reward/formatListDateTime'
+import { BoosterBadge } from '../../../ui/BoosterBadge'
 import { OrderRowIcon as OrderRowIconComponent } from '../../../ui/RewardEventIcon'
 import type { OrderInPack } from '../configs/types'
 import styles from '../RewardDetailModal.module.css'
@@ -17,16 +18,13 @@ export function PackOrderRow({
       </div>
       <div className={styles.orderBody}>
         <div className={styles.orderHead}>
-          <p className={styles.orderTitle}>{order.title}</p>
-          <p
-            className={
-              order.amountClass === 'negative'
-                ? `${styles.orderAmount} ${styles.orderAmountNegative}`
-                : styles.orderAmount
-            }
-          >
-            {order.amount}
-          </p>
+          <div className={styles.orderTitleRow}>
+            <p className={styles.orderTitle}>{order.title}</p>
+            {order.listBoosterBadge ? (
+              <BoosterBadge variant="multiplier">{order.listBoosterBadge}</BoosterBadge>
+            ) : null}
+          </div>
+          <p className={styles.orderAmount}>{order.amount}</p>
         </div>
         <div className={styles.orderDesc}>
           <div className={styles.orderMeta}>
@@ -34,7 +32,7 @@ export function PackOrderRow({
               <p key={line}>{line}</p>
             ))}
           </div>
-          <p className={styles.orderDate}>{order.date}</p>
+          <p className={styles.orderDate}>{formatListDateTimeLoose(order.date)}</p>
         </div>
       </div>
     </button>
@@ -42,26 +40,24 @@ export function PackOrderRow({
 }
 
 export function OrdersSection({
-  previewCount,
   previewOrders,
   onOpenFullList,
   onSelectOrder,
 }: {
-  previewCount: number
   previewOrders: OrderInPack[]
   onOpenFullList: () => void
   onSelectOrder: (orderId: string) => void
 }) {
   return (
-    <section className={styles.ordersBlock} aria-label={`Last ${previewCount} orders`}>
+    <section className={styles.ordersBlock} aria-label="Last orders">
       <button
         type="button"
         className={styles.ordersNavRow}
         onClick={onOpenFullList}
-        aria-label={`Last ${previewCount} orders, open full list`}
+        aria-label="Last orders, see all"
       >
-        <h3 className={styles.ordersTitle}>Last {previewCount} orders</h3>
-        <IconChevronRight className={styles.ordersChevron} size={24} stroke={2} aria-hidden />
+        <h3 className={styles.ordersTitle}>Last orders</h3>
+        <span className={styles.ordersSeeAll}>See all</span>
       </button>
       {previewOrders.map((order) => (
         <PackOrderRow key={order.id} order={order} onSelect={() => onSelectOrder(order.id)} />

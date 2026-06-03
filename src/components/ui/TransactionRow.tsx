@@ -8,10 +8,7 @@ type Props = TransactionRowModel & {
   onClick?: () => void
 }
 
-function amountClassName(tone?: AmountTone): string {
-  if (tone === 'positive') return `${styles.amount} ${styles.amountPositive}`
-  if (tone === 'negative') return `${styles.amount} ${styles.amountNegative}`
-  if (tone === 'neutral') return `${styles.amount} ${styles.amountNeutral}`
+function amountClassName(_tone?: AmountTone): string {
   return styles.amount
 }
 

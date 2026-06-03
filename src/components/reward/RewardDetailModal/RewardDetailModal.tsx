@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useId, useMemo, useState } from 'react'
-import { IconX } from '@tabler/icons-react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { IconChevronLeft, IconX } from '@tabler/icons-react'
+import { ModalSheet } from '../../ui/ModalSheet'
 import type { RewardModalVariant } from '../rewardModalTypes'
 import {
   ORDERS_DEMO_TOTAL,
@@ -11,12 +12,18 @@ import {
   type PackConfig,
 } from './configs'
 import { DetailFieldList, DetailHero, chipClassFor } from './parts/DetailHero'
+import { OrderDetailContent } from './parts/OrderDetailView'
+import { OrdersListView } from './parts/OrdersListView'
 import { OrdersSection } from './parts/OrdersSection'
-import { OrdersSheetContent } from './parts/OrderDetailView'
 import styles from './RewardDetailModal.module.css'
 
 export type { OrderInPack, PackConfig } from './configs'
 export type { ChipTone, DetailRow, HeroIcon, OrderRowIcon } from '../../../domain/reward/types'
+
+type PackModalRoute =
+  | { screen: 'pack' }
+  | { screen: 'orders' }
+  | { screen: 'orderDetail'; orderId: string; from: 'pack' | 'orders' }
 
 type Props = {
   variant: RewardModalVariant
@@ -25,9 +32,8 @@ type Props = {
 }
 
 export function RewardDetailModal({ variant, onClose, packOverride }: Props) {
-  const [ordersSheetOpen, setOrdersSheetOpen] = useState(false)
-  const [sheetOrderId, setSheetOrderId] = useState<string | null>(null)
-  const ordersSheetTitleId = useId()
+  const [route, setRoute] = useState<PackModalRoute>({ screen: 'pack' })
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null)
 
   const pack =
     isPackVariant(variant) && packOverride != null
@@ -48,140 +54,152 @@ export function RewardDetailModal({ variant, onClose, packOverride }: Props) {
     [allOrders],
   )
 
-  const sheetOrder = sheetOrderId ? (allOrders.find((o) => o.id === sheetOrderId) ?? null) : null
+  const selectedOrder = useMemo(() => {
+    if (route.screen !== 'orderDetail') return null
+    return allOrders.find((o) => o.id === route.orderId) ?? null
+  }, [allOrders, route])
 
-  const openOrdersSheet = useCallback(() => {
-    setOrdersSheetOpen(true)
+  const popRoute = useCallback(() => {
+    setRoute((current) => {
+      if (current.screen === 'orderDetail') {
+        return current.from === 'orders' ? { screen: 'orders' } : { screen: 'pack' }
+      }
+      if (current.screen === 'orders') return { screen: 'pack' }
+      return current
+    })
   }, [])
 
-  const openOrderInSheet = useCallback((orderId: string) => {
-    setOrdersSheetOpen(true)
-    setSheetOrderId(orderId)
-  }, [])
+  const handleDismiss = useCallback(() => {
+    if (route.screen !== 'pack') {
+      popRoute()
+      return
+    }
+    onClose()
+  }, [onClose, popRoute, route.screen])
 
   useEffect(() => {
-    if (sheetOrderId && !sheetOrder) setSheetOrderId(null)
-  }, [sheetOrderId, sheetOrder])
-
-  const closeOrdersSheet = useCallback(() => {
-    setOrdersSheetOpen(false)
-    setSheetOrderId(null)
-  }, [])
-
-  useEffect(() => {
-    setOrdersSheetOpen(false)
-    setSheetOrderId(null)
+    setRoute({ screen: 'pack' })
   }, [variant, packOverride])
 
   useEffect(() => {
-    const prev = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    return () => {
-      document.body.style.overflow = prev
+    if (route.screen === 'orderDetail' && !selectedOrder) {
+      setRoute({ screen: 'pack' })
     }
+  }, [route, selectedOrder])
+
+  const openOrders = useCallback(() => {
+    setRoute({ screen: 'orders' })
   }, [])
 
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key !== 'Escape') return
-      if (sheetOrderId) {
-        setSheetOrderId(null)
-        return
-      }
-      if (ordersSheetOpen) {
-        closeOrdersSheet()
-        return
-      }
-      onClose()
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [closeOrdersSheet, onClose, ordersSheetOpen, sheetOrderId])
+  const openOrderFromPack = useCallback((orderId: string) => {
+    setRoute({ screen: 'orderDetail', orderId, from: 'pack' })
+  }, [])
+
+  const openOrderFromList = useCallback((orderId: string) => {
+    setRoute({ screen: 'orderDetail', orderId, from: 'orders' })
+  }, [])
+
+  const handleEdgeTouchStart = useCallback((e: React.TouchEvent) => {
+    const touch = e.touches[0]
+    if (!touch || touch.clientX > 24) return
+    touchStartRef.current = { x: touch.clientX, y: touch.clientY }
+  }, [])
+
+  const handleEdgeTouchEnd = useCallback(
+    (e: React.TouchEvent) => {
+      const start = touchStartRef.current
+      touchStartRef.current = null
+      if (!start || route.screen === 'pack') return
+
+      const touch = e.changedTouches[0]
+      if (!touch) return
+
+      const dx = touch.clientX - start.x
+      const dy = Math.abs(touch.clientY - start.y)
+      if (dx > 48 && dy < 80) popRoute()
+    },
+    [popRoute, route.screen],
+  )
 
   const chipClass = chipClassFor(pack ? pack.chip.tone : simple!.chip.tone, styles)
   const titleId = 'reward-detail-modal-title'
-  const navTitle = pack ? pack.navTitle : simple!.navTitle
-  const heroIcon = pack ? pack.heroIcon : simple!.heroIcon
-  const amount = pack ? pack.amount : simple!.amount
-  const amountTone = pack ? pack.amountTone : simple!.amountTone
-  const chipText = pack ? pack.chip.text : simple!.chip.text
-  const detailRows = pack ? pack.details : simple!.details
 
-  const handleOrdersBackdrop = useCallback(() => {
-    if (sheetOrderId) setSheetOrderId(null)
-    else closeOrdersSheet()
-  }, [closeOrdersSheet, sheetOrderId])
+  const navTitle =
+    route.screen === 'orders'
+      ? 'Orders'
+      : route.screen === 'orderDetail' && selectedOrder
+        ? selectedOrder.detail.navTitle
+        : pack
+          ? pack.navTitle
+          : simple!.navTitle
+
+  const navContentClass =
+    route.screen === 'pack'
+      ? styles.navContent
+      : `${styles.navContent} ${styles.navContentPushed}`
 
   return (
-    <div className={styles.root} role="presentation">
-      <button
-        type="button"
-        className={styles.backdrop}
-        onClick={onClose}
-        aria-label="Close"
-      />
+    <ModalSheet
+      open
+      onClose={handleDismiss}
+      onScrimDismiss={onClose}
+      titleId={titleId}
+      detent="large"
+    >
       <div
-        className={styles.panel}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
+        className={styles.sheetBody}
+        onTouchStart={handleEdgeTouchStart}
+        onTouchEnd={handleEdgeTouchEnd}
       >
         <header className={styles.header}>
-          <button type="button" className={styles.closeBtn} onClick={onClose} aria-label="Close">
-            <IconX size={24} stroke={2} aria-hidden />
-          </button>
+          {route.screen === 'pack' ? (
+            <button type="button" className={styles.closeBtn} onClick={onClose} aria-label="Close">
+              <IconX size={24} stroke={2} aria-hidden />
+            </button>
+          ) : (
+            <button type="button" className={styles.closeBtn} onClick={popRoute} aria-label="Back">
+              <IconChevronLeft size={24} stroke={2} aria-hidden />
+            </button>
+          )}
           <h2 className={styles.navTitle} id={titleId}>
             {navTitle}
           </h2>
           <span aria-hidden className={styles.headerSpacer} />
         </header>
 
-        <div className={styles.scroll}>
-          <DetailHero
-            heroIcon={heroIcon}
-            amount={amount}
-            amountTone={amountTone}
-            chipText={chipText}
-            chipClass={chipClass}
-          />
-          <DetailFieldList rows={detailRows} />
+        <div className={styles.navViewport}>
+          <div key={route.screen === 'orderDetail' ? route.orderId : route.screen} className={navContentClass}>
+            {route.screen === 'pack' && (
+              <div className={styles.scroll}>
+                <DetailHero
+                  heroIcon={pack ? pack.heroIcon : simple!.heroIcon}
+                  amount={pack ? pack.amount : simple!.amount}
+                  amountTone={pack ? pack.amountTone : simple!.amountTone}
+                  chipText={pack ? pack.chip.text : simple!.chip.text}
+                  chipClass={chipClass}
+                />
+                <DetailFieldList rows={pack ? pack.details : simple!.details} />
 
-          {pack ? (
-            <OrdersSection
-              previewCount={ORDERS_PREVIEW_COUNT}
-              previewOrders={previewOrders}
-              onOpenFullList={openOrdersSheet}
-              onSelectOrder={openOrderInSheet}
-            />
-          ) : null}
-        </div>
-      </div>
+                {pack ? (
+                  <OrdersSection
+                    previewOrders={previewOrders}
+                    onOpenFullList={openOrders}
+                    onSelectOrder={openOrderFromPack}
+                  />
+                ) : null}
+              </div>
+            )}
 
-      {ordersSheetOpen && pack ? (
-        <div className={styles.ordersLayer} role="presentation">
-          <button
-            type="button"
-            className={styles.ordersBackdrop}
-            onClick={handleOrdersBackdrop}
-            aria-label={sheetOrderId ? 'Back' : 'Close'}
-          />
-          <div
-            className={styles.ordersPanel}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby={ordersSheetTitleId}
-          >
-            <OrdersSheetContent
-              titleId={ordersSheetTitleId}
-              allOrders={allOrders}
-              sheetOrder={sheetOrder}
-              onBackFromOrder={() => setSheetOrderId(null)}
-              onClose={closeOrdersSheet}
-              onSelectOrder={setSheetOrderId}
-            />
+            {route.screen === 'orders' && pack ? (
+              <OrdersListView allOrders={allOrders} onSelectOrder={openOrderFromList} />
+            ) : null}
+
+            {route.screen === 'orderDetail' && selectedOrder ? (
+              <OrderDetailContent order={selectedOrder} />
+            ) : null}
           </div>
         </div>
-      ) : null}
-    </div>
+      </div>
+    </ModalSheet>
   )
 }

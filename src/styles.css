@@ -41,7 +41,11 @@
   --reward-exness-yellow: #ffde02;
   --reward-exness-contrast: #000000;
   --reward-info-content: #44a2fa;
+  --reward-info-branded-content: #1172cc;
   --reward-info-ultralight: rgba(21, 139, 249, 0.16);
+  --reward-info-ultralight-badge: rgba(21, 139, 249, 0.08);
+  --reward-success-branded-content: #0e7337;
+  --reward-success-ultralight: rgba(70, 205, 124, 0.08);
   --reward-neutral-ultralight: rgba(108, 133, 149, 0.08);
   --activity-amount-positive: #0d7a4f;
 
@@ -53,6 +57,22 @@
   --modal-warning-content: #b45309;
   --modal-success-bg: rgba(13, 122, 79, 0.12);
   --modal-success-content: #0d7a4f;
+
+  /* Vertical rhythm between Rewards screen sections */
+  --section-stack-gap: 40px;
+  /* Room for wallet card Shadow/MD inside horizontal scroll (see walletsScroll) */
+  --wallet-scroll-shadow-pad: 26px;
+
+  /* iOS modal sheet container (HIG) */
+  --sheet-scrim: rgba(0, 0, 0, 0.4);
+  --sheet-radius-top: 12px;
+  --sheet-grabber-width: 36px;
+  --sheet-grabber-height: 5px;
+  --sheet-grabber-color: var(--reward-border);
+  --sheet-shadow: 0 -4px 24px rgba(0, 0, 0, 0.12);
+  --sheet-detent-medium-max: min(72vh, 520px);
+  --sheet-detent-large-max: 96%;
+  --sheet-safe-bottom: max(8px, env(safe-area-inset-bottom, 0px));
 }
 
 * {

@@ -5,6 +5,8 @@ export type OrderInPack = {
   id: string
   listIcon: OrderRowIcon
   title: string
+  /** Figma 41788:19744 — multiplier chip у title (loyalty order list). */
+  listBoosterBadge?: string
   amount: string
   amountClass?: 'negative'
   meta: string[]

@@ -1,0 +1,23 @@
+# Документация CE-3142
+
+Точка входа — [`README.md`](../README.md) в корне репозитория.
+
+## Структура
+
+| Папка | Содержание |
+|-------|------------|
+| [`product/`](product/) | Каталог транзакций, lifecycle, copy drill-in |
+| [`research/`](research/) | Fintech UX benchmark (Mobbin), gap analysis |
+| [`architecture/`](architecture/) | Поток данных, рефакторинг, UX map |
+| [`design/`](design/) | Figma, FIGMA_CURSOR, чеклисты, spread rebate design |
+| [`deploy/`](deploy/) | Vercel, Basic Auth |
+| [`specs/`](specs/) | Spread rebate: task, prototype spec, варианты |
+
+## Часто используемые
+
+- [`product/TRANSACTIONS_CATALOG.md`](product/TRANSACTIONS_CATALOG.md) — Kind ID, поля list/modal/order
+- [`product/REWARD_LIFECYCLE.md`](product/REWARD_LIFECYCLE.md) — 9 шагов симулятора, цифры моков
+- [`architecture/ARCHITECTURE.md`](architecture/ARCHITECTURE.md) — модули и regression checklist
+- [`design/DESIGN.md`](design/DESIGN.md) — Figma node-id
+
+Правило для агента: [`.cursor/rules/docs-structure.mdc`](../.cursor/rules/docs-structure.mdc).

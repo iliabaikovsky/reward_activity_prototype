@@ -23,7 +23,8 @@ alwaysApply: true
 | 8 | `LifecycleActivityIcon` и отдельный `ActivityFeedIcon` union | `RewardEventIcon` в `domain/reward/types.ts` | Один union иконок; adapters мапят source types → `TransactionRowModel` |
 | 9 | `function FilterChip()` внутри `ActivityFeedScreen.tsx` | `components/ui/` если 2+ экрана или переиспользуемый паттерн | Screen-specific hero/tier/wallets — OK в screen; generic UI — в `components/ui/` |
 | 10 | `import from '../RewardDetailModal'` после move | Barrel `RewardDetailModal/index.ts`, grep старых путей | После move/rename: `npm run build`, grep deleted paths |
-| 11 | README «шаблон Figma → Vercel» для CE-3142 | README про Exness Rewards + ссылки на `ARCHITECTURE.md`, `REWARD_LIFECYCLE.md` | Доки описывают **этот** продукт, не generic template |
+| 11 | README «шаблон Figma → Vercel» для CE-3142 | README про Exness Rewards + ссылки на `docs/architecture/`, `docs/product/` | Доки описывают **этот** продукт, не generic template |
+| 12 | Новый `SOMETHING.md` в корне репо | `docs/<product\|research\|architecture\|design\|deploy\|specs>/` — см. [`docs-structure.mdc`](docs-structure.mdc) | Benchmark, catalog, spec → нужная подпапка; README только в корне |
 
 **Также не делать:** новые npm без запроса; generic modal registry/factory; hero tier в shared UI; React в `domain/`; mock data в `screens/`; правки `.cursor/plans/`.
 
@@ -65,7 +66,7 @@ RewardDetailModal/configs  ──►  статический контент мо
 buildLoyaltyModalPack  ──►  динамический PackConfig для loyalty (packOverride)
 ```
 
-- Mock-цифры и сценарий — `REWARD_LIFECYCLE.md`; якорные даты — `demoTimeline.ts`.
+- Mock-цифры и сценарий — `docs/product/REWARD_LIFECYCLE.md`; якорные даты — `demoTimeline.ts`.
 - Не дублировать разметку строк: данные → adapter → `TransactionRow`.
 
 ## Добавить transaction type (лента / preview / upcoming)
@@ -85,7 +86,7 @@ buildLoyaltyModalPack  ──►  динамический PackConfig для loy
 
 1. Новый объект в `LIFECYCLE_STEPS` (`lifecycleSteps.ts`): wallets, upcoming, activityPreview, feedGroups.
 2. Переиспользовать группы из `feedGroupsData.ts`; не inline дублировать большие feed blocks.
-3. Обновить `REWARD_LIFECYCLE.md` при смене бизнес-цифр.
+3. Обновить `docs/product/REWARD_LIFECYCLE.md` при смене бизнес-цифр.
 
 ## Feature flags
 
@@ -97,7 +98,7 @@ buildLoyaltyModalPack  ──►  динамический PackConfig для loy
 
 - Компонент: co-located `*.module.css`.
 - Цвета/spacing/radius — `var(--…)` из `:root` в `styles.css`; новые токены добавлять туда, не хардкодить hex в модулях без причины.
-- Figma node-id — `data-node-id` на корне screen при сверке (`DESIGN.md`).
+- Figma node-id — `data-node-id` на корне screen при сверке (`docs/design/DESIGN.md`).
 
 ## Checklist после изменений
 
@@ -122,4 +123,4 @@ buildLoyaltyModalPack  ──►  динамический PackConfig для loy
 
 Push не удался — описать ошибку, не имитировать успех.
 
-Подробнее: [`REFACTORING.md`](../../REFACTORING.md), [`ARCHITECTURE.md`](../../ARCHITECTURE.md).
+Подробнее: [`REFACTORING.md`](../../docs/architecture/REFACTORING.md), [`ARCHITECTURE.md`](../../docs/architecture/ARCHITECTURE.md).

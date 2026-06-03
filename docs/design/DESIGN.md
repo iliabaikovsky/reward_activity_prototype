@@ -15,10 +15,11 @@
 
 ## Контекст для разработки
 
-- **Жизненный цикл EXD / Cashback и примеры с цифрами:** см. **`REWARD_LIFECYCLE.md`**
+- **Жизненный цикл EXD / Cashback и примеры с цифрами:** см. [`REWARD_LIFECYCLE.md`](../product/REWARD_LIFECYCLE.md)
 - **Платформа:** Web, мобильный вьюпорт **375px** (`max-width` в `.app-container`)
 - **Экраны в этом прототипе:** **Exness Rewards** (полный экран по ноде): тёмный hero (статус Ultimate, прогресс EXD), карусель кошельков, How to earn, Upcoming, Lifetime cashback, Activity feed
-- **Состояния:** клик по строке открывает bottom sheet. Для **Loyalty / Cashback** (пачки): сверху детали пачки, блок ордеров (как Figma `42104:17559`, `42104:17168`): строка **Last 3 orders** + chevron открывает второй sheet со **всем** списком; ниже превью **трёх** последних (тот же порядок, что в полном списке); клик по превью → сразу деталька ордера во втором sheet. Заголовок второго sheet по-прежнему **Orders**. **Назад** (chevron / backdrop / Escape). Остальные типы — только верхний уровень.
+- **Состояния:** клик по строке открывает **iOS modal sheet** (`ModalSheet`: scrim, grabber, slide-up). **BottomSheet** (фильтры Activity) — medium detent; **RewardDetailModal** — **large** (96%) на всех шагах (pack / Orders / detail), без скачка высоты при push. Внутренняя навигация push/pop; **Last orders** + **See all**; Back без X на nested. Закрытие (X / backdrop) — только с корня pack.
+- **Rewards screen:** между секциями (низ контента → заголовок следующей) **40px** (`--section-stack-gap`), без spacer-div.
 - **Не делать в v1:** реальный API, ассеты Figma по CDN (истекают ~7 дней) — в коде упрощённые иллюстрации
 
 ## Сверка с Figma (чеклист)
@@ -41,7 +42,8 @@
 | `42104:17168` | `RewardDetailModal` — `cashback-upcoming` | Cashback pending |
 | `42104:17387` | `RewardDetailModal` — `cashback-activated` | Cashback credited |
 | — | `TransactionRow` | Строки Upcoming / preview / feed |
-| — | `BottomSheet` | Filter sheets (Type, Date) на Activity feed |
+| — | `ModalSheet` | iOS HIG sheet shell (scrim, grabber, detents) |
+| — | `BottomSheet` | Filter sheets (Type, Date) → `ModalSheet` medium |
 | — | `MobileScreenShell` | Status bar, nav, bottom safe area |
 
 Конфиги модалок: `src/components/reward/RewardDetailModal/configs/`. Динамический loyalty pack: `buildLoyaltyModalPack.ts`.
@@ -49,7 +51,7 @@
 ## Референсы
 
 - Тикет: CE-3142
-- См. `FIGMA_CURSOR.md` — для точной верстки включи **Figma MCP** и попроси агента сверить отступы/типографику по ноде `42104:10683`.
+- См. [`FIGMA_CURSOR.md`](FIGMA_CURSOR.md) — для точной верстки включи **Figma MCP** и попроси агента сверить отступы/типографику по ноде `42104:10683`.
 
 ---
 

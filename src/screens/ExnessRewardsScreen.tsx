@@ -8,6 +8,7 @@ import {
   IconInfoCircle,
 } from '@tabler/icons-react'
 import { RewardEventIcon } from '../components/ui/RewardEventIcon'
+import { MobileStatusBar, MobileTopNav } from '../components/ui/MobileScreenShell'
 import { HIDE_TRANSACTION_BADGES } from '../domain/reward/featureFlags'
 import { parseExdAmount, parseWalletExdBalance } from '../domain/reward/parseExd'
 import type { RewardEventIcon as RewardEventIconKind } from '../domain/reward/types'
@@ -21,8 +22,12 @@ import { parseUpcomingPayoutDate, parseDemoToday } from '../rewardLifecycle/demo
 import { parseSignedAmount } from '../rewardLifecycle/rebateSimulatorSteps'
 import styles from './ExnessRewardsScreen.module.css'
 
+/** Превью Activity feed на главном экране — только N последних строк (новые первые). */
+const ACTIVITY_FEED_PREVIEW_MAX = 3
+
 /** Временно скрываем бейдж — см. domain/reward/featureFlags.ts */
 const TIER_EXD_GOAL = 1000
+
 type V2SummaryCurrencyPage = 'usd' | 'exd'
 
 /** Убирает знак +/-, оставляя формат суммы для UI-лейбла. */
@@ -34,17 +39,6 @@ function scrollDeviceFrameToTop(): void {
   if (typeof document === 'undefined') return
   const el = document.querySelector('.device-frame-scroll')
   if (el instanceof HTMLElement) el.scrollTo(0, 0)
-}
-
-function DrillScreenStatusBar() {
-  return (
-    <div className={styles.drillStatusBarBand}>
-      <div className={styles.statusBar}>
-        <span className={styles.statusTime}>9:41</span>
-        <span className={styles.statusRight} aria-hidden />
-      </div>
-    </div>
-  )
 }
 
 function fmtSignedAmount(value: number, currency: 'USD' | 'EXD'): string {
@@ -81,6 +75,7 @@ type SummaryPayoutEntry = {
   line1: string
   icon: RewardEventIconKind
   countBadge?: string
+  rewardModal: RewardModalVariant
 }
 
 /** Drill-in Upcoming: строки из lifecycle `upcoming[]`, без синтеза. */
@@ -109,6 +104,7 @@ function buildDrillEntriesFromUpcoming(
         line1: item.lines[0] ?? '',
         icon: item.icon,
         countBadge: item.badge,
+        rewardModal: item.rewardModal,
       }
     })
 }
@@ -199,14 +195,13 @@ function V2SummaryCurrencyDetailPage({
   currency,
   upcomingItems,
   demoTodayIso,
-  onBack,
+  onOpenRewardModal,
 }: {
   currency: V2SummaryCurrencyPage
   upcomingItems: LifecycleUpcomingItem[]
   demoTodayIso: string
-  onBack: () => void
+  onOpenRewardModal?: (variant: RewardModalVariant, itemId: string) => void
 }) {
-  const title = currency === 'usd' ? 'Upcoming cashback' : 'Upcoming rewards'
   const unit = currency.toUpperCase() as 'USD' | 'EXD'
 
   const entries = useMemo(
@@ -227,19 +222,21 @@ function V2SummaryCurrencyDetailPage({
     const tomorrow = new Date(today)
     tomorrow.setDate(today.getDate() + 1)
     const groups = new Map<string, V2UpcomingRowData[]>()
-    entries.forEach((entry, idx) => {
+    entries.forEach((entry) => {
       const isTomorrow = entry.payoutDate.getTime() === tomorrow.getTime()
       const key = isTomorrow
         ? 'Tomorrow'
         : entry.payoutDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
       const row: V2UpcomingRowData = {
-        id: `${entry.id}-${idx}`,
+        id: entry.id,
         icon: entry.icon,
         title: entry.title,
         amount: fmtSignedAmount(entry.amount, unit),
         line1: entry.line1,
         date: '',
         countBadge: entry.countBadge,
+        rewardModal: entry.rewardModal,
+        upcomingId: entry.id,
       }
       const arr = groups.get(key)
       if (arr) arr.push(row)
@@ -254,18 +251,13 @@ function V2SummaryCurrencyDetailPage({
 
   return (
     <div className={styles.v2SummaryDetailPage}>
-      <div className={styles.v2SummaryDetailTop}>
-        <button type="button" className={styles.v2InnerBack} onClick={onBack} aria-label="Back">
-          <IconChevronLeft size={22} stroke={2} aria-hidden />
-        </button>
-        <p className={styles.v2SummaryDetailNavTitle}>{title}</p>
-      </div>
-
       <div className={styles.v2SummaryDetailHero}>
-        <p className={styles.v2SummaryDetailLabel}>{title}</p>
-        <p className={styles.v2SummaryDetailAmount}>
-          {unsignedAmountLabel(fmtSignedAmount(viewTotal, unit as 'USD' | 'EXD'))}
-        </p>
+        <div className={styles.v2SummaryDetailTotalRow}>
+          <p className={styles.v2SummaryDetailTotalLabel}>Total upcoming</p>
+          <p className={styles.v2SummaryDetailAmount}>
+            {unsignedAmountLabel(fmtSignedAmount(viewTotal, unit as 'USD' | 'EXD'))}
+          </p>
+        </div>
       </div>
 
       {groupedRows.map((group) =>
@@ -273,7 +265,15 @@ function V2SummaryCurrencyDetailPage({
           <div key={group.id} className={styles.v2SummaryDetailGroup}>
             <p className={styles.v2DateHeading}>{group.heading}</p>
             {group.rows.map((row) => (
-              <V2UpcomingRow key={row.id} row={row} />
+              <V2UpcomingRow
+                key={row.id}
+                row={row}
+                onOpenDetail={
+                  onOpenRewardModal && row.rewardModal && row.upcomingId
+                    ? () => onOpenRewardModal(row.rewardModal!, row.upcomingId)
+                    : undefined
+                }
+              />
             ))}
           </div>
         ) : null,
@@ -314,6 +314,9 @@ type V2UpcomingRowData = {
   filterProgram?: 'loyalty' | 'rebates'
   /** Фильтр drill-in: USD vs EXD. */
   filterEquity?: 'usd' | 'exd'
+  rewardModal?: RewardModalVariant
+  /** id строки в lifecycle.upcoming[] для packOverride. */
+  upcomingId?: string
 }
 
 function TransactionRow({
@@ -370,9 +373,11 @@ function TransactionRow({
 function V2UpcomingRow({
   row,
   onOpenRebateLedger,
+  onOpenDetail,
 }: {
   row: V2UpcomingRowData
   onOpenRebateLedger?: () => void
+  onOpenDetail?: () => void
 }) {
   const dateCell =
     row.date.trim().length > 0 ? (
@@ -416,6 +421,14 @@ function V2UpcomingRow({
     )
   }
 
+  if (onOpenDetail) {
+    return (
+      <button type="button" className={styles.v2RowBtn} onClick={onOpenDetail}>
+        {body}
+      </button>
+    )
+  }
+
   return <div className={styles.v2Row}>{body}</div>
 }
 
@@ -424,7 +437,7 @@ type ExnessRewardsScreenProps = {
   simulatorStepId: string
   /** `category: 'cashback'` — с Lifetime cashback; без opts — с Activity feed */
   onOpenActivityFeed?: (opts?: { category?: ActivityTypeFilter }) => void
-  onOpenRewardModal?: (variant: RewardModalVariant, feedItemId?: string) => void
+  onOpenRewardModal?: (variant: RewardModalVariant, itemId?: string) => void
   availableRewardsExd: string
   tradingWalletLabel: string
   tradingWalletValue: string
@@ -504,6 +517,11 @@ export function ExnessRewardsScreen({
     [upcomingItems],
   )
 
+  const activityPreviewVisible = useMemo(
+    () => activityPreviewItems.slice(0, ACTIVITY_FEED_PREVIEW_MAX),
+    [activityPreviewItems],
+  )
+
   useEffect(() => {
     setV2SummaryCurrencyPage(null)
   }, [simulatorStepId])
@@ -513,15 +531,24 @@ export function ExnessRewardsScreen({
   }, [v2SummaryCurrencyPage])
 
   if (v2SummaryCurrencyPage) {
+    const drillNavTitle =
+      v2SummaryCurrencyPage === 'usd' ? 'Upcoming cashback' : 'Upcoming rewards'
+
     return (
       <div className={`${styles.screen} ${styles.screenDrillOnly}`} data-node-id="42104:10683">
-        <DrillScreenStatusBar />
+        <MobileStatusBar theme="light" />
+        <MobileTopNav
+          theme="light"
+          navVariant="titleWithActions"
+          title={drillNavTitle}
+          onBack={() => setV2SummaryCurrencyPage(null)}
+        />
         <div className={styles.flexDrillPageRoot}>
           <V2SummaryCurrencyDetailPage
             currency={v2SummaryCurrencyPage}
             upcomingItems={upcomingItems}
             demoTodayIso={demoTodayIso}
-            onBack={() => setV2SummaryCurrencyPage(null)}
+            onOpenRewardModal={onOpenRewardModal}
           />
         </div>
       </div>
@@ -632,21 +659,21 @@ export function ExnessRewardsScreen({
           </div>
         </div>
 
-        <div className={styles.sectionSpacer} aria-hidden />
-        <SectionTitle title="How to earn rewards" />
-        <div className={styles.banner}>
-          <div className={styles.bannerText}>
-            <p className={styles.bannerTitle}>Long-term rebates</p>
-            <p className={styles.bannerDesc}>Trade and get rebates after 60 day.</p>
+        <section className={styles.sectionBlock}>
+          <SectionTitle title="How to earn rewards" />
+          <div className={styles.banner}>
+            <div className={styles.bannerText}>
+              <p className={styles.bannerTitle}>Long-term rebates</p>
+              <p className={styles.bannerDesc}>Trade and get rebates after 60 day.</p>
+            </div>
+            <div className={styles.bannerArt} aria-hidden>
+              💸
+            </div>
           </div>
-          <div className={styles.bannerArt} aria-hidden>
-            💸
-          </div>
-        </div>
+        </section>
 
-        <div className={styles.sectionSpacer} aria-hidden />
         {showUpcomingSection ? (
-          <>
+          <section className={styles.sectionBlock}>
             <SectionTitle title="Upcoming" showChevron={false} />
             <V2SummaryUpcomingBlock
               showUsd={showUpcomingUsd}
@@ -656,41 +683,43 @@ export function ExnessRewardsScreen({
               onOpenUsd={() => setV2SummaryCurrencyPage('usd')}
               onOpenExd={() => setV2SummaryCurrencyPage('exd')}
             />
-          </>
+          </section>
         ) : null}
 
-        <div className={styles.sectionSpacer} aria-hidden />
-        <SectionTitle
-          title="Lifetime cashback"
-          onClick={() => onOpenActivityFeed?.({ category: 'cashback' })}
-        />
-        <div className={styles.cashbackCard}>
-          <p className={styles.cashbackLabel}>Your earned for all time</p>
-          <p className={styles.cashbackValue}>{lifetimeCashbackUsd}</p>
-          <div className={styles.cashbackCoin} aria-hidden>
-            💵
+        <section className={styles.sectionBlock}>
+          <SectionTitle
+            title="Lifetime cashback"
+            onClick={() => onOpenActivityFeed?.({ category: 'cashback' })}
+          />
+          <div className={styles.cashbackCard}>
+            <p className={styles.cashbackLabel}>Your earned for all time</p>
+            <p className={styles.cashbackValue}>{lifetimeCashbackUsd}</p>
+            <div className={styles.cashbackCoin} aria-hidden>
+              💵
+            </div>
           </div>
-        </div>
+        </section>
 
-        <div className={styles.sectionSpacer} aria-hidden />
-        <SectionTitle title="Activity feed" onClick={() => onOpenActivityFeed?.()} />
-        {activityPreviewItems.length === 0 ? (
-          <p className={styles.emptyHint}>No transactions yet</p>
-        ) : (
-          activityPreviewItems.map((row) => (
-            <TransactionRow
-              key={row.id}
-              icon={<RewardEventIcon kind={row.icon} />}
-              title={row.title}
-              amount={row.amount}
-              lines={row.lines}
-              date={row.date}
-              onOpenDetail={
-                onOpenRewardModal ? () => onOpenRewardModal(row.rewardModal) : undefined
-              }
-            />
-          ))
-        )}
+        <section className={styles.sectionBlock}>
+          <SectionTitle title="Activity feed" onClick={() => onOpenActivityFeed?.()} />
+          {activityPreviewVisible.length === 0 ? (
+            <p className={styles.emptyHint}>No transactions yet</p>
+          ) : (
+            activityPreviewVisible.map((row) => (
+              <TransactionRow
+                key={row.id}
+                icon={<RewardEventIcon kind={row.icon} />}
+                title={row.title}
+                amount={row.amount}
+                lines={row.lines}
+                date={row.date}
+                onOpenDetail={
+                  onOpenRewardModal ? () => onOpenRewardModal(row.rewardModal) : undefined
+                }
+              />
+            ))
+          )}
+        </section>
 
         <div className={styles.bottomSafe} aria-hidden />
       </div>

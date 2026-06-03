@@ -80,10 +80,20 @@
 .navTitle {
   margin: 0;
   justify-self: center;
-  font-size: 17px;
-  font-weight: 600;
-  line-height: 22px;
+  font-size: 16px;
+  font-weight: 590;
+  line-height: 24px;
   text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.navTitleLight {
+  color: var(--reward-text-primary);
+}
+
+.navTitleOnDark {
   color: var(--reward-text-on-dark);
 }
 

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { RewardDetailModal } from './components/reward/RewardDetailModal'
 import type { RewardModalVariant } from './components/reward/rewardModalTypes'
-import { buildLoyaltyModalPackOverride } from './rewardLifecycle/buildLoyaltyModalPack'
+import { buildRewardModalPackOverride } from './rewardLifecycle/buildLoyaltyModalPack'
 import { LifecycleSimulatorPanel } from './rewardLifecycle/LifecycleSimulatorPanel'
 import { LIFECYCLE_STEPS } from './rewardLifecycle/lifecycleSteps'
 import { DeviceFrameProvider } from './context/DeviceFrameContext'
@@ -18,7 +18,7 @@ function App() {
   const [route, setRoute] = useState<Route>('rewards')
   const [rewardModal, setRewardModal] = useState<{
     variant: RewardModalVariant
-    feedItemId?: string
+    itemId?: string
   } | null>(null)
   const [activityTypeFilter, setActivityTypeFilter] = useState<ActivityTypeFilter>('all')
   const [activityDatePreset, setActivityDatePreset] = useState<ActivityDatePreset>('all')
@@ -38,9 +38,9 @@ function App() {
     setRoute('activity')
   }
 
-  const loyaltyPackOverride = useMemo(() => {
+  const rewardPackOverride = useMemo(() => {
     if (!rewardModal) return null
-    return buildLoyaltyModalPackOverride(lifecycle, rewardModal.variant, rewardModal.feedItemId)
+    return buildRewardModalPackOverride(lifecycle, rewardModal.variant, rewardModal.itemId)
   }, [lifecycle, rewardModal])
 
   return (
@@ -52,7 +52,7 @@ function App() {
               <ExnessRewardsScreen
                 simulatorStepId={lifecycle.id}
                 onOpenActivityFeed={(opts) => openActivity(opts)}
-                onOpenRewardModal={(v, id) => setRewardModal({ variant: v, feedItemId: id })}
+                onOpenRewardModal={(v, itemId) => setRewardModal({ variant: v, itemId })}
                 availableRewardsExd={lifecycle.availableRewardsExd}
                 tradingWalletLabel={lifecycle.tradingWalletLabel}
                 tradingWalletValue={lifecycle.tradingWalletValue}
@@ -66,7 +66,7 @@ function App() {
             ) : (
               <ActivityFeedScreen
                 onBack={() => setRoute('rewards')}
-                onOpenRewardModal={(v, id) => setRewardModal({ variant: v, feedItemId: id })}
+                onOpenRewardModal={(v, itemId) => setRewardModal({ variant: v, itemId })}
                 typeFilter={activityTypeFilter}
                 onTypeFilterChange={setActivityTypeFilter}
                 datePreset={activityDatePreset}
@@ -80,7 +80,7 @@ function App() {
           {rewardModal ? (
             <RewardDetailModal
               variant={rewardModal.variant}
-              packOverride={loyaltyPackOverride}
+              packOverride={rewardPackOverride}
               onClose={() => setRewardModal(null)}
             />
           ) : null}

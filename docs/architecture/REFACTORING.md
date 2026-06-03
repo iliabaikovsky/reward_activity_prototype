@@ -1,6 +1,6 @@
 # Refactoring guide
 
-Краткий справочник по структуре прототипа. Cursor rule (always apply): [`.cursor/rules/reward-prototype-refactor.mdc`](.cursor/rules/reward-prototype-refactor.mdc).
+Краткий справочник по структуре прототипа. Cursor rule (always apply): [`.cursor/rules/reward-prototype-refactor.mdc`](../../.cursor/rules/reward-prototype-refactor.mdc).
 
 ## Быстрая карта
 
@@ -79,7 +79,7 @@ rewardLifecycle/   lifecycleSteps, feedGroupsData, buildLoyaltyModalPack
 ### 11. Generic README вместо продукта
 
 - **❌ Плохо:** README «шаблон Figma → Vercel» без упоминания Exness Rewards / CE-3142.
-- **✅ Хорошо:** README описывает этот прототип; архитектура — `ARCHITECTURE.md`, сценарий — `REWARD_LIFECYCLE.md`.
+- **✅ Хорошо:** README описывает этот прототип; архитектура — `docs/architecture/ARCHITECTURE.md`, сценарий — `docs/product/REWARD_LIFECYCLE.md`.
 - **Проверь:** новый разработчик понимает продукт из README, не только «как скопировать шаблон».
 
 ### Прочее — не делать
@@ -118,7 +118,7 @@ rewardLifecycle/   lifecycleSteps, feedGroupsData, buildLoyaltyModalPack
 ### Новый шаг симулятора
 
 1. Запись в `LIFECYCLE_STEPS`.
-2. Сверка с [`REWARD_LIFECYCLE.md`](REWARD_LIFECYCLE.md).
+2. Сверка с [`REWARD_LIFECYCLE.md`](../product/REWARD_LIFECYCLE.md).
 
 ### Скрыть UI временно
 
