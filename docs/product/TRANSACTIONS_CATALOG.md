@@ -262,11 +262,11 @@ flowchart TB
 | `amount` | +3.70 USD | из `row.amount` | `total_usd` |
 | `details[0]` | **Credits on** | `creditsOn(row.date)` | `credit_at` |
 | `details[1]` | **For trading with EXD on** | value: `CB_PENDING_TRADE_DAY_SHORT` если list без даты | `trade_day` |
-| `orders[]` | EXD → Cashback legs | split USD → EXD debit per order | |
+| `orders[]` | **+USD** per order; meta `For trading with EXD` + Order | split total USD; EXD debited in order detail | |
 
 #### Order (cashback leg — upcoming or credited pack)
 
-List: `EXD → Cashback`, amount **negative** EXD. Detail `chip`: **Debited** / neutral (всегда, не Upcoming/Credited). Detail fields: **Debited on** (UTC) → **From account** → **For trading with EXD on** → **Order** ›.
+List: **EXD cashback**, amount **+USD**; meta **For trading with EXD** + **Order** (без Account). Detail hero: **+USD**; chip **Upcoming** или **Credited**. Fields: **To account** → **EXD debited** (info) → **For trading with EXD on** → **Order** › → **Calculation** ›.
 
 ---
 
@@ -293,7 +293,7 @@ List: `EXD → Cashback`, amount **negative** EXD. Detail `chip`: **Debited** / 
 | `details[0]` | **Credited on** (UTC) | `groupDateLabel` + `time` или `row.date` | `credited_at` |
 | `details[1]` | **For trading with EXD on** | `{day}` без года/UTC (T−1 от credit или из lines) | `trade_day` |
 | `details[2]` | **To account** (credited only) | из lines | `account_id` |
-| `orders[]` | demo legs | split USD → EXD debit | |
+| `orders[]` | **+USD** per order (как upcoming) | split USD; EXD в order detail | |
 
 Порядок hero credited: **When → To account → Why**.
 

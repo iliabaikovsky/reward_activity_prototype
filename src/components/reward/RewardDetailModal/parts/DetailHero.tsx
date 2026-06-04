@@ -3,6 +3,7 @@ import { BoosterBadge } from '../../../ui/BoosterBadge'
 import { RewardEventIcon } from '../../../ui/RewardEventIcon'
 import type { ChipTone, HeroIcon } from '../../../domain/reward/types'
 import type { DetailRow } from '../configs/types'
+import { EXD_DEBITED_LABEL } from '../configs/cashbackExdDebitExplainer'
 import { CALCULATION_ROW_LABEL } from '../configs/rewardCalculationExplainer'
 import styles from '../RewardDetailModal.module.css'
 
@@ -30,6 +31,7 @@ type DetailFieldListProps = {
   rows: DetailRow[]
   onOrderClick?: (orderNum: string) => void
   onEarningRateClick?: () => void
+  onExdDebitedClick?: () => void
   onCalculationClick?: () => void
 }
 
@@ -37,6 +39,7 @@ export function DetailFieldList({
   rows,
   onOrderClick,
   onEarningRateClick,
+  onExdDebitedClick,
   onCalculationClick,
 }: DetailFieldListProps) {
   return (
@@ -45,9 +48,11 @@ export function DetailFieldList({
         const isOrderNav = row.label === 'Order' && row.chevron && onOrderClick
         const isEarningRateNav =
           row.label === 'Earning rate' && row.infoIcon && onEarningRateClick
+        const isExdDebitedNav =
+          row.label === EXD_DEBITED_LABEL && row.infoIcon && onExdDebitedClick
         const isCalculationNav =
           row.label === CALCULATION_ROW_LABEL && row.chevron && onCalculationClick
-        const isNav = isOrderNav || isEarningRateNav || isCalculationNav
+        const isNav = isOrderNav || isEarningRateNav || isExdDebitedNav || isCalculationNav
         const RowTag = isNav ? 'button' : 'div'
         const isNavDetail = row.valueDisplay === 'navDetail'
 
@@ -61,9 +66,11 @@ export function DetailFieldList({
                 ? () => onOrderClick!(row.value)
                 : isEarningRateNav
                   ? onEarningRateClick
-                  : isCalculationNav
-                    ? onCalculationClick
-                    : undefined
+                  : isExdDebitedNav
+                    ? onExdDebitedClick
+                    : isCalculationNav
+                      ? onCalculationClick
+                      : undefined
             }
           >
             <p className={styles.detailLabel}>{row.label}</p>

@@ -9,7 +9,6 @@ import {
   SIMPLE_CONFIG,
   expandOrdersForDemo,
   isPackVariant,
-  isUpcomingPackVariant,
   type PackConfig,
 } from './configs'
 import { DetailFieldList, DetailHero, chipClassFor } from './parts/DetailHero'
@@ -17,6 +16,8 @@ import { EARNING_RATE_VALUE } from './configs/loyaltyOrderDetailRows'
 import { ClosedOrderSheet } from './parts/ClosedOrderSheet'
 import { EarningRateSheet } from './parts/EarningRateSheet'
 import { CashbackCalculationSheet } from './parts/CashbackCalculationSheet'
+import { ExdCashbackDebitExplainerSheet } from './parts/ExdCashbackDebitExplainerSheet'
+import { EXD_DEBITED_LABEL } from './configs/cashbackExdDebitExplainer'
 import { RebateShareSheet } from './parts/RebateShareSheet'
 import { RewardCalculationSheet } from './parts/RewardCalculationSheet'
 import { OrderDetailContent } from './parts/OrderDetailView'
@@ -59,6 +60,7 @@ export function RewardDetailModal({
   const [earningRateOpen, setEarningRateOpen] = useState(false)
   const [calculationKind, setCalculationKind] = useState<'loyalty' | 'cashback' | null>(null)
   const [rebateShareOpen, setRebateShareOpen] = useState(false)
+  const [exdDebitExplainerOpen, setExdDebitExplainerOpen] = useState(false)
   const touchStartRef = useRef<{ x: number; y: number } | null>(null)
 
   const pack =
@@ -113,17 +115,15 @@ export function RewardDetailModal({
     setEarningRateOpen(false)
     setCalculationKind(null)
     setRebateShareOpen(false)
+    setExdDebitExplainerOpen(false)
     setSheetOpen(true)
   }, [variant, packOverride])
 
   const registryForModal = useMemo(() => {
     if (packOverride != null) {
-      if (isUpcomingPackVariant(variant)) {
-        return { ...tradingOrderRegistry }
-      }
-      const fromOpenPack: TradingOrderRegistry = {}
-      ingestPackIntoRegistry(fromOpenPack, packOverride)
-      return fromOpenPack
+      const merged: TradingOrderRegistry = { ...tradingOrderRegistry }
+      ingestPackIntoRegistry(merged, packOverride)
+      return merged
     }
     const merged: TradingOrderRegistry = { ...tradingOrderRegistry }
     if (pack) ingestPackIntoRegistry(merged, pack)
@@ -153,20 +153,33 @@ export function RewardDetailModal({
     selectedOrder?.title === 'Loyalty reward' &&
     selectedOrder.detail.details.some((r) => r.label === 'Earning rate' && r.infoIcon)
 
+  const isCashbackLegOrder =
+    selectedOrder?.legMode === 'upcoming' ||
+    selectedOrder?.legMode === 'credited' ||
+    selectedOrder?.title === 'EXD → Cashback'
+
+  const showExdDebitedExplainer =
+    (selectedOrder?.legMode === 'upcoming' || selectedOrder?.legMode === 'credited') &&
+    selectedOrder.detail.details.some((r) => r.label === EXD_DEBITED_LABEL && r.infoIcon)
+
   const showCalculationExplainer =
-    (selectedOrder?.title === 'Loyalty reward' ||
-      selectedOrder?.title === 'EXD → Cashback') &&
-    selectedOrder.detail.details.some(
+    (selectedOrder?.title === 'Loyalty reward' || isCashbackLegOrder) &&
+    (selectedOrder?.detail.details.some(
       (r) => r.label === CALCULATION_ROW_LABEL && r.chevron,
-    )
+    ) ??
+      false)
 
   const openCalculationForOrder = useCallback(() => {
     if (selectedOrder?.title === 'Loyalty reward') {
       setCalculationKind('loyalty')
-    } else if (selectedOrder?.title === 'EXD → Cashback') {
+    } else if (isCashbackLegOrder) {
       setCalculationKind('cashback')
     }
-  }, [selectedOrder?.title])
+  }, [selectedOrder?.title, isCashbackLegOrder])
+
+  const openExdDebitedExplainer = useCallback(() => {
+    setExdDebitExplainerOpen(true)
+  }, [])
 
   const loyaltyCalculation = useMemo(() => {
     if (!selectedOrder || selectedOrder.title !== 'Loyalty reward') return null
@@ -191,20 +204,25 @@ export function RewardDetailModal({
   }, [selectedOrder, registryForModal])
 
   const cashbackCalculation = useMemo(() => {
-    if (!selectedOrder || selectedOrder.title !== 'EXD → Cashback') return null
+    if (!selectedOrder || !isCashbackLegOrder) return null
     const orderNum =
       parseTradingOrderNum(selectedOrder) ??
       selectedOrder.detail.details.find((r) => r.label === 'Order')?.value ??
       ''
+    const exdRow = selectedOrder.detail.details.find((r) => r.label === EXD_DEBITED_LABEL)
+    const amountExd =
+      (selectedOrder.legMode === 'upcoming' || selectedOrder.legMode === 'credited') && exdRow
+        ? exdRow.value
+        : selectedOrder.detail.amount
 
     return buildCashbackRebateCalculation({
-      amountExd: selectedOrder.detail.amount,
+      amountExd,
       cashbackUsdLeg: selectedOrder.cashbackUsdLeg,
       orderNum,
       packCredited: pack?.chip.text === 'Credited',
       rewards: orderNum ? registryForModal[orderNum] : undefined,
     })
-  }, [selectedOrder, pack?.chip.text, registryForModal])
+  }, [selectedOrder, isCashbackLegOrder, pack?.chip.text, registryForModal])
 
   useEffect(() => {
     if (route.screen === 'orderDetail' && !selectedOrder) {
@@ -274,7 +292,8 @@ export function RewardDetailModal({
         closedOrderNum == null &&
         !earningRateOpen &&
         calculationKind == null &&
-        !rebateShareOpen
+        !rebateShareOpen &&
+        !exdDebitExplainerOpen
       }
       onEscape={handleDismiss}
     >
@@ -317,6 +336,13 @@ export function RewardDetailModal({
                     previewOrders={previewOrders}
                     onOpenFullList={openOrders}
                     onSelectOrder={openOrderFromPack}
+                    sectionTitle={
+                      variant === 'cashback-upcoming' ||
+                      variant === 'cashback-activated' ||
+                      variant === 'cashback-activated-jan12'
+                        ? 'Orders'
+                        : 'Last orders'
+                    }
                   />
                 ) : null}
               </div>
@@ -331,6 +357,7 @@ export function RewardDetailModal({
                 order={selectedOrder}
                 onOrderClick={openClosedOrder}
                 onEarningRateClick={showEarningRateExplainer ? openEarningRate : undefined}
+                onExdDebitedClick={showExdDebitedExplainer ? openExdDebitedExplainer : undefined}
                 onCalculationClick={showCalculationExplainer ? openCalculationForOrder : undefined}
               />
             ) : null}
@@ -371,6 +398,11 @@ export function RewardDetailModal({
         sharePercent={cashbackCalculation?.rebateSharePercent ?? 50}
         maxSharePercent={cashbackCalculation?.maxSharePercent ?? 50}
         onClose={() => setRebateShareOpen(false)}
+      />
+
+      <ExdCashbackDebitExplainerSheet
+        open={exdDebitExplainerOpen}
+        onClose={() => setExdDebitExplainerOpen(false)}
       />
     </ModalSheet>
   )

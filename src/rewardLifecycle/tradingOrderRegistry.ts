@@ -1,4 +1,5 @@
 import type { OrderInPack, PackConfig } from '../components/reward/RewardDetailModal/configs'
+import { EXD_DEBITED_LABEL } from '../components/reward/RewardDetailModal/configs/cashbackExdDebitExplainer'
 import { parseExdAbsolute } from '../domain/reward/parseExd'
 import {
   EXD_TO_USD_CASHBACK_RATE,
@@ -11,6 +12,22 @@ export function parseTradingOrderNum(order: OrderInPack): string | null {
   if (meta) return meta.replace(/^Order:\s*/i, '').trim()
   const row = order.detail.details.find((r) => r.label === 'Order')
   return row?.value?.trim() ?? null
+}
+
+function isCashbackPackOrder(order: OrderInPack): boolean {
+  return (
+    order.title === 'EXD → Cashback' ||
+    order.title === 'EXD cashback' ||
+    order.legMode === 'upcoming' ||
+    order.legMode === 'credited' ||
+    order.cashbackUsdLeg != null
+  )
+}
+
+function exdDebitedFromCashbackOrder(order: OrderInPack): number {
+  const debitedRow = order.detail.details.find((r) => r.label === EXD_DEBITED_LABEL)
+  if (debitedRow) return parseExdAbsolute(debitedRow.value)
+  return parseExdAbsolute(order.amount)
 }
 
 export function mergeOrderLegIntoRegistry(
@@ -33,13 +50,16 @@ export function mergeOrderLegIntoRegistry(
     }
   }
 
-  if (order.title === 'EXD → Cashback') {
-    const exdDebited = parseExdAbsolute(order.amount)
+  if (isCashbackPackOrder(order)) {
+    const exdDebited = exdDebitedFromCashbackOrder(order)
     const amountUsd =
       order.cashbackUsdLeg != null
         ? order.cashbackUsdLeg
         : Math.round(exdDebited * EXD_TO_USD_CASHBACK_RATE * 100) / 100
-    const pending = packChipText !== 'Credited'
+    const pending =
+      order.legMode != null
+        ? order.detail.chip.text !== 'Credited'
+        : packChipText !== 'Credited'
     next.cashbackFromExd = {
       exdDebited: (prev.cashbackFromExd?.exdDebited ?? 0) + exdDebited,
       amountUsd: (prev.cashbackFromExd?.amountUsd ?? 0) + amountUsd,

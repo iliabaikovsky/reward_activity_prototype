@@ -6,6 +6,7 @@ type Props = {
   order: OrderInPack
   onOrderClick?: (orderNum: string) => void
   onEarningRateClick?: () => void
+  onExdDebitedClick?: () => void
   onCalculationClick?: () => void
 }
 
@@ -13,6 +14,7 @@ export function OrderDetailContent({
   order,
   onOrderClick,
   onEarningRateClick,
+  onExdDebitedClick,
   onCalculationClick,
 }: Props) {
   return (
@@ -28,6 +30,7 @@ export function OrderDetailContent({
         rows={order.detail.details}
         onOrderClick={onOrderClick}
         onEarningRateClick={onEarningRateClick}
+        onExdDebitedClick={onExdDebitedClick}
         onCalculationClick={onCalculationClick}
       />
     </div>

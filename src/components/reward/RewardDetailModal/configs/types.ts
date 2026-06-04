@@ -13,6 +13,8 @@ export type OrderInPack = {
   date: string
   /** USD leg для registry (cashback order); совпадает с hero pack split. */
   cashbackUsdLeg?: number
+  /** Upcoming: USD list + EXD in detail; Credited: EXD debit list (legacy). */
+  legMode?: 'upcoming' | 'credited'
   detail: {
     navTitle: string
     chip: { text: string; tone: ChipTone }

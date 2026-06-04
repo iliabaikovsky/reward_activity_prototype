@@ -43,20 +43,22 @@ export function OrdersSection({
   previewOrders,
   onOpenFullList,
   onSelectOrder,
+  sectionTitle = 'Last orders',
 }: {
   previewOrders: OrderInPack[]
   onOpenFullList: () => void
   onSelectOrder: (orderId: string) => void
+  sectionTitle?: string
 }) {
   return (
-    <section className={styles.ordersBlock} aria-label="Last orders">
+    <section className={styles.ordersBlock} aria-label={sectionTitle}>
       <button
         type="button"
         className={styles.ordersNavRow}
         onClick={onOpenFullList}
-        aria-label="Last orders, see all"
+        aria-label={`${sectionTitle}, see all`}
       >
-        <h3 className={styles.ordersTitle}>Last orders</h3>
+        <h3 className={styles.ordersTitle}>{sectionTitle}</h3>
         <span className={styles.ordersSeeAll}>See all</span>
       </button>
       {previewOrders.map((order) => (
