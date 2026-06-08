@@ -1,4 +1,5 @@
 import { formatListDateTimeLoose } from '../../../../domain/reward/formatListDateTime'
+import { appHeadingStyles } from '../../../ui/AppHeading'
 import { BoosterBadge } from '../../../ui/BoosterBadge'
 import { OrderRowIcon as OrderRowIconComponent } from '../../../ui/RewardEventIcon'
 import type { OrderInPack } from '../configs/types'
@@ -58,7 +59,7 @@ export function OrdersSection({
         onClick={onOpenFullList}
         aria-label={`${sectionTitle}, see all`}
       >
-        <h3 className={styles.ordersTitle}>{sectionTitle}</h3>
+        <span className={`${appHeadingStyles.h3} ${styles.ordersTitle}`}>{sectionTitle}</span>
         <span className={styles.ordersSeeAll}>See all</span>
       </button>
       {previewOrders.map((order) => (

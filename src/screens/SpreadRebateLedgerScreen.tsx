@@ -1,6 +1,7 @@
 import { IconChevronLeft } from '@tabler/icons-react'
 import type { RebateDemoState } from '../rewardLifecycle/rebateSimulatorSteps'
 import { buildRebateLedgerLines } from '../rewardLifecycle/rebateLedgerDemo'
+import { AppH3 } from '../components/ui/AppHeading'
 import styles from './SpreadRebateLedgerScreen.module.css'
 
 type Props = {
@@ -22,7 +23,7 @@ export function SpreadRebateLedgerScreen({ onBack, rebateDemo, rebateScenarioId 
         <button type="button" className={styles.back} onClick={onBack} aria-label="Back">
           <IconChevronLeft size={22} stroke={2} aria-hidden />
         </button>
-        <h1 className={styles.title}>Spread rebates</h1>
+        <AppH3 className={styles.title}>Spread rebates</AppH3>
       </header>
       <div className={styles.intro}>
         <p className={styles.introTotals}>

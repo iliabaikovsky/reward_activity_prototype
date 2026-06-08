@@ -1,4 +1,7 @@
-import { cashbackUpcomingOrderDetailRows } from './cashbackOrderDetailRows'
+import {
+  cashbackCreditedOrderDetailRows,
+  cashbackUpcomingOrderDetailRows,
+} from './cashbackOrderDetailRows'
 import { CB_LIST_SUBTITLE } from '../../../../rewardLifecycle/demoTimeline'
 import { LOYALTY_LIST_BOOSTER_BADGE, loyaltyOrderDetailRows } from './loyaltyOrderDetailRows'
 import { cashbackPackDetailRows, loyaltyPackDetailRows } from './packDetailRows'
@@ -130,6 +133,7 @@ export const PACK_CONFIG: Record<PackVariantKey, PackConfig> = {
           heroIcon: 'dollar',
           amount: '+1.23 USD',
           details: cashbackUpcomingOrderDetailRows(
+            'Jan 14, 2026, 08:00 UTC',
             '#12345678',
             'Mar 22',
             '9100821',
@@ -152,6 +156,7 @@ export const PACK_CONFIG: Record<PackVariantKey, PackConfig> = {
           heroIcon: 'dollar',
           amount: '+1.23 USD',
           details: cashbackUpcomingOrderDetailRows(
+            'Jan 14, 2026, 08:00 UTC',
             '#12345678',
             'Mar 22',
             '9100822',
@@ -174,6 +179,7 @@ export const PACK_CONFIG: Record<PackVariantKey, PackConfig> = {
           heroIcon: 'dollar',
           amount: '+1.24 USD',
           details: cashbackUpcomingOrderDetailRows(
+            'Jan 14, 2026, 08:00 UTC',
             '#12345678',
             'Mar 22',
             '9100823',
@@ -209,8 +215,8 @@ export const PACK_CONFIG: Record<PackVariantKey, PackConfig> = {
           chip: { text: 'Credited', tone: 'success' },
           heroIcon: 'dollar',
           amount: '+1.23 USD',
-          details: cashbackUpcomingOrderDetailRows(
-            '#12345678',
+          details: cashbackCreditedOrderDetailRows(
+            'Jan 14, 2026, 16:06 UTC',
             'Jan 13',
             '9130201',
             '-1.04 EXD',
@@ -231,8 +237,8 @@ export const PACK_CONFIG: Record<PackVariantKey, PackConfig> = {
           chip: { text: 'Credited', tone: 'success' },
           heroIcon: 'dollar',
           amount: '+1.23 USD',
-          details: cashbackUpcomingOrderDetailRows(
-            '#12345678',
+          details: cashbackCreditedOrderDetailRows(
+            'Jan 14, 2026, 16:06 UTC',
             'Jan 13',
             '9130202',
             '-1.04 EXD',
@@ -253,8 +259,8 @@ export const PACK_CONFIG: Record<PackVariantKey, PackConfig> = {
           chip: { text: 'Credited', tone: 'success' },
           heroIcon: 'dollar',
           amount: '+1.24 USD',
-          details: cashbackUpcomingOrderDetailRows(
-            '#12345678',
+          details: cashbackCreditedOrderDetailRows(
+            'Jan 14, 2026, 16:06 UTC',
             'Jan 13',
             '9130203',
             '-1.04 EXD',
@@ -289,8 +295,8 @@ export const PACK_CONFIG: Record<PackVariantKey, PackConfig> = {
           chip: { text: 'Credited', tone: 'success' },
           heroIcon: 'dollar',
           amount: '+1.23 USD',
-          details: cashbackUpcomingOrderDetailRows(
-            '#12345678',
+          details: cashbackCreditedOrderDetailRows(
+            'Jan 13, 2026, 16:06 UTC',
             'Jan 12',
             '9088801',
             '-1.04 EXD',
@@ -311,8 +317,8 @@ export const PACK_CONFIG: Record<PackVariantKey, PackConfig> = {
           chip: { text: 'Credited', tone: 'success' },
           heroIcon: 'dollar',
           amount: '+1.23 USD',
-          details: cashbackUpcomingOrderDetailRows(
-            '#12345678',
+          details: cashbackCreditedOrderDetailRows(
+            'Jan 13, 2026, 16:06 UTC',
             'Jan 12',
             '9088802',
             '-1.04 EXD',
@@ -333,8 +339,8 @@ export const PACK_CONFIG: Record<PackVariantKey, PackConfig> = {
           chip: { text: 'Credited', tone: 'success' },
           heroIcon: 'dollar',
           amount: '+1.24 USD',
-          details: cashbackUpcomingOrderDetailRows(
-            '#12345678',
+          details: cashbackCreditedOrderDetailRows(
+            'Jan 13, 2026, 16:06 UTC',
             'Jan 12',
             '9088803',
             '-1.04 EXD',

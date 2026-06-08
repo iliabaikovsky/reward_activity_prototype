@@ -1,0 +1,31 @@
+/* iOS/Header — Figma 42423:37196 (Reward activity CE-3142) */
+.h1,
+.h2,
+.h3,
+.h4 {
+  margin: 0;
+  font-family: inherit;
+  font-weight: var(--heading-weight);
+  font-synthesis: none;
+  color: var(--reward-text-primary);
+}
+
+.h1 {
+  font-size: var(--heading-h1-size);
+  line-height: var(--heading-h1-line);
+}
+
+.h2 {
+  font-size: var(--heading-h2-size);
+  line-height: var(--heading-h2-line);
+}
+
+.h3 {
+  font-size: var(--heading-h3-size);
+  line-height: var(--heading-h3-line);
+}
+
+.h4 {
+  font-size: var(--heading-h4-size);
+  line-height: var(--heading-h4-line);
+}

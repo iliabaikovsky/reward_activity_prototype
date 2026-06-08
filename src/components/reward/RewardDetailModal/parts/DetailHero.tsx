@@ -1,10 +1,12 @@
 import { IconChevronRight, IconInfoCircle } from '@tabler/icons-react'
+import { AppH2 } from '../../../ui/AppHeading'
 import { BoosterBadge } from '../../../ui/BoosterBadge'
 import { RewardEventIcon } from '../../../ui/RewardEventIcon'
 import type { ChipTone, HeroIcon } from '../../../domain/reward/types'
 import type { DetailRow } from '../configs/types'
+import { isCashbackConversionLabel } from '../configs/cashbackConversionExplainer'
 import { EXD_DEBITED_LABEL } from '../configs/cashbackExdDebitExplainer'
-import { CALCULATION_ROW_LABEL } from '../configs/rewardCalculationExplainer'
+import { CASHBACK_RATE_LABEL } from '../configs/cashbackRateExplainer'
 import styles from '../RewardDetailModal.module.css'
 
 type HeroProps = {
@@ -21,7 +23,7 @@ export function DetailHero({ heroIcon, amount, chipText, chipClass }: HeroProps)
       <div className={styles.heroIcon}>
         <RewardEventIcon kind={heroIcon} size={28} stroke={1.75} />
       </div>
-      <p className={styles.heroAmount}>{amount}</p>
+      <AppH2 className={styles.heroAmount}>{amount}</AppH2>
       <span className={`${styles.chip} ${chipClass}`}>{chipText}</span>
     </div>
   )
@@ -30,29 +32,30 @@ export function DetailHero({ heroIcon, amount, chipText, chipClass }: HeroProps)
 type DetailFieldListProps = {
   rows: DetailRow[]
   onOrderClick?: (orderNum: string) => void
-  onEarningRateClick?: () => void
   onExdDebitedClick?: () => void
-  onCalculationClick?: () => void
+  onCashbackConversionClick?: () => void
+  onCashbackRateClick?: () => void
 }
 
 export function DetailFieldList({
   rows,
   onOrderClick,
-  onEarningRateClick,
   onExdDebitedClick,
-  onCalculationClick,
+  onCashbackConversionClick,
+  onCashbackRateClick,
 }: DetailFieldListProps) {
   return (
     <div className={styles.details}>
       {rows.map((row) => {
         const isOrderNav = row.label === 'Order' && row.chevron && onOrderClick
-        const isEarningRateNav =
-          row.label === 'Earning rate' && row.infoIcon && onEarningRateClick
         const isExdDebitedNav =
           row.label === EXD_DEBITED_LABEL && row.infoIcon && onExdDebitedClick
-        const isCalculationNav =
-          row.label === CALCULATION_ROW_LABEL && row.chevron && onCalculationClick
-        const isNav = isOrderNav || isEarningRateNav || isExdDebitedNav || isCalculationNav
+        const isConversionNav =
+          row.infoIcon && isCashbackConversionLabel(row.label) && onCashbackConversionClick
+        const isCashbackRateNav =
+          row.label === CASHBACK_RATE_LABEL && row.infoIcon && onCashbackRateClick
+        const isNav =
+          isOrderNav || isExdDebitedNav || isConversionNav || isCashbackRateNav
         const RowTag = isNav ? 'button' : 'div'
         const isNavDetail = row.valueDisplay === 'navDetail'
 
@@ -64,12 +67,12 @@ export function DetailFieldList({
             onClick={
               isOrderNav
                 ? () => onOrderClick!(row.value)
-                : isEarningRateNav
-                  ? onEarningRateClick
-                  : isExdDebitedNav
-                    ? onExdDebitedClick
-                    : isCalculationNav
-                      ? onCalculationClick
+                : isExdDebitedNav
+                  ? onExdDebitedClick
+                  : isConversionNav
+                    ? onCashbackConversionClick
+                    : isCashbackRateNav
+                      ? onCashbackRateClick
                       : undefined
             }
           >
@@ -85,6 +88,28 @@ export function DetailFieldList({
                       size={20}
                       stroke={2}
                       className={styles.detailChevron}
+                      aria-hidden
+                    />
+                  ) : null}
+                </>
+              ) : row.valueDisplay === 'modalDatetime' ? (
+                <>
+                  <p className={`${styles.detailValue} ${styles.detailValueDatetime}`}>
+                    {row.value}
+                  </p>
+                  {row.chevron ? (
+                    <IconChevronRight
+                      size={20}
+                      stroke={2}
+                      className={styles.detailChevron}
+                      aria-hidden
+                    />
+                  ) : null}
+                  {row.infoIcon ? (
+                    <IconInfoCircle
+                      size={20}
+                      stroke={2}
+                      className={styles.detailInfoIcon}
                       aria-hidden
                     />
                   ) : null}

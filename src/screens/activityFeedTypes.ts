@@ -19,5 +19,13 @@ export const DATE_PRESET_LABELS: Record<ActivityDatePreset, string> = {
   thisMonth: 'March 2026',
 }
 
+/** Фраза после «for» в hero Activity feed: «Rewards for all time» */
+export const DATE_RANGE_FOR_SUMMARY: Record<ActivityDatePreset, string> = {
+  all: 'all time',
+  last7: '7 days',
+  last30: '30 days',
+  thisMonth: 'March 2026',
+}
+
 /** «Сегодня» для относительных диапазонов (симулятор, см. demoTimeline.ts) */
 export { DEMO_TODAY_ISO as ACTIVITY_FEED_TODAY_ISO } from '../rewardLifecycle/demoTimeline'

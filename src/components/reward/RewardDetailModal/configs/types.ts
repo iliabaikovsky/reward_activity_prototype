@@ -35,6 +35,11 @@ export type PackConfig = {
   orders: OrderInPack[]
 }
 
+export type SimpleCelebration = {
+  message: string
+  imageAlt: string
+}
+
 export type SimpleConfig = {
   navTitle: string
   chip: { text: string; tone: ChipTone }
@@ -42,6 +47,8 @@ export type SimpleConfig = {
   amount: string
   amountTone?: 'negative'
   details: DetailRow[]
+  /** Birthday gift: message + 16:9 banner below metadata rows. */
+  celebration?: SimpleCelebration
   orders?: undefined
 }
 

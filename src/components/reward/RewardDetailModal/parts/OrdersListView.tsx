@@ -57,7 +57,7 @@ export function OrdersListView({ allOrders, onSelectOrder }: Props) {
         ) : (
           groups.map((group) => (
             <section key={group.monthId} aria-label={group.monthLabel}>
-              <h3 className={styles.sectionHeader}>{group.monthLabel}</h3>
+              <p className={styles.sectionHeader}>{group.monthLabel}</p>
               {group.orders.map((order) => (
                 <PackOrderRow
                   key={order.id}

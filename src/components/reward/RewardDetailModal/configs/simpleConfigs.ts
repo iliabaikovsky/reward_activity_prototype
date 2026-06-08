@@ -19,9 +19,12 @@ export const SIMPLE_CONFIG: Record<SimpleVariantKey, SimpleConfig> = {
     amount: '+50.00 EXD',
     details: [
       { label: 'Credited on', value: 'Mar 19, 2026, 16:15 UTC' },
-      { label: 'To', value: 'Available rewards' },
-      { label: 'Comment', value: 'Best wishes! ✨' },
+      { label: 'To wallet', value: 'Available rewards' },
     ],
+    celebration: {
+      message: 'Best wishes! ✨',
+      imageAlt: 'Metallic gift tiles with a gift box icon',
+    },
   },
   'exd-adjustment': {
     navTitle: 'EXD adjustment',

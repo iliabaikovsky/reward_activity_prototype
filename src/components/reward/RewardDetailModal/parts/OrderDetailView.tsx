@@ -5,17 +5,17 @@ import styles from '../RewardDetailModal.module.css'
 type Props = {
   order: OrderInPack
   onOrderClick?: (orderNum: string) => void
-  onEarningRateClick?: () => void
   onExdDebitedClick?: () => void
-  onCalculationClick?: () => void
+  onCashbackConversionClick?: () => void
+  onCashbackRateClick?: () => void
 }
 
 export function OrderDetailContent({
   order,
   onOrderClick,
-  onEarningRateClick,
   onExdDebitedClick,
-  onCalculationClick,
+  onCashbackConversionClick,
+  onCashbackRateClick,
 }: Props) {
   return (
     <div className={styles.scroll}>
@@ -29,9 +29,9 @@ export function OrderDetailContent({
       <DetailFieldList
         rows={order.detail.details}
         onOrderClick={onOrderClick}
-        onEarningRateClick={onEarningRateClick}
         onExdDebitedClick={onExdDebitedClick}
-        onCalculationClick={onCalculationClick}
+        onCashbackConversionClick={onCashbackConversionClick}
+        onCashbackRateClick={onCashbackRateClick}
       />
     </div>
   )

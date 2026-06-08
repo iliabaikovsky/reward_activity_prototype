@@ -7,6 +7,8 @@ import {
 import type { RewardModalVariant } from '../components/reward/rewardModalTypes'
 import { BottomSheet } from '../components/ui/BottomSheet'
 import { MobileBottomSafe, MobileStatusBar, MobileTopNav } from '../components/ui/MobileScreenShell'
+import { AppH1, AppH3 } from '../components/ui/AppHeading'
+import { SummaryHeroAmount } from '../components/ui/SummaryHeroAmount'
 import { TransactionRow } from '../components/ui/TransactionRow'
 import { HIDE_DAY_SUMMARY } from '../domain/reward/featureFlags'
 import { fromActivityFeedItem } from '../domain/reward/transactionAdapters'
@@ -17,6 +19,7 @@ import {
   type ActivityDatePreset,
   type ActivityTypeFilter,
 } from './activityFeedTypes'
+import { summarizeActivityFeedByType } from '../domain/reward/activityFeedSummary'
 import { filterFeedGroups } from './activityFeedFilter'
 import styles from './ActivityFeedScreen.module.css'
 
@@ -52,6 +55,11 @@ export function ActivityFeedScreen({
     [feedGroups, typeFilter, datePreset, demoTodayIso],
   )
 
+  const filterSummary = useMemo(() => {
+    const items = filteredGroups.flatMap((g) => g.items)
+    return summarizeActivityFeedByType(items, typeFilter, datePreset)
+  }, [filteredGroups, typeFilter, datePreset])
+
   return (
     <div className={styles.screen} data-node-id="42124:14876">
       <MobileStatusBar theme="light" />
@@ -59,7 +67,7 @@ export function ActivityFeedScreen({
       <MobileTopNav theme="light" navVariant="backOnly" onBack={onBack} />
 
       <div className={styles.titleBlock}>
-        <h1 className={styles.pageTitle}>Activity feed</h1>
+        <AppH1 className={styles.pageTitle}>Activity feed</AppH1>
       </div>
 
       <div className={styles.filters}>
@@ -92,6 +100,24 @@ export function ActivityFeedScreen({
         </button>
       </div>
 
+      {filterSummary ? (
+        <div
+          className={styles.filterSummaryHero}
+          role="status"
+          aria-label={filterSummary.ariaLabel}
+        >
+          <div className={styles.filterSummaryTotalRow}>
+            <p className={styles.filterSummaryLabel}>{filterSummary.scopeLabel}</p>
+            <SummaryHeroAmount>{filterSummary.amountPrimary}</SummaryHeroAmount>
+            {filterSummary.amountSecondary ? (
+              <SummaryHeroAmount variant="secondary">
+                {filterSummary.amountSecondary}
+              </SummaryHeroAmount>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
+
       <div className={styles.list}>
         {feedGroups.length === 0 ? (
           <p className={styles.emptyState} role="status">
@@ -105,9 +131,9 @@ export function ActivityFeedScreen({
           filteredGroups.map((group) => (
             <section key={group.dateLabel} aria-labelledby={`feed-date-${group.dateLabel}`}>
               <div className={styles.dateHeader}>
-                <h2 className={styles.dateLabel} id={`feed-date-${group.dateLabel}`}>
+                <AppH3 className={styles.dateLabel} id={`feed-date-${group.dateLabel}`}>
                   {group.dateLabel}
-                </h2>
+                </AppH3>
                 <p
                   className={`${styles.dateSummary} ${HIDE_DAY_SUMMARY ? styles.dateSummaryHidden : ''}`}
                 >

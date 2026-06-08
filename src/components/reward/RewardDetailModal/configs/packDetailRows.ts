@@ -1,6 +1,7 @@
 import type { DetailRow } from '../../../domain/reward/types'
 
-const AVAILABLE_REWARDS = 'Available rewards'
+export const AVAILABLE_REWARDS_WALLET = 'Available rewards'
+export const TO_WALLET_LABEL = 'To wallet'
 const DEFAULT_ACCOUNT = '#12345678'
 
 /** Loyalty pack hero: When → To → Why */
@@ -11,7 +12,7 @@ export function loyaltyPackDetailRows(
 ): DetailRow[] {
   return [
     { label: whenLabel, value: whenValue },
-    { label: 'To', value: AVAILABLE_REWARDS },
+    { label: TO_WALLET_LABEL, value: AVAILABLE_REWARDS_WALLET },
     { label: 'For trading on', value: periodLabel },
   ]
 }

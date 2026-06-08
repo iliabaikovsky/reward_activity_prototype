@@ -132,10 +132,6 @@
 }
 
 .navTitle {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 600;
-  line-height: 24px;
   text-align: center;
   color: var(--reward-text-on-dark);
   white-space: nowrap;
@@ -167,10 +163,6 @@
 }
 
 .tierName {
-  margin: 0;
-  font-size: 36px;
-  font-weight: 600;
-  line-height: 48px;
   color: var(--reward-text-on-dark);
 }
 
@@ -488,11 +480,7 @@
 
 .sectionTitle {
   flex: 1;
-  margin: 0;
-  font-size: 20px;
-  font-weight: 600;
-  line-height: 28px;
-  color: var(--reward-text-primary);
+  min-width: 0;
 }
 
 .chevronIcon {

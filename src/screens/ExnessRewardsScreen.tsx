@@ -7,6 +7,8 @@ import {
   IconCrown,
   IconInfoCircle,
 } from '@tabler/icons-react'
+import { AppH1, AppH4, appHeadingStyles } from '../components/ui/AppHeading'
+import { SummaryHeroAmount } from '../components/ui/SummaryHeroAmount'
 import { RewardEventIcon } from '../components/ui/RewardEventIcon'
 import { MobileStatusBar, MobileTopNav } from '../components/ui/MobileScreenShell'
 import { HIDE_TRANSACTION_BADGES } from '../domain/reward/featureFlags'
@@ -120,9 +122,7 @@ function SectionTitle({
 }) {
   const inner = (
     <>
-      <span className={styles.sectionTitle} role="heading" aria-level={2}>
-        {title}
-      </span>
+      <span className={`${appHeadingStyles.h3} ${styles.sectionTitle}`}>{title}</span>
       {showChevron ? (
         <IconChevronRight className={styles.chevronIcon} size={24} stroke={2} aria-hidden />
       ) : null}
@@ -254,9 +254,9 @@ function V2SummaryCurrencyDetailPage({
       <div className={styles.v2SummaryDetailHero}>
         <div className={styles.v2SummaryDetailTotalRow}>
           <p className={styles.v2SummaryDetailTotalLabel}>Total upcoming</p>
-          <p className={styles.v2SummaryDetailAmount}>
+          <SummaryHeroAmount>
             {unsignedAmountLabel(fmtSignedAmount(viewTotal, unit as 'USD' | 'EXD'))}
-          </p>
+          </SummaryHeroAmount>
         </div>
       </div>
 
@@ -435,6 +435,8 @@ function V2UpcomingRow({
 type ExnessRewardsScreenProps = {
   /** Сброс локального UI при смене шага симулятора. */
   simulatorStepId: string
+  /** Increment to collapse Upcoming drill and scroll home after cross-type modal close. */
+  rewardsHomeResetKey?: number
   /** `category: 'cashback'` — с Lifetime cashback; без opts — с Activity feed */
   onOpenActivityFeed?: (opts?: { category?: ActivityTypeFilter }) => void
   onOpenRewardModal?: (variant: RewardModalVariant, itemId?: string) => void
@@ -453,6 +455,7 @@ type ExnessRewardsScreenProps = {
 
 export function ExnessRewardsScreen({
   simulatorStepId,
+  rewardsHomeResetKey = 0,
   onOpenActivityFeed,
   onOpenRewardModal,
   availableRewardsExd,
@@ -524,7 +527,11 @@ export function ExnessRewardsScreen({
 
   useEffect(() => {
     setV2SummaryCurrencyPage(null)
-  }, [simulatorStepId])
+  }, [simulatorStepId, rewardsHomeResetKey])
+
+  useEffect(() => {
+    if (rewardsHomeResetKey > 0) scrollDeviceFrameToTop()
+  }, [rewardsHomeResetKey])
 
   useEffect(() => {
     scrollDeviceFrameToTop()
@@ -572,7 +579,7 @@ export function ExnessRewardsScreen({
           <button type="button" className={styles.navBtn} aria-label="Back">
             <IconChevronLeft size={24} stroke={2} aria-hidden />
           </button>
-          <h1 className={styles.navTitle}>Exness Rewards</h1>
+          <AppH4 className={styles.navTitle}>Exness Rewards</AppH4>
           <button type="button" className={styles.navBtn} aria-label="Information">
             <IconInfoCircle size={24} stroke={2} aria-hidden />
           </button>
@@ -582,7 +589,7 @@ export function ExnessRewardsScreen({
           <div>
             <p className={styles.currentLabel}>Current status</p>
             <div className={styles.tierTitleRow}>
-              <p className={styles.tierName}>Ultimate</p>
+              <AppH1 className={styles.tierName}>Ultimate</AppH1>
               <span className={styles.chipX2}>
                 <IconCrown size={16} stroke={1.75} aria-hidden />
                 x2

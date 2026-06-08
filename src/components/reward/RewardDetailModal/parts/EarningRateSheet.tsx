@@ -1,4 +1,5 @@
 import { IconX } from '@tabler/icons-react'
+import { AppH4 } from '../../../ui/AppHeading'
 import { ModalSheet } from '../../../ui/ModalSheet'
 import {
   EARNING_RATE_LEAD,
@@ -23,9 +24,9 @@ export function EarningRateSheet({ open, rateValue, onClose }: Props) {
           <button type="button" className={styles.closeBtn} onClick={onClose} aria-label="Close">
             <IconX size={24} stroke={2} aria-hidden />
           </button>
-          <h2 className={styles.navTitle} id={titleId}>
+          <AppH4 className={styles.navTitle} id={titleId}>
             {EARNING_RATE_SHEET_TITLE}
-          </h2>
+          </AppH4>
           <span aria-hidden className={styles.headerSpacer} />
         </header>
 

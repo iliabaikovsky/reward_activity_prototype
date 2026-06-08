@@ -16,11 +16,7 @@
 }
 
 .pageTitle {
-  margin: 0;
-  font-size: 36px;
-  font-weight: 600;
-  line-height: 48px;
-  color: var(--reward-text-primary);
+  padding: 0;
 }
 
 .filters {
@@ -65,6 +61,27 @@
   color: var(--reward-info-content);
 }
 
+/* Filter totals — same stack as ExnessRewards v2SummaryDetailHero */
+.filterSummaryHero {
+  display: flex;
+  flex-direction: column;
+  padding: 12px 16px 4px;
+}
+
+.filterSummaryTotalRow {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.filterSummaryLabel {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--reward-text-secondary);
+}
+
 .list {
   padding: 0 16px;
   display: flex;
@@ -81,11 +98,6 @@
 }
 
 .dateLabel {
-  margin: 0;
-  font-size: 20px;
-  font-weight: 600;
-  line-height: 28px;
-  color: var(--reward-text-primary);
   flex: 1;
   min-width: 0;
 }

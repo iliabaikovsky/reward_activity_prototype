@@ -1,4 +1,5 @@
 import { IconChevronRight } from '@tabler/icons-react'
+import { appHeadingStyles } from './AppHeading'
 import styles from './SectionHeader.module.css'
 
 type Props = {
@@ -10,9 +11,7 @@ type Props = {
 export function SectionHeader({ title, showChevron = true, onClick }: Props) {
   const inner = (
     <>
-      <span className={styles.sectionTitle} role="heading" aria-level={2}>
-        {title}
-      </span>
+      <span className={`${appHeadingStyles.h3} ${styles.sectionTitle}`}>{title}</span>
       {showChevron ? (
         <IconChevronRight className={styles.chevronIcon} size={24} stroke={2} aria-hidden />
       ) : null}

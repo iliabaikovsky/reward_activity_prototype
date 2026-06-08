@@ -63,6 +63,17 @@
   /* Room for wallet card Shadow/MD inside horizontal scroll (see walletsScroll) */
   --wallet-scroll-shadow-pad: 26px;
 
+  --heading-h1-size: 36px;
+  --heading-h1-line: 48px;
+  --heading-h2-size: 24px;
+  --heading-h2-line: 32px;
+  --heading-h3-size: 20px;
+  --heading-h3-line: 28px;
+  --heading-h4-size: 16px;
+  --heading-h4-line: 24px;
+  /* Figma SF Pro Semibold = 590; web maps to 600 (590 triggers faux-bold on system-ui) */
+  --heading-weight: 600;
+
   /* iOS modal sheet container (HIG) */
   --sheet-scrim: rgba(0, 0, 0, 0.4);
   --sheet-radius-top: 12px;

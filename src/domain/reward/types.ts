@@ -21,5 +21,5 @@ export type DetailRow = {
   /** Info icon: earning rate explainer (Figma 42413:32765). */
   infoIcon?: boolean
   /** `boosterTier` — info chip; `navDetail` — trailing Details + chevron (Figma). */
-  valueDisplay?: 'text' | 'boosterTier' | 'navDetail'
+  valueDisplay?: 'text' | 'boosterTier' | 'navDetail' | 'modalDatetime'
 }

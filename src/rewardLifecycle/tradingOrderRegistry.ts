@@ -14,6 +14,21 @@ export function parseTradingOrderNum(order: OrderInPack): string | null {
   return row?.value?.trim() ?? null
 }
 
+export type RewardOrderLeg = 'exdEarned' | 'cashbackFromExd'
+
+/** Order leg in pack modal for a trading order # (closed-order drill). */
+export function findPackOrderByTradingNum(
+  orders: OrderInPack[],
+  orderNum: string,
+  leg: RewardOrderLeg,
+): OrderInPack | undefined {
+  const matching = orders.filter((o) => parseTradingOrderNum(o) === orderNum)
+  if (leg === 'exdEarned') {
+    return matching.find((o) => o.title === 'Loyalty reward')
+  }
+  return matching.find((o) => isCashbackPackOrder(o))
+}
+
 function isCashbackPackOrder(order: OrderInPack): boolean {
   return (
     order.title === 'EXD → Cashback' ||
@@ -77,5 +92,28 @@ export function ingestPackIntoRegistry(
   if (!pack) return
   for (const order of pack.orders) {
     mergeOrderLegIntoRegistry(registry, order, pack.chip.text)
+  }
+}
+
+/** Merge pack legs only when that leg is missing on the order (avoids double cashback on simulator). */
+export function ingestPackLegsIfMissing(
+  registry: TradingOrderRegistry,
+  pack: PackConfig | null,
+): void {
+  if (!pack) return
+  for (const order of pack.orders) {
+    const orderNum = parseTradingOrderNum(order)
+    if (!orderNum) {
+      mergeOrderLegIntoRegistry(registry, order, pack.chip.text)
+      continue
+    }
+    const entry = registry[orderNum]
+    const needsLoyalty =
+      order.title === 'Loyalty reward' && (entry?.exdEarned?.amountExd ?? 0) <= 0
+    const needsCashback =
+      isCashbackPackOrder(order) && (entry?.cashbackFromExd?.amountUsd ?? 0) <= 0
+    if (!entry || needsLoyalty || needsCashback) {
+      mergeOrderLegIntoRegistry(registry, order, pack.chip.text)
+    }
   }
 }

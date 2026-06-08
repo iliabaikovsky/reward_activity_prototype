@@ -78,11 +78,7 @@
 }
 
 .navTitle {
-  margin: 0;
   justify-self: center;
-  font-size: 16px;
-  font-weight: 590;
-  line-height: 24px;
   text-align: center;
   white-space: nowrap;
   overflow: hidden;

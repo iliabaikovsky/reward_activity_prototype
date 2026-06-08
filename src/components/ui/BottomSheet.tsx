@@ -1,5 +1,6 @@
 import { useId, type ReactNode } from 'react'
 import { IconX } from '@tabler/icons-react'
+import { AppH3 } from './AppHeading'
 import { ModalSheet } from './ModalSheet'
 import styles from './BottomSheet.module.css'
 
@@ -18,9 +19,9 @@ export function BottomSheet({ title, open, onClose, children, showClose = true }
   return (
     <ModalSheet open={open} onClose={onClose} titleId={titleId} detent="medium">
       <header className={styles.header}>
-        <h2 className={styles.title} id={titleId}>
+        <AppH3 className={styles.title} id={titleId}>
           {title}
-        </h2>
+        </AppH3>
         {showClose ? (
           <button type="button" className={styles.closeBtn} onClick={onClose} aria-label="Close">
             <IconX size={22} stroke={2} aria-hidden />

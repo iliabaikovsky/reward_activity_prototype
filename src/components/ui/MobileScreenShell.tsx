@@ -1,5 +1,6 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react'
 import { IconChevronLeft } from '@tabler/icons-react'
+import { AppH4 } from './AppHeading'
 import styles from './MobileScreenShell.module.css'
 
 type Theme = 'light' | 'onDark'
@@ -49,11 +50,11 @@ export function MobileTopNav({
         <IconChevronLeft size={24} stroke={2} aria-hidden />
       </button>
       {title ? (
-        <h1
+        <AppH4
           className={`${styles.navTitle} ${theme === 'light' ? styles.navTitleLight : styles.navTitleOnDark}`}
         >
           {title}
-        </h1>
+        </AppH4>
       ) : null}
       <div>{actions ?? <span className={btnClass} aria-hidden />}</div>
     </header>

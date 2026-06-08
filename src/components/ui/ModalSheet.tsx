@@ -12,8 +12,10 @@ type Props = {
   open: boolean
   /** Escape key and default scrim/swipe dismiss. */
   onClose: () => void
-  /** Scrim tap + swipe down; defaults to `onClose`. Use for full dismiss while `onClose` pops nav stack. */
+  /** Backdrop tap; defaults to animated `onClose`. */
   onScrimDismiss?: () => void
+  /** When false, scrim taps are ignored (e.g. stacked sheet open above). */
+  scrimDismissEnabled?: boolean
   titleId?: string
   detent?: ModalSheetDetent
   panelClassName?: string
@@ -30,6 +32,7 @@ export function ModalSheet({
   open,
   onClose,
   onScrimDismiss,
+  scrimDismissEnabled = true,
   titleId,
   detent = 'medium',
   panelClassName,
@@ -133,8 +136,11 @@ export function ModalSheet({
       <button
         type="button"
         className={styles.backdrop}
-        onClick={requestClose}
+        onClick={scrimDismissEnabled ? requestClose : undefined}
         aria-label="Close"
+        tabIndex={scrimDismissEnabled ? 0 : -1}
+        aria-hidden={!scrimDismissEnabled}
+        style={scrimDismissEnabled ? undefined : { pointerEvents: 'none' }}
       />
       <div
         className={panelClasses}
