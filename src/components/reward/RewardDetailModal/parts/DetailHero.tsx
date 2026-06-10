@@ -5,7 +5,7 @@ import { RewardEventIcon } from '../../../ui/RewardEventIcon'
 import type { ChipTone, HeroIcon } from '../../../domain/reward/types'
 import type { DetailRow } from '../configs/types'
 import { isCashbackConversionLabel } from '../configs/cashbackConversionExplainer'
-import { EXD_DEBITED_LABEL } from '../configs/cashbackExdDebitExplainer'
+import { EXD_DEDUCTED_LABEL } from '../configs/cashbackExdDebitExplainer'
 import { CASHBACK_RATE_LABEL } from '../configs/cashbackRateExplainer'
 import styles from '../RewardDetailModal.module.css'
 
@@ -49,7 +49,7 @@ export function DetailFieldList({
       {rows.map((row) => {
         const isOrderNav = row.label === 'Order' && row.chevron && onOrderClick
         const isExdDebitedNav =
-          row.label === EXD_DEBITED_LABEL && row.infoIcon && onExdDebitedClick
+          row.label === EXD_DEDUCTED_LABEL && row.infoIcon && onExdDebitedClick
         const isConversionNav =
           row.infoIcon && isCashbackConversionLabel(row.label) && onCashbackConversionClick
         const isCashbackRateNav =

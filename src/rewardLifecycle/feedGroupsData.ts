@@ -14,7 +14,7 @@ export const G_MAR18: ActivityFeedGroup = {
       title: 'EXD adjustment',
       amount: '-0.40 EXD',
       amountTone: 'negative',
-      lines: ['Balance correction', 'Account: #12345678'],
+      lines: [],
       time: '23:59',
       icon: 'crownOff',
       rewardModal: 'exd-adjustment',

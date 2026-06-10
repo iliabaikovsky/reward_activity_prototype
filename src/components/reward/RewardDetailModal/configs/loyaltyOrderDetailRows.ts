@@ -1,4 +1,5 @@
 import type { DetailRow } from '../../../domain/reward/types'
+import { formatAsUpcomingByNoon } from '../../../../domain/reward/formatModalDateTimeUtc'
 import { PACK_DEFAULT_ACCOUNT } from './packDetailRows'
 
 export const LOYALTY_LIST_BOOSTER_BADGE = 'x2'
@@ -12,9 +13,10 @@ export function loyaltyOrderDetailRows(
   orderNum: string,
 ): DetailRow[] {
   const whenLabel = mode === 'upcoming' ? 'Earned on' : 'Posted on'
+  const displayWhen = mode === 'upcoming' ? formatAsUpcomingByNoon(whenValue) : whenValue
 
   return [
-    { label: whenLabel, value: whenValue },
+    { label: whenLabel, value: displayWhen },
     { label: 'Account', value: PACK_DEFAULT_ACCOUNT },
     { label: 'Order', value: orderNum },
     { label: 'Booster', value: LOYALTY_BOOSTER_TIER, valueDisplay: 'boosterTier' },

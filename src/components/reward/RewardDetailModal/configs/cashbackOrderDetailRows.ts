@@ -1,15 +1,9 @@
 import type { ChipTone, DetailRow } from '../../../domain/reward/types'
-import { CONVERTED_ON_LABEL } from './cashbackConversionExplainer'
-import { EXD_DEBITED_LABEL } from './cashbackExdDebitExplainer'
+import { EXD_DEDUCTED_LABEL } from './cashbackExdDebitExplainer'
 import {
   CASHBACK_RATE_LABEL,
   formatCashbackRateValue,
 } from './cashbackRateExplainer'
-
-const CASHBACK_ACCOUNT = '#12345678'
-
-/** Trading account on cashback order leg (conversion context; not From/To wallet). */
-const CASHBACK_ACCOUNT_LABEL = 'Account'
 
 /** Chip on every EXD → Cashback leg (pack Upcoming or Credited). */
 export const CASHBACK_LEG_CHIP: { text: string; tone: ChipTone } = {
@@ -17,23 +11,14 @@ export const CASHBACK_LEG_CHIP: { text: string; tone: ChipTone } = {
   tone: 'neutral',
 }
 
-/** Order detail — upcoming leg: Converted on → To → EXD debited → trade day → Order → rate. */
+/** Order detail — upcoming leg: EXD deducted → trade day → Order → rate. */
 export function cashbackUpcomingOrderDetailRows(
-  convertedOnUtc: string,
-  account: string,
   tradeDay: string,
   orderNum: string,
-  exdDebitedFormatted: string,
+  exdDeductedFormatted: string,
 ): DetailRow[] {
   return [
-    {
-      label: CONVERTED_ON_LABEL,
-      value: convertedOnUtc,
-      infoIcon: true,
-      valueDisplay: 'modalDatetime',
-    },
-    { label: CASHBACK_ACCOUNT_LABEL, value: account },
-    { label: EXD_DEBITED_LABEL, value: exdDebitedFormatted, infoIcon: true },
+    { label: EXD_DEDUCTED_LABEL, value: exdDeductedFormatted, infoIcon: true },
     { label: 'For trading with EXD on', value: tradeDay },
     { label: 'Order', value: orderNum },
     {
@@ -44,22 +29,14 @@ export function cashbackUpcomingOrderDetailRows(
   ]
 }
 
-/** Order detail — credited leg: Converted on → From → EXD debited → trade day → Order → rate. */
+/** Order detail — credited leg: same order as upcoming (no Converted on). */
 export function cashbackCreditedOrderDetailRows(
-  convertedOnUtc: string,
   tradeDay: string,
   orderNum: string,
-  exdDebitedFormatted: string,
+  exdDeductedFormatted: string,
 ): DetailRow[] {
   return [
-    {
-      label: CONVERTED_ON_LABEL,
-      value: convertedOnUtc,
-      infoIcon: true,
-      valueDisplay: 'modalDatetime',
-    },
-    { label: CASHBACK_ACCOUNT_LABEL, value: CASHBACK_ACCOUNT },
-    { label: EXD_DEBITED_LABEL, value: exdDebitedFormatted, infoIcon: true },
+    { label: EXD_DEDUCTED_LABEL, value: exdDeductedFormatted, infoIcon: true },
     { label: 'For trading with EXD on', value: tradeDay },
     { label: 'Order', value: orderNum },
     {

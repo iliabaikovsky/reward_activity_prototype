@@ -4,6 +4,31 @@ const MONTH_TO_INDEX: Record<string, number> = Object.fromEntries(
   MONTH_SHORT.map((m, i) => [m, i]),
 )
 
+/** Upcoming When fields: `Mar 25, 2026, by 12:00 UTC`. */
+export function formatUpcomingByNoonUtc(upcomingDateCol: string, defaultYear = 2026): string {
+  const trimmed = upcomingDateCol.replace(/^on\s+/i, '').trim()
+  const parsed = parseModalDateTimeLoose(`${trimmed}, ${defaultYear}, 12:00`, defaultYear)
+  if (parsed) {
+    const month = MONTH_SHORT[parsed.getUTCMonth()]
+    const day = parsed.getUTCDate()
+    const year = parsed.getUTCFullYear()
+    return `${month} ${day}, ${year}, by 12:00 UTC`
+  }
+  return `${trimmed}, ${defaultYear}, by 12:00 UTC`
+}
+
+/** Normalize any modal datetime to Upcoming cutoff copy. */
+export function formatAsUpcomingByNoon(input: string, defaultYear = 2026): string {
+  const parsed = parseModalDateTimeLoose(input.replace(/\s+by 12:00 UTC$/i, ''), defaultYear)
+  if (parsed) {
+    const month = MONTH_SHORT[parsed.getUTCMonth()]
+    const day = parsed.getUTCDate()
+    const year = parsed.getUTCFullYear()
+    return `${month} ${day}, ${year}, by 12:00 UTC`
+  }
+  return formatUpcomingByNoonUtc(input, defaultYear)
+}
+
 /** Modal datetime: `Mar 23, 2026, 08:00 UTC` (always UTC). */
 export function formatModalDateTimeUtc(date: Date): string {
   const month = MONTH_SHORT[date.getUTCMonth()]

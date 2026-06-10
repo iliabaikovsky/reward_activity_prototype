@@ -15,11 +15,9 @@ import {
 } from './configs'
 import { DetailFieldList, DetailHero, chipClassFor } from './parts/DetailHero'
 import { ClosedOrderSheet } from './parts/ClosedOrderSheet'
-import { CashbackConversionSheet } from './parts/CashbackConversionSheet'
 import { CashbackRateSheet } from './parts/CashbackRateSheet'
 import { ExdCashbackDebitExplainerSheet } from './parts/ExdCashbackDebitExplainerSheet'
-import { EXD_DEBITED_LABEL } from './configs/cashbackExdDebitExplainer'
-import { isCashbackConversionLabel } from './configs/cashbackConversionExplainer'
+import { EXD_DEDUCTED_LABEL } from './configs/cashbackExdDebitExplainer'
 import { CASHBACK_RATE_LABEL } from './configs/cashbackRateExplainer'
 import { OrderDetailContent } from './parts/OrderDetailView'
 import { PromoGiftCelebration } from './parts/PromoGiftCelebration'
@@ -75,7 +73,6 @@ export function RewardDetailModal({
   const [sheetOpen, setSheetOpen] = useState(true)
   const [closedOrderNum, setClosedOrderNum] = useState<string | null>(null)
   const [cashbackRateOpen, setCashbackRateOpen] = useState(false)
-  const [conversionExplainerOpen, setConversionExplainerOpen] = useState(false)
   const [exdDebitExplainerOpen, setExdDebitExplainerOpen] = useState(false)
   const touchStartRef = useRef<{ x: number; y: number } | null>(null)
   const closeNotifiedRef = useRef(false)
@@ -243,24 +240,14 @@ export function RewardDetailModal({
 
   const showExdDebitedExplainer =
     (selectedOrder?.legMode === 'upcoming' || selectedOrder?.legMode === 'credited') &&
-    selectedOrder.detail.details.some((r) => r.label === EXD_DEBITED_LABEL && r.infoIcon)
+    selectedOrder.detail.details.some((r) => r.label === EXD_DEDUCTED_LABEL && r.infoIcon)
 
   const showCashbackRateExplainer =
     isCashbackLegOrder &&
     selectedOrder?.detail.details.some((r) => r.label === CASHBACK_RATE_LABEL && r.infoIcon)
 
-  const showConversionExplainer =
-    isCashbackLegOrder &&
-    selectedOrder?.detail.details.some(
-      (r) => r.infoIcon && isCashbackConversionLabel(r.label),
-    )
-
   const openExdDebitedExplainer = useCallback(() => {
     setExdDebitExplainerOpen(true)
-  }, [])
-
-  const openConversionExplainer = useCallback(() => {
-    setConversionExplainerOpen(true)
   }, [])
 
   const openCashbackRateExplainer = useCallback(() => {
@@ -335,7 +322,6 @@ export function RewardDetailModal({
       scrimDismissEnabled={
         closedOrderNum == null &&
         !cashbackRateOpen &&
-        !conversionExplainerOpen &&
         !exdDebitExplainerOpen
       }
       titleId={titleId}
@@ -343,7 +329,6 @@ export function RewardDetailModal({
       escapeEnabled={
         closedOrderNum == null &&
         !cashbackRateOpen &&
-        !conversionExplainerOpen &&
         !exdDebitExplainerOpen
       }
       onEscape={handleDismiss}
@@ -408,9 +393,6 @@ export function RewardDetailModal({
               <OrderDetailContent
                 order={selectedOrder}
                 onExdDebitedClick={showExdDebitedExplainer ? openExdDebitedExplainer : undefined}
-                onCashbackConversionClick={
-                  showConversionExplainer ? openConversionExplainer : undefined
-                }
                 onCashbackRateClick={
                   showCashbackRateExplainer ? openCashbackRateExplainer : undefined
                 }
@@ -441,11 +423,6 @@ export function RewardDetailModal({
       <CashbackRateSheet
         open={cashbackRateOpen}
         onClose={() => setCashbackRateOpen(false)}
-      />
-
-      <CashbackConversionSheet
-        open={conversionExplainerOpen}
-        onClose={() => setConversionExplainerOpen(false)}
       />
 
       <ExdCashbackDebitExplainerSheet

@@ -1,5 +1,5 @@
 import type { OrderInPack, PackConfig } from '../components/reward/RewardDetailModal/configs'
-import { EXD_DEBITED_LABEL } from '../components/reward/RewardDetailModal/configs/cashbackExdDebitExplainer'
+import { EXD_DEDUCTED_LABEL } from '../components/reward/RewardDetailModal/configs/cashbackExdDebitExplainer'
 import { parseExdAbsolute } from '../domain/reward/parseExd'
 import {
   EXD_TO_USD_CASHBACK_RATE,
@@ -40,7 +40,7 @@ function isCashbackPackOrder(order: OrderInPack): boolean {
 }
 
 function exdDebitedFromCashbackOrder(order: OrderInPack): number {
-  const debitedRow = order.detail.details.find((r) => r.label === EXD_DEBITED_LABEL)
+  const debitedRow = order.detail.details.find((r) => r.label === EXD_DEDUCTED_LABEL)
   if (debitedRow) return parseExdAbsolute(debitedRow.value)
   return parseExdAbsolute(order.amount)
 }

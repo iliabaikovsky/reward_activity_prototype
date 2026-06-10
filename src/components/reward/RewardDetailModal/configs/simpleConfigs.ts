@@ -28,14 +28,12 @@ export const SIMPLE_CONFIG: Record<SimpleVariantKey, SimpleConfig> = {
   },
   'exd-adjustment': {
     navTitle: 'EXD adjustment',
-    chip: { text: 'Adjusted', tone: 'negative' },
+    chip: { text: 'Adjusted', tone: 'neutral' },
     heroIcon: 'crownOff',
     amount: '-0.40 EXD',
     details: [
       { label: 'Processed on', value: 'Mar 18, 2026, 23:59 UTC' },
       { label: 'From', value: 'Available rewards' },
-      { label: 'To account', value: '#12345678' },
-      { label: 'Reason', value: 'Balance correction' },
     ],
   },
 }
