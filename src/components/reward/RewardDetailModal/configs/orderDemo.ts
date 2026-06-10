@@ -15,7 +15,6 @@ function cloneOrderWithOrderNumber(src: OrderInPack, id: string, orderNum: strin
     ...next.detail,
     details: next.detail.details.map((row) => {
       if (row.label === 'Order') return { ...row, value: orderNum }
-      if (row.label === 'Order') return { ...row, value: orderNum, chevron: true as const }
       if (row.label === 'Conversion ref.') return { ...row, value: `CB-CONV-${orderNum}` }
       return row
     }),

@@ -5,7 +5,7 @@ export const LOYALTY_LIST_BOOSTER_BADGE = 'x2'
 const LOYALTY_BOOSTER_TIER = 'Ultimate · x2'
 export const EARNING_RATE_VALUE = '5.34%'
 
-/** Loyalty order detail: When → Account → Order › → Booster (no Calculation / Earning rate in stripped UX). */
+/** Loyalty order detail: When → Account → Order → Booster (no Calculation / Earning rate in stripped UX). */
 export function loyaltyOrderDetailRows(
   mode: 'upcoming' | 'activated',
   whenValue: string,
@@ -16,7 +16,7 @@ export function loyaltyOrderDetailRows(
   return [
     { label: whenLabel, value: whenValue },
     { label: 'Account', value: PACK_DEFAULT_ACCOUNT },
-    { label: 'Order', value: orderNum, chevron: true },
+    { label: 'Order', value: orderNum },
     { label: 'Booster', value: LOYALTY_BOOSTER_TIER, valueDisplay: 'boosterTier' },
   ]
 }

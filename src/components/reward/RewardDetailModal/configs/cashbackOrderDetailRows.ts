@@ -35,7 +35,7 @@ export function cashbackUpcomingOrderDetailRows(
     { label: CASHBACK_ACCOUNT_LABEL, value: account },
     { label: EXD_DEBITED_LABEL, value: exdDebitedFormatted, infoIcon: true },
     { label: 'For trading with EXD on', value: tradeDay },
-    { label: 'Order', value: orderNum, chevron: true },
+    { label: 'Order', value: orderNum },
     {
       label: CASHBACK_RATE_LABEL,
       value: formatCashbackRateValue(),
@@ -61,7 +61,7 @@ export function cashbackCreditedOrderDetailRows(
     { label: CASHBACK_ACCOUNT_LABEL, value: CASHBACK_ACCOUNT },
     { label: EXD_DEBITED_LABEL, value: exdDebitedFormatted, infoIcon: true },
     { label: 'For trading with EXD on', value: tradeDay },
-    { label: 'Order', value: orderNum, chevron: true },
+    { label: 'Order', value: orderNum },
     {
       label: CASHBACK_RATE_LABEL,
       value: formatCashbackRateValue(),

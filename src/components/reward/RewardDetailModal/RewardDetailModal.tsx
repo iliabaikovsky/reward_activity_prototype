@@ -206,10 +206,6 @@ export function RewardDetailModal({
     }
   }, [closedOrderNum, ordersForLegDrill])
 
-  const openClosedOrder = useCallback((orderNum: string) => {
-    setClosedOrderNum(orderNum)
-  }, [])
-
   const openRewardLegFromClosedOrder = useCallback(
     (leg: RewardOrderLeg) => {
       if (!closedOrderNum) return
@@ -411,7 +407,6 @@ export function RewardDetailModal({
             {route.screen === 'orderDetail' && selectedOrder ? (
               <OrderDetailContent
                 order={selectedOrder}
-                onOrderClick={openClosedOrder}
                 onExdDebitedClick={showExdDebitedExplainer ? openExdDebitedExplainer : undefined}
                 onCashbackConversionClick={
                   showConversionExplainer ? openConversionExplainer : undefined
