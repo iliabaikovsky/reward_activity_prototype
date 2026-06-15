@@ -1,0 +1,51 @@
+---
+description: При старте задачи — найти и загрузить релевантный skill из .cursor/skills/
+alwaysApply: true
+---
+
+# Agent Skills — выбор и загрузка
+
+В проекте лежит каталог скиллов из [awesome-cursor-skills](https://github.com/spencerpauly/awesome-cursor-skills) — `.cursor/skills/` (65 workflow-инструкций). Индекс по категориям: `.cursor/skills/CATALOG.md`.
+
+## Когда применять
+
+**В начале каждой новой задачи в Agent** (до правок кода, до исследования репо) — проверь, есть ли подходящий skill.
+
+Также учитывай встроенные skills Cursor из `~/.cursor/skills-cursor/` — они приходят в system prompt; project skills из `.cursor/skills/` **нужно читать явно**.
+
+## Как выбрать skill
+
+1. **Сформулируй intent** задачи: что пользователь хочет (PR, browser QA, Figma, debug, commit, deploy, тесты, …).
+2. **Поиск** — по порядку:
+   - `.cursor/skills/CATALOG.md` — оглавление по категориям;
+   - `Glob` / `Grep` по `.cursor/skills/**/SKILL.md` — по `name`, `description` во frontmatter и ключевым словам задачи.
+3. **Выбор** — один наиболее специфичный skill. Если подходят несколько — основной + вспомогательный только если workflow явно требует оба.
+4. **Загрузка** — `Read` полный `SKILL.md` выбранного skill **до** первого substantive action. Не ограничивайся упоминанием в ответе.
+5. **Следуй** инструкциям skill на протяжении всей задачи. Project rules (`.cursor/rules/`) и user rules имеют приоритет при конфликте.
+
+## Типичные маппинги (reward prototype)
+
+| Задача | Skill |
+|--------|-------|
+| PR открыт, CI/комменты | `babysitting-pr` |
+| Создать PR | `creating-pr` |
+| Commit message | `writing-commit-messages` |
+| Верификация UI после правок | `verifying-in-browser`, `visual-qa-testing`, `responsive-testing` |
+| Figma → код (browser side-by-side) | `verifying-in-browser` |
+| Прототип → Figma (MCP `use_figma`) | skill `prototype-to-figma` + **INVENTORY** (local composite first) + **Gate-F/GH/full**; MCP `figma-use` |
+| Accessibility / a11y | `accessibility-auditing` |
+| Рефакторинг / code review | `reviewing-code`, `parallel-code-review` |
+| Debug, баг | `systematic-debugging` |
+| Build / lint до зелёного | `grinding-until-pass`, `auto-type-checking` |
+| Новый skill / rule / hook | `building-skills-from-patterns`, `suggesting-cursor-rules`, `suggesting-cursor-hooks` |
+| Исследование кодовой базы | `parallel-exploring`, `codebase-onboarding` |
+
+Полный список — в `CATALOG.md`.
+
+## Если skill не найден
+
+Работай по project rules и здравому смыслу. Не выдумывай skill и не копируй чужие workflow целиком в ответ.
+
+## Обновление каталога
+
+Upstream: `https://github.com/spencerpauly/awesome-cursor-skills`. При обновлении — скопировать `resources/*` → `.cursor/skills/`, обновить `CATALOG.md` из upstream `README.md` (заменить `resources/` на пустую строку в ссылках).

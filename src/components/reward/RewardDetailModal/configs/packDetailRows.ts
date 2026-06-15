@@ -1,6 +1,7 @@
 import type { DetailRow } from '../../../domain/reward/types'
 
 export const AVAILABLE_REWARDS_WALLET = 'Available rewards'
+export const FROM_WALLET_LABEL = 'From wallet'
 export const TO_WALLET_LABEL = 'To wallet'
 const DEFAULT_ACCOUNT = '#12345678'
 

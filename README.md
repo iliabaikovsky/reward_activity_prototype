@@ -36,7 +36,10 @@ npm run build   # перед деплоем
 | [`docs/product/TRANSACTIONS_CATALOG.md`](docs/product/TRANSACTIONS_CATALOG.md) | Каталог типов транзакций и полей детализации |
 | [`docs/design/DESIGN.md`](docs/design/DESIGN.md) | Figma node-id → компоненты, чеклист сверки |
 | [`docs/deploy/DEPLOY.md`](docs/deploy/DEPLOY.md) | Vercel, Basic Auth |
-| [`docs/design/FIGMA_CURSOR.md`](docs/design/FIGMA_CURSOR.md) | Figma MCP и агент в Cursor |
+| [`docs/design/FIGMA_CURSOR.md`](docs/design/FIGMA_CURSOR.md) | Figma MCP: Figma → код |
+| [`docs/design/FIGMA_FROM_PROTOTYPE.md`](docs/design/FIGMA_FROM_PROTOTYPE.md) | Прототип → Figma (универсальные принципы + CE-3142 appendices) |
+| [`docs/design/FIGMA_NAMING.md`](docs/design/FIGMA_NAMING.md) | Имена экранов/компонентов в Figma |
+| [`docs/design/FIGMA_VISUAL_QA.md`](docs/design/FIGMA_VISUAL_QA.md) | TRACE QA по категориям UI (не по именам DS) |
 
 Cursor rules: [`.cursor/rules/reward-prototype-refactor.mdc`](.cursor/rules/reward-prototype-refactor.mdc) · [`.cursor/rules/docs-structure.mdc`](.cursor/rules/docs-structure.mdc).
 

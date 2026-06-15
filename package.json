@@ -7,6 +7,9 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "screenshots": "node scripts/capture-screenshots.mjs --set full",
+    "screenshots:full": "node scripts/capture-screenshots.mjs --set full",
+    "screenshots:minimal": "node scripts/capture-screenshots.mjs --set minimal",
     "deploy": "vercel --prod"
   },
   "dependencies": {

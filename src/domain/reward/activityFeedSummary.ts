@@ -1,12 +1,8 @@
 import { parseExdAmount } from './parseExd'
+import { sumCashbackAmountsAsUsd } from './parseSignedMoney'
 import type { ActivityFeedItem } from '../../rewardLifecycle/activityFeedModel'
-import {
-  DATE_RANGE_FOR_SUMMARY,
-  TYPE_FILTER_LABELS,
-  type ActivityDatePreset,
-  type ActivityTypeFilter,
-} from '../../screens/activityFeedTypes'
-import { parseSignedAmount } from '../../rewardLifecycle/rebateSimulatorSteps'
+import { formatDateRangeForSummary, type DateRangeFilter } from './dateRangeFilter'
+import { TYPE_FILTER_LABELS, type ActivityTypeFilter } from '../../screens/activityFeedTypes'
 
 export type ActivityFeedFilterSummary = {
   /** «Rewards for all time», «Cashback for 7 days» */
@@ -20,8 +16,8 @@ function sumExd(items: ActivityFeedItem[]): number {
   return items.reduce((acc, item) => acc + Math.max(0, parseExdAmount(item.amount)), 0)
 }
 
-function sumUsd(items: ActivityFeedItem[]): number {
-  return items.reduce((acc, item) => acc + Math.max(0, parseSignedAmount(item.amount)), 0)
+function sumCashbackUsd(items: ActivityFeedItem[]): number {
+  return sumCashbackAmountsAsUsd(items.map((item) => item.amount))
 }
 
 function formatUsdTotal(n: number): string {
@@ -34,10 +30,10 @@ function formatExdTotal(n: number): string {
 
 function buildScopeLabel(
   typeFilter: Exclude<ActivityTypeFilter, 'all'>,
-  datePreset: ActivityDatePreset,
+  dateRange: DateRangeFilter,
 ): string {
   const typeName = TYPE_FILTER_LABELS[typeFilter]
-  const range = DATE_RANGE_FOR_SUMMARY[datePreset]
+  const range = formatDateRangeForSummary(dateRange)
   return `${typeName} for ${range}`
 }
 
@@ -50,11 +46,12 @@ function buildAriaLabel(scopeLabel: string, amountPrimary: string, amountSeconda
 export function summarizeActivityFeedByType(
   items: ActivityFeedItem[],
   typeFilter: ActivityTypeFilter,
-  datePreset: ActivityDatePreset = 'all',
+  dateRange: DateRangeFilter = { mode: 'all' },
 ): ActivityFeedFilterSummary | null {
   if (typeFilter === 'all' || items.length === 0) return null
+  if (typeFilter !== 'rewards' && typeFilter !== 'cashback') return null
 
-  const scopeLabel = buildScopeLabel(typeFilter, datePreset)
+  const scopeLabel = buildScopeLabel(typeFilter, dateRange)
 
   if (typeFilter === 'rewards') {
     const amountPrimary = formatExdTotal(sumExd(items))
@@ -65,34 +62,10 @@ export function summarizeActivityFeedByType(
     }
   }
 
-  if (typeFilter === 'cashback') {
-    const amountPrimary = formatUsdTotal(sumUsd(items))
-    return {
-      scopeLabel,
-      amountPrimary,
-      ariaLabel: buildAriaLabel(scopeLabel, amountPrimary),
-    }
-  }
-
-  if (typeFilter === 'transfers') {
-    const amountPrimary = formatExdTotal(sumExd(items))
-    return {
-      scopeLabel,
-      amountPrimary,
-      ariaLabel: buildAriaLabel(scopeLabel, amountPrimary),
-    }
-  }
-
-  const exd = sumExd(items)
-  const usd = sumUsd(items)
-  const amountPrimary = exd > 0 ? formatExdTotal(exd) : formatUsdTotal(usd)
-  const amountSecondary =
-    exd > 0 && usd > 0 ? formatUsdTotal(usd) : exd === 0 && usd === 0 ? formatExdTotal(0) : undefined
-
+  const amountPrimary = formatUsdTotal(sumCashbackUsd(items))
   return {
     scopeLabel,
     amountPrimary,
-    amountSecondary,
-    ariaLabel: buildAriaLabel(scopeLabel, amountPrimary, amountSecondary),
+    ariaLabel: buildAriaLabel(scopeLabel, amountPrimary),
   }
 }

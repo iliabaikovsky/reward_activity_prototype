@@ -85,7 +85,6 @@
   min-height: 48px;
   padding: 12px 0;
   border: none;
-  border-bottom: 1px solid var(--reward-border);
   background: transparent;
   width: 100%;
   text-align: left;
@@ -99,10 +98,6 @@
 .rowInteractive:focus-visible {
   outline: 2px solid var(--reward-info-content);
   outline-offset: -2px;
-}
-
-.row:last-child {
-  border-bottom: none;
 }
 
 .rowLabelCol {

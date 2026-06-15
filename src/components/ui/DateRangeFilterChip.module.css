@@ -1,0 +1,39 @@
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 1000px;
+  background: var(--reward-neutral-ultralight);
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 400;
+  color: var(--reward-text-primary);
+  cursor: pointer;
+}
+
+.chipIcon {
+  display: flex;
+  align-items: center;
+  color: var(--reward-text-primary);
+}
+
+.chipChevron {
+  opacity: 0.6;
+}
+
+.chipActive {
+  background: var(--reward-info-ultralight);
+  color: var(--reward-info-content);
+}
+
+.chipActive .chipIcon {
+  color: var(--reward-info-content);
+}
+
+.chip:focus-visible {
+  outline: 2px solid var(--reward-info-content);
+  outline-offset: 2px;
+}

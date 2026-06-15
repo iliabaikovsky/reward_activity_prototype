@@ -41,6 +41,11 @@
 | `42104:17588` | `RewardDetailModal` — `loyalty-activated` | После activation |
 | `42104:17168` | `RewardDetailModal` — `cashback-upcoming` | Cashback pending |
 | `42104:17387` | `RewardDetailModal` — `cashback-activated` | Cashback credited |
+| `42579:350` | `Exness Rewards / Loyalty rewards -- Upcoming` | **Cursor figma** · pack modal (step 2 drill) · [`FIGMA_NAMING.md`](FIGMA_NAMING.md) |
+| `42507:155` | `Exness Rewards / Loyalty rewards / Loyalty reward -- Upcoming` | **Cursor figma** · order detail nested route |
+| `42450:9311` | `Exness Rewards / Transaction detail / Summary` | **🧩 Components** — primary block (icon + amount + chip) |
+| `42421:16687` | Designer — Birthday gift (Simple) | Gift celebration block |
+| `42413:32765` | Designer — order detail (full) | Не копировать Earning rate / Calculation в stripped export |
 | — | `TransactionRow` | Строки Upcoming / preview / feed |
 | — | `ModalSheet` | iOS HIG sheet shell (scrim, grabber, detents) |
 | — | `BottomSheet` | Filter sheets (Type, Date) → `ModalSheet` medium |

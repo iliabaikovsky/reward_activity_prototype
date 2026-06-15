@@ -1,0 +1,215 @@
+.card {
+  margin: 0;
+  padding: 16px;
+  border: 1px solid var(--reward-neutral-light, #e8e9f1);
+  border-radius: 16px;
+  background: var(--reward-paper, #fff);
+  box-shadow:
+    0 5px 15px rgba(0, 0, 0, 0.12),
+    0 15px 35px rgba(103, 110, 118, 0.08);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.monthLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 24px;
+  color: var(--reward-text-primary);
+  cursor: default;
+}
+
+.monthChevron {
+  display: flex;
+  color: var(--reward-info-content);
+  opacity: 0.85;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.navBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--reward-info-content);
+  cursor: pointer;
+}
+
+.navBtn:focus-visible {
+  outline: 2px solid var(--reward-info-content);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 4px;
+}
+
+.weekday {
+  margin: 0;
+  font-size: 10px;
+  font-weight: 400;
+  line-height: normal;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  text-align: center;
+  color: #cdcdcd;
+}
+
+.week {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+
+.daySlot {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 34px;
+}
+
+.rangeBg {
+  position: absolute;
+  inset: 0;
+  background: var(--reward-info-content);
+  z-index: 0;
+}
+
+.rangeBgStart {
+  border-radius: 26px 0 0 26px;
+}
+
+.rangeBgEnd {
+  border-radius: 0 26px 26px 0;
+}
+
+.rangeBgSingle {
+  border-radius: 26px;
+}
+
+.dayBtn {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 34px;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 24px;
+  color: #45454a;
+  cursor: pointer;
+}
+
+.dayBtnOutside {
+  color: #e8e9f1;
+  cursor: default;
+}
+
+.dayBtnToday {
+  color: var(--reward-info-content);
+  font-weight: 600;
+}
+
+.dayBtnInRange {
+  color: #fff;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.dayBtn:focus-visible {
+  outline: 2px solid var(--reward-info-content);
+  outline-offset: 1px;
+  border-radius: 100px;
+}
+
+.footer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 12px;
+  padding-top: 12px;
+}
+
+.textBtn {
+  margin: 0;
+  padding: 4px 10px;
+  border: none;
+  border-radius: 40px;
+  background: none;
+  font: inherit;
+  font-size: 15px;
+  line-height: 20px;
+  letter-spacing: -0.23px;
+  color: #0088ff;
+  cursor: pointer;
+}
+
+.textBtn:focus-visible {
+  outline: 2px solid var(--reward-info-content);
+  outline-offset: 2px;
+}
+
+.clearBtn {
+  position: absolute;
+  left: 0;
+  top: 12px;
+}
+
+.okBtn {
+  margin: 0;
+  padding: 4px 10px;
+  border: none;
+  border-radius: 1000px;
+  background: #0088ff;
+  font: inherit;
+  font-size: 15px;
+  line-height: 20px;
+  letter-spacing: -0.23px;
+  color: #fff;
+  cursor: pointer;
+}
+
+.okBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.okBtn:focus-visible {
+  outline: 2px solid var(--reward-info-content);
+  outline-offset: 2px;
+}

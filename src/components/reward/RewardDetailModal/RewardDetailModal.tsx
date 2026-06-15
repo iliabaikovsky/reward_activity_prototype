@@ -170,7 +170,6 @@ export function RewardDetailModal({
     setRoute({ screen: 'pack' })
     setClosedOrderNum(null)
     setCashbackRateOpen(false)
-    setConversionExplainerOpen(false)
     setExdDebitExplainerOpen(false)
     setSheetOpen(true)
   }, [variant, modalItemId])
@@ -338,7 +337,7 @@ export function RewardDetailModal({
         onTouchStart={handleEdgeTouchStart}
         onTouchEnd={handleEdgeTouchEnd}
       >
-        <header className={styles.header}>
+        <header className={styles.header} data-screenshot="reward-modal-header">
           {route.screen === 'pack' ? (
             <button type="button" className={styles.closeBtn} onClick={requestSheetClose} aria-label="Close">
               <IconX size={24} stroke={2} aria-hidden />
@@ -379,7 +378,7 @@ export function RewardDetailModal({
                     previewOrders={previewOrders}
                     onOpenFullList={openOrders}
                     onSelectOrder={openOrderFromPack}
-                    sectionTitle={displayPack.heroIcon === 'dollar' ? 'Orders' : 'Last orders'}
+                    sectionTitle={displayPack.heroIcon === 'dollar' ? 'Cashback' : 'Rewards'}
                   />
                 ) : null}
               </div>
@@ -392,6 +391,7 @@ export function RewardDetailModal({
             {route.screen === 'orderDetail' && selectedOrder ? (
               <OrderDetailContent
                 order={selectedOrder}
+                onOrderClick={setClosedOrderNum}
                 onExdDebitedClick={showExdDebitedExplainer ? openExdDebitedExplainer : undefined}
                 onCashbackRateClick={
                   showCashbackRateExplainer ? openCashbackRateExplainer : undefined

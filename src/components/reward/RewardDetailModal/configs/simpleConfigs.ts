@@ -1,4 +1,9 @@
 import type { SimpleConfig, SimpleVariantKey } from './types'
+import {
+  AVAILABLE_REWARDS_WALLET,
+  FROM_WALLET_LABEL,
+  TO_WALLET_LABEL,
+} from './packDetailRows'
 
 export const SIMPLE_CONFIG: Record<SimpleVariantKey, SimpleConfig> = {
   'transfer-exd': {
@@ -8,7 +13,7 @@ export const SIMPLE_CONFIG: Record<SimpleVariantKey, SimpleConfig> = {
     amount: '30.00 EXD',
     details: [
       { label: 'Completed on', value: 'Mar 21, 2026, 09:30 UTC' },
-      { label: 'From', value: 'Available rewards' },
+      { label: FROM_WALLET_LABEL, value: AVAILABLE_REWARDS_WALLET },
       { label: 'To account', value: '#12345678' },
     ],
   },
@@ -19,7 +24,7 @@ export const SIMPLE_CONFIG: Record<SimpleVariantKey, SimpleConfig> = {
     amount: '+50.00 EXD',
     details: [
       { label: 'Credited on', value: 'Mar 19, 2026, 16:15 UTC' },
-      { label: 'To wallet', value: 'Available rewards' },
+      { label: TO_WALLET_LABEL, value: AVAILABLE_REWARDS_WALLET },
     ],
     celebration: {
       message: 'Best wishes! ✨',
@@ -33,7 +38,7 @@ export const SIMPLE_CONFIG: Record<SimpleVariantKey, SimpleConfig> = {
     amount: '-0.40 EXD',
     details: [
       { label: 'Processed on', value: 'Mar 18, 2026, 23:59 UTC' },
-      { label: 'From', value: 'Available rewards' },
+      { label: FROM_WALLET_LABEL, value: AVAILABLE_REWARDS_WALLET },
     ],
   },
 }

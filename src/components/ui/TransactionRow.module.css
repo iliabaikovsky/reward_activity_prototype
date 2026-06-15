@@ -3,11 +3,6 @@
   gap: 16px;
   align-items: flex-start;
   padding: 16px 0;
-  border-bottom: 1px solid var(--reward-border);
-}
-
-.row:last-child {
-  border-bottom: none;
 }
 
 .rowClickable {
@@ -18,17 +13,12 @@
   margin: 0;
   padding: 16px 0;
   border: none;
-  border-bottom: 1px solid var(--reward-border);
   background: transparent;
   font: inherit;
   text-align: left;
   color: inherit;
   cursor: pointer;
   border-radius: 0;
-}
-
-.rowClickable:last-child {
-  border-bottom: none;
 }
 
 .rowClickable:focus-visible {

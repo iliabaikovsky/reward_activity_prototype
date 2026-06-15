@@ -1,5 +1,16 @@
 # Работа с Figma в Cursor (MCP)
 
+Два направления:
+
+| Направление | Документ |
+|-------------|----------|
+| **Figma → код** (верстка прототипа) | этот файл |
+| **Прототип → Figma** (экспорт в DS) | [`FIGMA_FROM_PROTOTYPE.md`](FIGMA_FROM_PROTOTYPE.md), [`FIGMA_NAMING.md`](FIGMA_NAMING.md), [`FIGMA_VISUAL_QA.md`](FIGMA_VISUAL_QA.md), skill `prototype-to-figma` |
+
+Новые экраны от агента в Figma — страница **Cursor figma** (`42433:17909`), не основной canvas.
+
+## Figma → код
+
 Цель: ты кидаешь **ссылку на Figma**, агент подключается к макету и пишет код в этом репозитории (React + Vite), потом проект деплоится на Vercel.
 
 ## Что нужно с твоей стороны

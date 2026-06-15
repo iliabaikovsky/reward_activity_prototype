@@ -31,6 +31,20 @@ export const CB_PENDING_TRADE_DAY_SHORT = 'Mar 22'
 /** Subtitle в list row для cashback (Upcoming / feed / preview). */
 export const CB_LIST_SUBTITLE = 'For trading with EXD'
 
+/** Вторая строка list row cashback — счёт зачисления (Upcoming drill, feed credited). */
+export const CB_ACCOUNT_LIST_LINE = 'Account: #12345678'
+
+/** Step 9 — три торговых счёта в локальных валютах (THB / JPY / INR). */
+export const CB_ACCOUNT_THB_LINE = 'Account: #88112233'
+export const CB_ACCOUNT_JPY_LINE = 'Account: #99223344'
+export const CB_ACCOUNT_INR_LINE = 'Account: #77334455'
+
+/** Subtitle в list row для EXD adjustment (feed / preview). */
+export const ADJUSTMENT_LIST_SUBTITLE = 'Available rewards adjusted'
+
+/** Subtitle в list row для loyalty activated (первая строка lines[]). */
+export const LOYALTY_TO_AVAILABLE_SUBTITLE = 'To available'
+
 /** Дата в колонке справа у Upcoming loyalty: `on Mar 25` */
 export const upcomingLoyaltyDate = (activationShort: string) => `on ${activationShort}`
 

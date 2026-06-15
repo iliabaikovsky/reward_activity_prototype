@@ -1,3 +1,4 @@
+import { isOrderDateInRange, type DateRangeFilter } from '../../../domain/reward/dateRangeFilter'
 import { parseModalDateTimeLoose } from '../../../domain/reward/formatModalDateTimeUtc'
 import type { OrderInPack } from './configs/types'
 
@@ -32,11 +33,6 @@ const MONTH_LABELS = [
   'November',
   'December',
 ] as const
-
-export type MonthFilterOption = {
-  id: string
-  label: string
-}
 
 export type OrderMonthGroup = {
   monthId: string
@@ -75,32 +71,15 @@ export function monthLabelFromDate(d: Date): string {
   return `${MONTH_LABELS[d.getMonth()]} ${d.getFullYear()}`
 }
 
-export function buildMonthFilterOptions(orders: OrderInPack[]): MonthFilterOption[] {
-  const seen = new Map<string, MonthFilterOption>()
-
-  for (const order of orders) {
-    const parsed = parseOrderListDate(order.date)
-    if (!parsed) continue
-    const id = monthIdFromDate(parsed)
-    if (!seen.has(id)) {
-      seen.set(id, { id, label: monthLabelFromDate(parsed) })
-    }
-  }
-
-  const months = [...seen.values()].sort((a, b) => b.id.localeCompare(a.id))
-  return [{ id: 'all', label: 'All' }, ...months]
-}
-
 export function filterOrders(
   orders: OrderInPack[],
-  opts: { query: string; monthId: string },
+  opts: { query: string; dateRange: DateRangeFilter },
 ): OrderInPack[] {
   const q = opts.query.trim().toLowerCase()
 
   return orders.filter((order) => {
-    if (opts.monthId !== 'all') {
-      const parsed = parseOrderListDate(order.date)
-      if (!parsed || monthIdFromDate(parsed) !== opts.monthId) return false
+    if (!isOrderDateInRange(parseOrderListDate(order.date), opts.dateRange)) {
+      return false
     }
 
     if (!q) return true

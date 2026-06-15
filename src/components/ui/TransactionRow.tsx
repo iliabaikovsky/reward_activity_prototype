@@ -6,6 +6,8 @@ import styles from './TransactionRow.module.css'
 
 type Props = TransactionRowModel & {
   onClick?: () => void
+  /** Stable id for activity feed rows (screenshot automation). */
+  dataFeedItemId?: string
 }
 
 function amountClassName(_tone?: AmountTone): string {
@@ -21,6 +23,7 @@ export function TransactionRow({
   trailing,
   badge,
   onClick,
+  dataFeedItemId,
 }: Props) {
   const inner = (
     <>
@@ -57,11 +60,20 @@ export function TransactionRow({
 
   if (onClick) {
     return (
-      <button type="button" className={styles.rowClickable} onClick={onClick}>
+      <button
+        type="button"
+        className={styles.rowClickable}
+        onClick={onClick}
+        data-feed-item-id={dataFeedItemId}
+      >
         {inner}
       </button>
     )
   }
 
-  return <div className={styles.row}>{inner}</div>
+  return (
+    <div className={styles.row} data-feed-item-id={dataFeedItemId}>
+      {inner}
+    </div>
+  )
 }

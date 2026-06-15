@@ -1,7 +1,7 @@
 import { formatListDateTimeLoose } from '../../../../domain/reward/formatListDateTime'
-import { appHeadingStyles } from '../../../ui/AppHeading'
 import { BoosterBadge } from '../../../ui/BoosterBadge'
 import { OrderRowIcon as OrderRowIconComponent } from '../../../ui/RewardEventIcon'
+import { SectionHeader } from '../../../ui/SectionHeader'
 import type { OrderInPack } from '../configs/types'
 import styles from '../RewardDetailModal.module.css'
 
@@ -44,7 +44,7 @@ export function OrdersSection({
   previewOrders,
   onOpenFullList,
   onSelectOrder,
-  sectionTitle = 'Last orders',
+  sectionTitle = 'Rewards',
 }: {
   previewOrders: OrderInPack[]
   onOpenFullList: () => void
@@ -53,15 +53,13 @@ export function OrdersSection({
 }) {
   return (
     <section className={styles.ordersBlock} aria-label={sectionTitle}>
-      <button
-        type="button"
-        className={styles.ordersNavRow}
-        onClick={onOpenFullList}
-        aria-label={`${sectionTitle}, see all`}
-      >
-        <span className={`${appHeadingStyles.h3} ${styles.ordersTitle}`}>{sectionTitle}</span>
-        <span className={styles.ordersSeeAll}>See all</span>
-      </button>
+      <div className={styles.ordersSectionHeader}>
+        <SectionHeader
+          title={sectionTitle}
+          onClick={onOpenFullList}
+          ariaLabel={`${sectionTitle}, see all`}
+        />
+      </div>
       {previewOrders.map((order) => (
         <PackOrderRow key={order.id} order={order} onSelect={() => onSelectOrder(order.id)} />
       ))}

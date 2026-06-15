@@ -46,18 +46,18 @@
 | Kind | List subtitle | Modal: When | Modal: From | Modal: To | Modal: Why / period |
 |------|---------------|-------------|-------------|-----------|---------------------|
 | `loyalty_upcoming` | `For trading on {пн–вс}` | **Available on** | — | **To wallet** → Available rewards | **For trading on** → `{пн–вс}` |
-| `loyalty_activated` | `To wallet` + `For trading on {пн–вс}` | **Activated on** | — | **To wallet** → Available rewards | **For trading on** → `{пн–вс}` |
-| `cashback_upcoming` | **For trading with EXD** | **Credits on** | — | — | **For trading on** → `{day}` |
+| `loyalty_activated` | `To available` + `For trading on {пн–вс}` | **Activated on** | — | **To wallet** → Available rewards | **For trading on** → `{пн–вс}` |
+| `cashback_upcoming` | **For trading with EXD** + `Account: #…` | **Credits on** | — | — | **For trading on** → `{day}` |
 | `cashback_credited` | **For trading with EXD** + `Account: #…` в list | **Credited on** | — | **To account** | **For trading on** → `{day}` |
-| `transfer_exd` | `To account: #…` | **Completed on** | **From** → Available rewards | **To account** | — |
+| `transfer_exd` | `To account: #…` | **Completed on** | **From wallet** → Available rewards | **To account** | — |
 | `promo_gift` | промо-текст | **Credited on** | — | **To wallet** → Available rewards | — (поздравление + steel banner в modal) |
-| `exd_adjustment` | Reason + Account | **Processed on** | **From** → Available rewards | **To account** | **Reason** |
+| `exd_adjustment` | `Available rewards adjusted` | **Processed on** | **From wallet** → Available rewards | — | — |
 
 Константа list cashback: `CB_LIST_SUBTITLE` в [`demoTimeline.ts`](../../src/rewardLifecycle/demoTimeline.ts). День для модалки при subtitle без даты — `CB_PENDING_TRADE_DAY_SHORT`.
 
 **Status chip (modal hero):** `warning` → **Upcoming**; `success` → **Activated**, **Credited**, **Completed** (transfer); `negative` → **Adjusted**. Promo gift: chip **Credited** (не «Promo»). Adjustment: только chip красный; сумма в hero — обычный цвет (без `amountTone: negative`).
 
-**Порядок полей в modal:** **When → From → To → Why → Other** (пропускайте слот, если поля нет). Для pack после summary — блок **Orders**. Simple transfer: Completed on, From, To account.
+**Порядок полей в modal:** **When → From wallet → To → Why → Other** (пропускайте слот, если поля нет). Для pack после summary — блок **Orders**. Simple transfer: Completed on, From wallet, To account.
 
 **Datetime в modal `details[]` и order detail** (поля с временем): `{Mon} {d}, {yyyy}, {HH}:{mm} UTC` — [`formatModalDateTimeUtc.ts`](../../src/domain/reward/formatModalDateTimeUtc.ts). **For trading on** — только дата/период, без UTC.
 
@@ -99,12 +99,12 @@
 | Kind ID | List title | State | Currency | Icon | `rewardModal` | Pack? | Surfaces | Feed filter | List copy rules | Modal override | Data source (modal) | Known inconsistency | Review: copy | Review: UX | Review: API |
 |---------|------------|-------|----------|------|---------------|-------|----------|-------------|-----------------|----------------|---------------------|---------------------|--------------|------------|-------------|
 | `loyalty_upcoming` | Loyalty rewards | Upcoming | EXD | crown | `loyalty-upcoming` | yes | Upcoming, drill EXD | — | агрегат **пн–вс**; TRANSACTION_SUMMARY §2; `lines[0]`: `For trading on {пн–вс}`; `date`: `on {среда зачисления}` | `buildRewardModalPackOverride` + `upcoming.id` | `simulator-dynamic` | — | | | |
-| `loyalty_activated` | Loyalty rewards | Activated | EXD | crown | `loyalty-activated` | yes | Feed, activity preview | rewards | `lines[0]`: `To wallet`; `lines[1]`: `For trading on {period}`; `trailing`: время | override если `feedItemId`; иначе preview → dynamic; иначе static | `simulator-dynamic` или `static` | — | | | |
+| `loyalty_activated` | Loyalty rewards | Activated | EXD | crown | `loyalty-activated` | yes | Feed, activity preview | rewards | `lines[0]`: `To available`; `lines[1]`: `For trading on {period}`; `trailing`: время | override если `feedItemId`; иначе preview → dynamic; иначе static | `simulator-dynamic` или `static` | — | | | |
 | `cashback_upcoming` | EXD cashback | Upcoming | USD | dollar | `cashback-upcoming` | yes | Upcoming, drill USD | — | list: **For trading with EXD**; modal: Credits on + For trading on | `buildRewardModalPackOverride` + `upcoming.id` | `simulator-dynamic` | — | | | |
 | `cashback_credited` | EXD cashback | Credited | USD | dollar | `cashback-activated` | yes | Feed, preview | cashback | list: **For trading with EXD**; `lines[1]`: Account | override если `feedItemId`; иначе preview → dynamic | `simulator-dynamic` / static fallback | — | | | |
 | `transfer_exd` | Transfer | Completed | EXD | transfer | `transfer-exd` | no | Feed, preview | transfers | `lines[0]`: `To account: #…` | — | `static` | amount на list может быть без знака `+` | | | |
 | `promo_gift` | Birthday gift | Credited | EXD | gift | `promo-gift` | no | Feed, preview | rewards | `lines[0]`: промо-текст | — | `static` | chip **Credited**; modal To + Credited on | | | |
-| `exd_adjustment` | EXD adjustment | Adjusted | EXD | crownOff | `exd-adjustment` | no | Feed, preview | others | `lines[0]`: `Balance correction`; `lines[1]`: `Account: #…` | — | `static` | chip **Adjusted**; hero amount не красный | | | |
+| `exd_adjustment` | EXD adjustment | Adjusted | EXD | crownOff | `exd-adjustment` | no | Feed, preview | others | `lines[0]`: `Available rewards adjusted` | — | `static` | chip **Adjusted**; hero amount не красный | | | |
 
 \* Pack для credited cashback: только [`PACK_CONFIG['cashback-activated']`](../../src/components/reward/RewardDetailModal/configs/packConfigs.ts). Строка ленты **не** подтягивает сумму/период в модалку.
 
@@ -217,7 +217,7 @@ flowchart TB
 |------|------------------|--------------|-----|
 | `title` | `Loyalty rewards` | | |
 | `amount` | `+N.NN EXD` | | |
-| `lines[0]` | `To wallet` | | |
+| `lines[0]` | `To available` | | |
 | `lines[1]` | `For trading on Mar 9–15` (неделя пн–вс) | | |
 | `trailing` | `23:58` (feed) или `Mar 18, 23:58` (preview) | | |
 | `icon` | `crown` | | |
@@ -322,7 +322,7 @@ List: **EXD cashback**, amount **+USD**; meta **For trading with EXD** + **Order
 | `chip` | **Completed** / success | OK |
 | `heroIcon` | transfer | |
 | `amount` | 30.00 EXD (static demo ≠ list mock) | **gap** |
-| `details` | **Completed on** (UTC); From → Available rewards; To account | |
+| `details` | **Completed on** (UTC); From wallet → Available rewards; To account | |
 
 Нет уровня order.
 
@@ -359,15 +359,14 @@ List: **EXD cashback**, amount **+USD**; meta **For trading with EXD** + **Order
 |------|--------|
 | `title` | EXD adjustment |
 | `amount` | -0.40 EXD (negative tone в **list**; в modal hero — нейтральный) |
-| `lines[0]` | Balance correction |
-| `lines[1]` | Account: #12345678 |
+| `lines[0]` | Available rewards adjusted |
 | `category` | others |
 
 #### Modal (simple)
 
 | Slot | Label | Value (demo) | Review: API |
 |------|-------|--------------|-------------|
-| From | **From** | Available rewards | |
+| From | **From wallet** | Available rewards | |
 | When | **Processed on** | Mar 18, 2026, 23:59 UTC | |
 | To | **To account** | #12345678 | |
 | Why | **Reason** | Balance correction | |
@@ -452,7 +451,7 @@ List: **EXD cashback**, amount **+USD**; meta **For trading with EXD** + **Order
 
 | Planned state | Chip | Tone | Когда показывать | Modal (draft) |
 |---------------|------|------|------------------|---------------|
-| Transfer failed | **Failed** | `negative` | EXD не зачислен на счёт | **Failed on**, From, To account, Reason (код/текст) |
+| Transfer failed | **Failed** | `negative` | EXD не зачислен на счёт | **Failed on**, From wallet, To account, Reason (код/текст) |
 | Cashback / loyalty payout failed | **Failed** | `negative` | payout отклонён | When + Reason; без Orders или с failed legs |
 | Adjustment reversed | TBD | TBD | отмена коррекции | отдельный kind или linked event |
 

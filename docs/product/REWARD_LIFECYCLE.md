@@ -29,7 +29,7 @@
 
 **Деталка Loyalty (bottom sheet):** для вариантов `loyalty-upcoming` и `loyalty-activated` данные пачки собираются из шага симулятора (`buildLoyaltyModalPack.ts`): те же **сумма**, **Available on** + **For trading on** (value = период пн–вс), что на списке; **ордера** — несколько строк, в сумме дающих агрегат (без раздувания до 200). Из ленты открытие передаёт `feedItemId`, чтобы совпадала конкретная транзакция.
 
-**Шаг 9 (`mature_trader_tuesday`, 20 Apr):** тот же пользователь **~месяц спустя** после якоря 20 Mar — **Lifetime cashback ~38 USD**, на счёте **62.40 EXD**, в Upcoming loyalty **Apr 13–19 → Apr 22** и **EXD cashback** за Apr 20; в ленте — ежедневные EXD cashback апреля + хвост марта.
+**Шаг 9 (`mature_trader_tuesday`, 20 Apr):** тот же пользователь **~месяц спустя** после якоря 20 Mar — **Lifetime cashback ~38 USD**, на счёте **62.40 EXD**, в Upcoming loyalty **Apr 13–19 → Apr 22** и **3 EXD cashback** (THB / JPY / INR на счетах `#88112233`, `#99223344`, `#77334455`, зачисление `on Apr 21`); в ленте — credited cashback 20 / 19 / 18 Apr в тех же валютах + хвост марта.
 
 Шаги **1–8** — первые дни/недели пути (март); шаг **9** — не «+6 дней», а **перемотка на ~31 день** для зрелого состояния.
 

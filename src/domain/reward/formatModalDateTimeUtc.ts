@@ -71,6 +71,24 @@ export function parseModalDateTimeLoose(input: string, defaultYear = 2026): Date
   return null
 }
 
+/** Modal date/period in `details[]`: `Mar 23, 2026` or `Mar 16–22, 2026` — no time, no UTC. */
+export function formatModalDateLoose(input: string, defaultYear = 2026): string {
+  const s = input.trim()
+  if (!s || /\b\d{4}\b/.test(s)) return s
+
+  const range = s.match(/^(\w{3})\s+(\d{1,2})([–-])(\d{1,2})$/)
+  if (range && MONTH_TO_INDEX[range[1]] != null) {
+    return `${range[1]} ${range[2]}${range[3]}${range[4]}, ${defaultYear}`
+  }
+
+  const day = s.match(/^(\w{3})\s+(\d{1,2})$/)
+  if (day && MONTH_TO_INDEX[day[1]] != null) {
+    return `${day[1]} ${day[2]}, ${defaultYear}`
+  }
+
+  return s
+}
+
 /** Re-format known datetime strings for modal `details[]` / order detail. */
 export function formatModalDateTimeUtcLoose(input: string, defaultYear = 2026): string {
   const parsed = parseModalDateTimeLoose(input, defaultYear)

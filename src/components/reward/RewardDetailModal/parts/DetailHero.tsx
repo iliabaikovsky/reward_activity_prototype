@@ -1,4 +1,5 @@
 import { IconChevronRight, IconInfoCircle } from '@tabler/icons-react'
+import { formatModalDateLoose } from '../../../../domain/reward/formatModalDateTimeUtc'
 import { AppH2 } from '../../../ui/AppHeading'
 import { BoosterBadge } from '../../../ui/BoosterBadge'
 import { RewardEventIcon } from '../../../ui/RewardEventIcon'
@@ -8,6 +9,22 @@ import { isCashbackConversionLabel } from '../configs/cashbackConversionExplaine
 import { EXD_DEDUCTED_LABEL } from '../configs/cashbackExdDebitExplainer'
 import { CASHBACK_RATE_LABEL } from '../configs/cashbackRateExplainer'
 import styles from '../RewardDetailModal.module.css'
+
+const MODAL_DATE_LABELS = new Set(['For trading on', 'For trading with EXD on'])
+
+function formatDetailValue(row: DetailRow): string {
+  if (
+    row.valueDisplay === 'modalDatetime' ||
+    row.valueDisplay === 'boosterTier' ||
+    row.valueDisplay === 'navDetail'
+  ) {
+    return row.value
+  }
+  if (MODAL_DATE_LABELS.has(row.label)) {
+    return formatModalDateLoose(row.value)
+  }
+  return row.value
+}
 
 type HeroProps = {
   heroIcon: HeroIcon
@@ -58,6 +75,7 @@ export function DetailFieldList({
           isOrderNav || isExdDebitedNav || isConversionNav || isCashbackRateNav
         const RowTag = isNav ? 'button' : 'div'
         const isNavDetail = row.valueDisplay === 'navDetail'
+        const displayValue = formatDetailValue(row)
 
         return (
           <RowTag
@@ -82,7 +100,7 @@ export function DetailFieldList({
                 <BoosterBadge variant="tier">{row.value}</BoosterBadge>
               ) : isNavDetail ? (
                 <>
-                  <p className={styles.detailNavValue}>{row.value}</p>
+                  <p className={styles.detailNavValue}>{displayValue}</p>
                   {row.chevron ? (
                     <IconChevronRight
                       size={20}
@@ -95,7 +113,7 @@ export function DetailFieldList({
               ) : row.valueDisplay === 'modalDatetime' ? (
                 <>
                   <p className={`${styles.detailValue} ${styles.detailValueDatetime}`}>
-                    {row.value}
+                    {displayValue}
                   </p>
                   {row.chevron ? (
                     <IconChevronRight
@@ -116,7 +134,7 @@ export function DetailFieldList({
                 </>
               ) : (
                 <>
-                  <p className={styles.detailValue}>{row.value}</p>
+                  <p className={styles.detailValue}>{displayValue}</p>
                   {row.chevron ? (
                     <IconChevronRight
                       size={20}

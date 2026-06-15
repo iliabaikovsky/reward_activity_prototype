@@ -48,30 +48,13 @@
   overflow: hidden;
 }
 
-.heroGlow {
+.heroBgImage {
   position: absolute;
-  width: 500px;
-  height: 500px;
-  left: -73px;
-  top: -23px;
-  opacity: 0.35;
-  background: radial-gradient(
-    circle at 40% 40%,
-    rgba(100, 140, 200, 0.45) 0%,
-    transparent 55%
-  );
-  pointer-events: none;
-}
-
-.heroBlurBottom {
-  position: absolute;
-  left: 23px;
-  top: 293px;
-  width: 370px;
-  height: 146px;
-  background: #1a1f28;
-  filter: blur(75px);
-  opacity: 0.9;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
   pointer-events: none;
 }
 
@@ -330,12 +313,12 @@
   min-width: 0;
   max-width: 100%;
   overflow-x: auto;
-  /* Тень MD до ~15px вниз; padding снизу внутри scrollport, иначе overflow-x режет тень. */
   overflow-y: visible;
   scroll-snap-type: x mandatory;
   scroll-padding-left: 16px;
   scroll-padding-right: 16px;
-  padding: 18px 16px var(--wallet-scroll-shadow-pad) 16px;
+  /* Тень MD вниз — pad снизу; сверху 32px до progressCard (hero pb 64 − body overlap 32). */
+  padding: 0 16px var(--wallet-scroll-shadow-pad) 16px;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-x: contain;
@@ -524,14 +507,22 @@
 }
 
 .bannerArt {
+  position: relative;
   width: 100px;
   flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #c5d6e8 0%, #d8e4f0 100%);
-  font-size: 42px;
-  line-height: 1;
+  overflow: hidden;
+  background: var(--pa-banners-platinum, #d8e4f0);
+}
+
+.bannerArtImage {
+  position: absolute;
+  top: -2.12%;
+  left: -12.21%;
+  width: 121.18%;
+  height: 104.53%;
+  max-width: none;
+  object-fit: cover;
+  pointer-events: none;
 }
 
 .v2List {
@@ -580,7 +571,6 @@
   width: 100%;
   margin: 0;
   border: none;
-  border-bottom: 1px solid var(--reward-border);
   background: transparent;
   padding: 12px 0;
   display: flex;
@@ -590,10 +580,6 @@
   cursor: pointer;
   font: inherit;
   color: inherit;
-}
-
-.v2SummaryCell:last-child {
-  border-bottom: none;
 }
 
 .v2SummaryCellIcon {
@@ -1113,7 +1099,6 @@
   gap: 16px;
   align-items: flex-start;
   padding: 16px 0;
-  border-bottom: 1px solid var(--reward-border);
 }
 
 /* Кликабельная строка Upcoming (spread rebate → леджер) */
@@ -1125,7 +1110,6 @@
   margin: 0;
   width: 100%;
   border: none;
-  border-bottom: 1px solid var(--reward-border);
   background: transparent;
   cursor: pointer;
   font: inherit;
@@ -1384,15 +1368,10 @@
 
 .v2DayRow {
   padding: 12px 0;
-  border-bottom: 1px solid var(--reward-border);
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-}
-
-.v2DayRow:last-of-type {
-  border-bottom: none;
 }
 
 .v2DayRowTitle {
@@ -1604,11 +1583,6 @@
   justify-content: space-between;
   gap: 10px;
   padding: 8px 0;
-  border-bottom: 1px solid var(--reward-border);
-}
-
-.flexRow:last-child {
-  border-bottom: none;
 }
 
 .flexRowPinned {
@@ -1816,14 +1790,9 @@
   gap: 16px;
   align-items: flex-start;
   padding: 16px 0;
-  border-bottom: 1px solid var(--reward-border);
 }
 
-.tx:last-child {
-  border-bottom: none;
-}
-
-/* Кликабельная строка (открывает bottom sheet) — те же отступы/граница, что у .tx */
+/* Кликабельная строка (открывает bottom sheet) — те же отступы, что у .tx */
 .txClickable {
   display: flex;
   gap: 16px;
@@ -1832,17 +1801,12 @@
   margin: 0;
   padding: 16px 0;
   border: none;
-  border-bottom: 1px solid var(--reward-border);
   background: transparent;
   font: inherit;
   text-align: left;
   color: inherit;
   cursor: pointer;
   border-radius: 0;
-}
-
-.txClickable:last-child {
-  border-bottom: none;
 }
 
 .txClickable:focus-visible {
@@ -1987,11 +1951,15 @@
   top: 0;
   bottom: 0;
   width: 100px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 48px;
-  opacity: 0.85;
+  overflow: hidden;
+}
+
+.cashbackCoinImage {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
 }
 
 .bottomSafe {

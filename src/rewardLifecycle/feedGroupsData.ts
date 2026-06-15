@@ -1,5 +1,14 @@
 import type { ActivityFeedGroup, ActivityFeedItem } from './activityFeedModel'
-import { CB_LIST_SUBTITLE, LOY_PERIOD_NEXT_LABEL, LOY_PERIOD_PREV_LABEL } from './demoTimeline'
+import {
+  ADJUSTMENT_LIST_SUBTITLE,
+  CB_ACCOUNT_INR_LINE,
+  CB_ACCOUNT_JPY_LINE,
+  CB_ACCOUNT_THB_LINE,
+  CB_LIST_SUBTITLE,
+  LOYALTY_TO_AVAILABLE_SUBTITLE,
+  LOY_PERIOD_NEXT_LABEL,
+  LOY_PERIOD_PREV_LABEL,
+} from './demoTimeline'
 
 const item = (x: ActivityFeedItem): ActivityFeedItem => x
 
@@ -14,7 +23,7 @@ export const G_MAR18: ActivityFeedGroup = {
       title: 'EXD adjustment',
       amount: '-0.40 EXD',
       amountTone: 'negative',
-      lines: [],
+      lines: [ADJUSTMENT_LIST_SUBTITLE],
       time: '23:59',
       icon: 'crownOff',
       rewardModal: 'exd-adjustment',
@@ -25,7 +34,7 @@ export const G_MAR18: ActivityFeedGroup = {
       title: 'Loyalty rewards',
       amount: '+3.20 EXD',
       amountTone: 'positive',
-      lines: ['To wallet', `For trading on ${LOY_PERIOD_PREV_LABEL}`],
+      lines: [LOYALTY_TO_AVAILABLE_SUBTITLE, `For trading on ${LOY_PERIOD_PREV_LABEL}`],
       time: '23:58',
       icon: 'crown',
       rewardModal: 'loyalty-activated',
@@ -158,7 +167,7 @@ export const G_MAR25: ActivityFeedGroup = {
       title: 'Loyalty rewards',
       amount: '+2.80 EXD',
       amountTone: 'positive',
-      lines: ['To wallet', 'For trading on Mar 16–22'],
+      lines: [LOYALTY_TO_AVAILABLE_SUBTITLE, 'For trading on Mar 16–22'],
       time: '23:58',
       icon: 'crown',
       rewardModal: 'loyalty-activated',
@@ -200,14 +209,14 @@ export const G_MAR26: ActivityFeedGroup = {
 export const G_APR19: ActivityFeedGroup = {
   dateLabel: '19 Apr 2026',
   dateIso: '2026-04-19',
-  summary: '+4.80 USD',
+  summary: '+698 JPY',
   items: [
     item({
-      id: 'feed-cb-apr18',
+      id: 'feed-cb-apr19-jpy',
       title: 'EXD cashback',
-      amount: '+4.80 USD',
+      amount: '+698 JPY',
       amountTone: 'positive',
-      lines: [CB_LIST_SUBTITLE, 'Account: #12345678'],
+      lines: [CB_LIST_SUBTITLE, CB_ACCOUNT_JPY_LINE],
       time: '08:00',
       icon: 'dollar',
       rewardModal: 'cashback-activated',
@@ -219,14 +228,33 @@ export const G_APR19: ActivityFeedGroup = {
 export const G_APR20: ActivityFeedGroup = {
   dateLabel: '20 Apr 2026',
   dateIso: '2026-04-20',
-  summary: '+4.60 USD',
+  summary: '+152.00 THB',
   items: [
     item({
-      id: 'feed-cb-apr19',
+      id: 'feed-cb-apr20-thb',
       title: 'EXD cashback',
-      amount: '+4.60 USD',
+      amount: '+152.00 THB',
       amountTone: 'positive',
-      lines: [CB_LIST_SUBTITLE, 'Account: #12345678'],
+      lines: [CB_LIST_SUBTITLE, CB_ACCOUNT_THB_LINE],
+      time: '08:00',
+      icon: 'dollar',
+      rewardModal: 'cashback-activated',
+      category: 'cashback',
+    }),
+  ],
+}
+
+export const G_APR18: ActivityFeedGroup = {
+  dateLabel: '18 Apr 2026',
+  dateIso: '2026-04-18',
+  summary: '+392.00 INR',
+  items: [
+    item({
+      id: 'feed-cb-apr18-inr',
+      title: 'EXD cashback',
+      amount: '+392.00 INR',
+      amountTone: 'positive',
+      lines: [CB_LIST_SUBTITLE, CB_ACCOUNT_INR_LINE],
       time: '08:00',
       icon: 'dollar',
       rewardModal: 'cashback-activated',
@@ -245,7 +273,7 @@ export const G_APR1: ActivityFeedGroup = {
       title: 'Loyalty rewards',
       amount: '+2.00 EXD',
       amountTone: 'positive',
-      lines: ['To wallet', `For trading on ${LOY_PERIOD_NEXT_LABEL}`],
+      lines: [LOYALTY_TO_AVAILABLE_SUBTITLE, `For trading on ${LOY_PERIOD_NEXT_LABEL}`],
       time: '23:59',
       icon: 'crown',
       rewardModal: 'loyalty-activated',

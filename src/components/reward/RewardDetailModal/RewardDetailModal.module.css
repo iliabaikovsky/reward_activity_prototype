@@ -46,31 +46,15 @@
 }
 
 .ordersBlock {
-  margin-top: 8px;
+  margin-top: 0;
   padding-bottom: 8px;
-  border-top: 1px solid var(--reward-border);
 }
 
-.ordersNavRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+/* Title iOS — Figma 43702:21826 (Rewards), 43702:22840 (Cashback) */
+.ordersSectionHeader {
   width: 100%;
-  margin: 0;
-  padding: 16px 0 8px;
-  border: none;
-  background: transparent;
-  font: inherit;
-  text-align: left;
-  color: inherit;
-  cursor: pointer;
-  border-radius: 8px;
-}
-
-.ordersNavRow:focus-visible {
-  outline: 2px solid var(--reward-info-content);
-  outline-offset: 2px;
+  padding-top: 24px;
+  padding-bottom: 12px;
 }
 
 .header {
@@ -184,14 +168,12 @@
   gap: 12px;
   min-height: 48px;
   padding: 12px 0;
-  border-bottom: 1px solid var(--reward-border);
 }
 
 button.detailRow {
   width: 100%;
   margin: 0;
   border: none;
-  border-bottom: 1px solid var(--reward-border);
   background: transparent;
   font: inherit;
   text-align: left;
@@ -203,16 +185,6 @@ button.detailRow {
 button.detailRow:focus-visible {
   outline: 2px solid var(--reward-info-content);
   outline-offset: 2px;
-}
-
-/* Убираем border только если после details нет celebration / orders */
-.scroll > .details:last-child > .detailRow:last-child {
-  border-bottom: none;
-}
-
-/* Одна линия между details и Orders — border только на секции Orders */
-.scroll > .details:has(~ .ordersBlock) > .detailRow:last-child {
-  border-bottom: none;
 }
 
 .detailLabel {
@@ -268,19 +240,7 @@ button.detailRow:focus-visible {
   color: var(--reward-text-secondary);
 }
 
-/* Секция Orders — Figma 42104:17559, 42104:17168 */
-.ordersTitle {
-  flex: 1;
-  min-width: 0;
-}
-
-.ordersSeeAll {
-  flex-shrink: 0;
-  font-size: 16px;
-  line-height: 24px;
-  font-weight: 400;
-  color: var(--reward-info-content);
-}
+/* Секция Orders — Figma Title iOS 43702:21826 / 43702:22840 */
 
 .orderRowBtn {
   display: flex;
@@ -289,17 +249,12 @@ button.detailRow:focus-visible {
   margin: 0;
   padding: 16px 0;
   border: none;
-  border-bottom: 1px solid var(--reward-border);
   background: transparent;
   font: inherit;
   text-align: left;
   color: inherit;
   cursor: pointer;
   border-radius: 0;
-}
-
-.orderRowBtn:last-child {
-  border-bottom: none;
 }
 
 .orderRowBtn:focus-visible {

@@ -7,7 +7,7 @@ export const CASHBACK_RATE_LABEL = 'Cashback rate'
 export function formatCashbackRateValue(percent: number = CASHBACK_REBATE_SHARE_PERCENT): string {
   const rounded = Math.round(percent * 10) / 10
   const token = Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1)
-  return `${token}% of spread & commission`
+  return `${token}%`
 }
 
 export const CASHBACK_RATE_SHEET_TITLE = 'Cashback rate'

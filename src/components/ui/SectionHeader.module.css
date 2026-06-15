@@ -11,6 +11,12 @@
   text-align: left;
   color: inherit;
   cursor: pointer;
+  border-radius: 8px;
+}
+
+.sectionTitleRow:focus-visible {
+  outline: 2px solid var(--reward-info-content);
+  outline-offset: 2px;
 }
 
 .sectionTitleRowStatic {

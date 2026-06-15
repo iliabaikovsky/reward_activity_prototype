@@ -1,0 +1,66 @@
+---
+description: Прототип → Figma через MCP. Универсальные принципы §1; CE-3142 — appendices в FIGMA_FROM_PROTOTYPE.
+alwaysApply: false
+---
+
+# Прототип → Figma (code-to-design)
+
+Обратное направление figma-vercel-prototype. **Думать глобально:** категории UI и типы DS-props, не заучивать имена компонентов.
+
+## Перед работой
+
+1. [`FIGMA_FROM_PROTOTYPE.md`](../../docs/design/FIGMA_FROM_PROTOTYPE.md) §1–2 (принципы + workflow).
+2. [`FIGMA_VISUAL_QA.md`](../../docs/design/FIGMA_VISUAL_QA.md) — TRACE, категории §1.
+3. Skill [prototype-to-figma](../../.cursor/skills/prototype-to-figma/SKILL.md) + MCP **`figma-use`**.
+4. CE-3142 placement/naming/data — **§3 и приложения A–C** того же doc; не дублировать здесь.
+
+## Универсальные принципы (кратко)
+
+| # | Принцип |
+|---|---------|
+| 1 | **Source of truth** — прототип (код+скрин); DS — как выразить; designer node — не слепой clone |
+| 2 | **INVENTORY** — local composite в файле **до** library/reference; на экране — **instance** |
+| 3 | **Library-first** — внешняя DS только для ролей без composite в INVENTORY |
+| 4 | **Clone hygiene** — reference = layout-hint; не data source для primary block / rows |
+| 5 | **SLOT** — boolean = слот виден; swap/structure = что внутри |
+| 6 | **Incremental gates** — Gate-F → Gate-GH → Gate-full; блокеры между этапами |
+| 7 | **VISUAL gate (§1.10)** — растровый скрин Figma + compare table; не API readback |
+| 8 | **RENDER (§1.11)** — readback OK + скрин FAIL = FAIL |
+| 9 | **INK + REHYDRATE** — nested TEXT; re-apply props → toggle → nested swapComponent; ❌ detach |
+| 10 | **Learn loop (§1.9)** — находка в сессии → §D + rule + skill сразу |
+
+## Export не готов, пока не отмечено
+
+- [ ] **INVENTORY** — Appendix C + Components page; local instances перечислены (имя + node-id)
+- [ ] **Summary** = instance существующего composite (не inline из reference)
+- [ ] Данные из активного state кода, не из designer reference node
+- [ ] **Gate-F** — скрин Summary проанализирован, F = OK
+- [ ] **Gate-GH** — скрин field list проанализирован, G+H = OK
+- [ ] **Gate-full** — скрин frame + compare-таблица A–K в ответе
+- [ ] Находки сессии в §D
+
+## SLOT (единственный алгоритм fix props)
+
+`componentProperties` → тип → boolean+wrong child = descend + `swapComponent`; INSTANCE_SWAP = `setProperties`; wrong wrapper = restructure. ❌ hide-only.
+
+## Anti-patterns (универсальные)
+
+| ❌ | ✅ |
+|----|-----|
+| Сразу clone reference без INVENTORY | INVENTORY → instance composite → DS для остального |
+| Inline hero при наличии Summary composite | `createInstance` composite с Components page |
+| Library-first без local-first | §1.2 INVENTORY перед search_design_system |
+| «Готово» без Figma screenshot + compare | Gate-full + таблица A–K |
+| Только plugin readback (`characters`, `verify`) | растровый скрин + анализ |
+| Один gate в конце после readback | Gate-F / Gate-GH / Gate-full |
+| Readback OK, скрин не смотрели | §1.11 RENDER |
+| Слепой clone reference как data | layout only; прототип = copy |
+| `resetOverrides` без re-INK + visual gate | fix + re-screenshot |
+| Placeholder на скрине — «readback же OK» | REHYDRATE §1.8a; не detach |
+| Detach Summary / rows | instance + REHYDRATE на nested |
+| swapComponent на root TableView Cell | nested Badge / End accessory only |
+| Отложить урок «на потом» | §1.9 в той же сессии |
+
+## MCP pipeline
+
+`INVENTORY` → assemble → **Gate-F** → rows → **Gate-GH** → **Gate-full** (`get_screenshot` + compare) → fix loop → §D. Export **не готов** без checklist выше.

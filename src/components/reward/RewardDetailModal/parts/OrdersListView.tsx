@@ -1,6 +1,9 @@
 import { useMemo, useState } from 'react'
+import { ALL_TIME_DATE_RANGE, type DateRangeFilter } from '../../../../domain/reward/dateRangeFilter'
+import { DateRangeFilterChip } from '../../../ui/DateRangeFilterChip'
+import { DateRangeFilterSheet } from '../../../ui/DateRangeFilterSheet'
 import type { OrderInPack } from '../configs/types'
-import { buildMonthFilterOptions, filterOrders, groupOrdersByMonth } from '../orderListUtils'
+import { filterOrders, groupOrdersByMonth } from '../orderListUtils'
 import { PackOrderRow } from './OrdersSection'
 import styles from './OrdersListView.module.css'
 
@@ -11,13 +14,12 @@ type Props = {
 
 export function OrdersListView({ allOrders, onSelectOrder }: Props) {
   const [query, setQuery] = useState('')
-  const [monthId, setMonthId] = useState('all')
-
-  const monthOptions = useMemo(() => buildMonthFilterOptions(allOrders), [allOrders])
+  const [dateRange, setDateRange] = useState<DateRangeFilter>(ALL_TIME_DATE_RANGE)
+  const [dateSheetOpen, setDateSheetOpen] = useState(false)
 
   const filteredOrders = useMemo(
-    () => filterOrders(allOrders, { query, monthId }),
-    [allOrders, query, monthId],
+    () => filterOrders(allOrders, { query, dateRange }),
+    [allOrders, query, dateRange],
   )
 
   const groups = useMemo(() => groupOrdersByMonth(filteredOrders), [filteredOrders])
@@ -35,21 +37,13 @@ export function OrdersListView({ allOrders, onSelectOrder }: Props) {
         />
       </div>
 
-      {monthOptions.length > 1 ? (
-        <div className={styles.chipsRow} role="group" aria-label="Filter by month">
-          {monthOptions.map((opt) => (
-            <button
-              key={opt.id}
-              type="button"
-              className={`${styles.chip} ${monthId === opt.id ? styles.chipActive : ''}`}
-              onClick={() => setMonthId(opt.id)}
-              aria-pressed={monthId === opt.id}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
-      ) : null}
+      <div className={styles.filterWrap}>
+        <DateRangeFilterChip
+          value={dateRange}
+          onClick={() => setDateSheetOpen(true)}
+          expanded={dateSheetOpen}
+        />
+      </div>
 
       <div className={styles.listScroll}>
         {groups.length === 0 ? (
@@ -69,6 +63,13 @@ export function OrdersListView({ allOrders, onSelectOrder }: Props) {
           ))
         )}
       </div>
+
+      <DateRangeFilterSheet
+        open={dateSheetOpen}
+        onClose={() => setDateSheetOpen(false)}
+        value={dateRange}
+        onChange={setDateRange}
+      />
     </div>
   )
 }

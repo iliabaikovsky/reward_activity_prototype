@@ -1,11 +1,9 @@
 import { useMemo, useState } from 'react'
-import {
-  IconCalendar,
-  IconChevronDown,
-  IconCheck,
-} from '@tabler/icons-react'
+import { IconChevronDown, IconCheck } from '@tabler/icons-react'
 import type { RewardModalVariant } from '../components/reward/rewardModalTypes'
 import { BottomSheet } from '../components/ui/BottomSheet'
+import { DateRangeFilterChip } from '../components/ui/DateRangeFilterChip'
+import { DateRangeFilterSheet } from '../components/ui/DateRangeFilterSheet'
 import { MobileBottomSafe, MobileStatusBar, MobileTopNav } from '../components/ui/MobileScreenShell'
 import { AppH1, AppH3 } from '../components/ui/AppHeading'
 import { SummaryHeroAmount } from '../components/ui/SummaryHeroAmount'
@@ -14,25 +12,23 @@ import { HIDE_DAY_SUMMARY } from '../domain/reward/featureFlags'
 import { fromActivityFeedItem } from '../domain/reward/transactionAdapters'
 import type { ActivityFeedGroup } from '../rewardLifecycle/activityFeedModel'
 import {
-  DATE_PRESET_LABELS,
   TYPE_FILTER_LABELS,
-  type ActivityDatePreset,
   type ActivityTypeFilter,
+  type DateRangeFilter,
 } from './activityFeedTypes'
 import { summarizeActivityFeedByType } from '../domain/reward/activityFeedSummary'
 import { filterFeedGroups } from './activityFeedFilter'
 import styles from './ActivityFeedScreen.module.css'
 
 const TYPE_OPTIONS: ActivityTypeFilter[] = ['all', 'rewards', 'cashback', 'transfers', 'others']
-const DATE_OPTIONS: ActivityDatePreset[] = ['all', 'last7', 'last30', 'thisMonth']
 
 type Props = {
   onBack: () => void
   onOpenRewardModal?: (variant: RewardModalVariant, feedItemId?: string) => void
   typeFilter: ActivityTypeFilter
   onTypeFilterChange: (v: ActivityTypeFilter) => void
-  datePreset: ActivityDatePreset
-  onDatePresetChange: (v: ActivityDatePreset) => void
+  dateRange: DateRangeFilter
+  onDateRangeChange: (v: DateRangeFilter) => void
   feedGroups: ActivityFeedGroup[]
   demoTodayIso: string
 }
@@ -42,8 +38,8 @@ export function ActivityFeedScreen({
   onOpenRewardModal,
   typeFilter,
   onTypeFilterChange,
-  datePreset,
-  onDatePresetChange,
+  dateRange,
+  onDateRangeChange,
   feedGroups,
   demoTodayIso,
 }: Props) {
@@ -51,14 +47,14 @@ export function ActivityFeedScreen({
   const [dateSheetOpen, setDateSheetOpen] = useState(false)
 
   const filteredGroups = useMemo(
-    () => filterFeedGroups(feedGroups, typeFilter, datePreset, demoTodayIso),
-    [feedGroups, typeFilter, datePreset, demoTodayIso],
+    () => filterFeedGroups(feedGroups, typeFilter, dateRange),
+    [feedGroups, typeFilter, dateRange],
   )
 
   const filterSummary = useMemo(() => {
     const items = filteredGroups.flatMap((g) => g.items)
-    return summarizeActivityFeedByType(items, typeFilter, datePreset)
-  }, [filteredGroups, typeFilter, datePreset])
+    return summarizeActivityFeedByType(items, typeFilter, dateRange)
+  }, [filteredGroups, typeFilter, dateRange])
 
   return (
     <div className={styles.screen} data-node-id="42124:14876">
@@ -70,7 +66,7 @@ export function ActivityFeedScreen({
         <AppH1 className={styles.pageTitle}>Activity feed</AppH1>
       </div>
 
-      <div className={styles.filters}>
+      <div className={styles.filters} data-screenshot="activity-filters">
         <button
           type="button"
           className={`${styles.filterChip} ${typeFilter !== 'all' ? styles.filterChipActive : ''}`}
@@ -83,21 +79,11 @@ export function ActivityFeedScreen({
             <IconChevronDown size={16} stroke={2} aria-hidden />
           </span>
         </button>
-        <button
-          type="button"
-          className={`${styles.filterChip} ${datePreset !== 'all' ? styles.filterChipActive : ''}`}
+        <DateRangeFilterChip
+          value={dateRange}
           onClick={() => setDateSheetOpen(true)}
-          aria-haspopup="dialog"
-          aria-expanded={dateSheetOpen}
-        >
-          <span className={styles.filterChipIcon}>
-            <IconCalendar size={16} stroke={2} aria-hidden />
-          </span>
-          <span>{DATE_PRESET_LABELS[datePreset]}</span>
-          <span className={`${styles.filterChipIcon} ${styles.filterChevron}`}>
-            <IconChevronDown size={16} stroke={2} aria-hidden />
-          </span>
-        </button>
+          expanded={dateSheetOpen}
+        />
       </div>
 
       {filterSummary ? (
@@ -118,7 +104,7 @@ export function ActivityFeedScreen({
         </div>
       ) : null}
 
-      <div className={styles.list}>
+      <div className={styles.list} data-screenshot="activity-list">
         {feedGroups.length === 0 ? (
           <p className={styles.emptyState} role="status">
             No transactions yet.
@@ -144,6 +130,7 @@ export function ActivityFeedScreen({
                 <TransactionRow
                   key={item.id}
                   {...fromActivityFeedItem(item)}
+                  dataFeedItemId={item.id}
                   onClick={
                     onOpenRewardModal
                       ? () => onOpenRewardModal(item.rewardModal, item.id)
@@ -190,37 +177,13 @@ export function ActivityFeedScreen({
         </div>
       </BottomSheet>
 
-      <BottomSheet
-        title="Date"
+      <DateRangeFilterSheet
         open={dateSheetOpen}
         onClose={() => setDateSheetOpen(false)}
-      >
-        <div className={styles.sheetList} role="listbox">
-          {DATE_OPTIONS.map((opt) => {
-            const isSel = opt === datePreset
-            return (
-              <button
-                key={opt}
-                type="button"
-                role="option"
-                aria-selected={isSel}
-                className={`${styles.sheetOption} ${isSel ? styles.sheetOptionSelected : ''}`}
-                onClick={() => {
-                  onDatePresetChange(opt)
-                  setDateSheetOpen(false)
-                }}
-              >
-                <span className={styles.sheetOptionLabel}>{DATE_PRESET_LABELS[opt]}</span>
-                {isSel ? (
-                  <IconCheck className={styles.sheetCheck} size={22} stroke={2} aria-hidden />
-                ) : (
-                  <span className={styles.sheetCheckSpacer} aria-hidden />
-                )}
-              </button>
-            )
-          })}
-        </div>
-      </BottomSheet>
+        value={dateRange}
+        onChange={onDateRangeChange}
+        todayIso={demoTodayIso}
+      />
     </div>
   )
 }

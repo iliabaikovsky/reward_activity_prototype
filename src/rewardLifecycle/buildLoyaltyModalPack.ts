@@ -14,6 +14,11 @@ import {
 } from '../components/reward/RewardDetailModal/configs/packDetailRows'
 import type { RewardModalVariant } from '../components/reward/rewardModalTypes'
 import { formatExd, parseExdAbsolute } from '../domain/reward/parseExd'
+import {
+  fiatToUsdEquivalent,
+  formatSignedMoney,
+  parseSignedMoney,
+} from '../domain/reward/parseSignedMoney'
 import { formatListDateTimeLoose } from '../domain/reward/formatListDateTime'
 import {
   MONTH_SHORT,
@@ -23,10 +28,8 @@ import {
   parseModalDateTimeLoose,
 } from '../domain/reward/formatModalDateTimeUtc'
 import type { ActivityFeedItem } from './activityFeedModel'
-import { CB_LIST_SUBTITLE, CB_PENDING_TRADE_DAY_SHORT } from './demoTimeline'
+import { CB_LIST_SUBTITLE, CB_ACCOUNT_LIST_LINE, CB_PENDING_TRADE_DAY_SHORT } from './demoTimeline'
 import type { LifecycleActivityPreviewItem, LifecycleStep, LifecycleUpcomingItem } from './lifecycleSteps'
-import { parseSignedAmount } from './rebateSimulatorSteps'
-
 import { EXD_TO_USD_CASHBACK_RATE } from '../domain/reward/tradingOrder'
 
 /** Текущий открытый период (Mar 16–22) — связываем с cashback на шаге trade_exd_rebate. */
@@ -50,6 +53,13 @@ const CASHBACK_LINKED_PREVIEW_IDS = new Set(['prev-cb'])
 
 /** Feed row for Mar 24 credit of the same trade (step 8+). */
 const CASHBACK_LINKED_FEED_IDS = new Set(['feed-cb-1'])
+
+/** Step 9 — order # base per trading account (nested orders in pack). */
+const CASHBACK_ORDER_BASE_BY_ACCOUNT: Record<string, number> = {
+  '#88112233': 88112201,
+  '#99223344': 99223301,
+  '#77334455': 77334401,
+}
 
 function shouldLinkCashbackToTradingOrders(upcomingId: string): boolean {
   return CASHBACK_LINKED_UPCOMING_IDS.has(upcomingId)
@@ -120,22 +130,50 @@ function splitExdTotal(total: number, parts: number): number[] {
   return splitTotalCents(total, parts)
 }
 
-function splitUsdTotal(total: number, parts: number): number[] {
+function splitMoneyTotal(total: number, parts: number, currency: string): number[] {
+  if (parts <= 0) return []
+  if (currency === 'JPY') {
+    const base = Math.floor(total / parts)
+    const rem = Math.round(total) % parts
+    return Array.from({ length: parts }, (_, i) => base + (i < rem ? 1 : 0))
+  }
   return splitTotalCents(total, parts)
-}
-
-function formatUsd(value: number): string {
-  return `+${value.toFixed(2)} USD`
 }
 
 function formatExdDebit(value: number): string {
   return `-${value.toFixed(2)} EXD`
 }
 
-function inferCashbackOrderCount(totalUsd: number): number {
-  if (totalUsd <= 1.5) return 1
-  if (totalUsd <= 3.5) return 2
+/** Order count from USD-scale thresholds (works for any fiat via equivalent). */
+function inferCashbackOrderCount(usdEquivalent: number): number {
+  if (usdEquivalent <= 1.5) return 1
+  if (usdEquivalent <= 3.5) return 2
   return 3
+}
+
+function resolveCashbackOrderCount(
+  total: number,
+  currency: string,
+  linkSingle: boolean,
+): number {
+  if (linkSingle) return 1
+  const usdEq = currency === 'USD' ? total : fiatToUsdEquivalent(total, currency)
+  return inferCashbackOrderCount(usdEq)
+}
+
+function cashbackOrderBaseForAccount(account: string, link: boolean): number | undefined {
+  if (link) return undefined
+  return CASHBACK_ORDER_BASE_BY_ACCOUNT[account]
+}
+
+function exdDebitedForCashbackLeg(
+  leg: number,
+  currency: string,
+  options?: { exdDebitMatchesUsd?: boolean },
+): number {
+  if (options?.exdDebitMatchesUsd) return leg
+  const usdEq = currency === 'USD' ? leg : fiatToUsdEquivalent(leg, currency)
+  return Math.round((usdEq / EXD_TO_USD_CASHBACK_RATE) * 100) / 100
 }
 
 function inferOrderCount(total: number, badge?: string): number {
@@ -207,12 +245,6 @@ function creditsOn(upcomingDateCol: string): string {
 
 function becomeAvailableOn(upcomingDateCol: string): string {
   return formatUpcomingByNoonUtc(upcomingDateCol)
-}
-
-function accountMetaLine(account: string): string {
-  const trimmed = account.trim()
-  if (/^Account:/i.test(trimmed)) return trimmed
-  return `Account: ${trimmed}`
 }
 
 function buildOrders(
@@ -307,7 +339,7 @@ const DEMO_LINKED_CASHBACK_UPCOMING: LifecycleUpcomingItem = {
   icon: 'dollar',
   title: 'EXD cashback',
   amount: '+5.00 USD',
-  lines: [CB_LIST_SUBTITLE],
+  lines: [CB_LIST_SUBTITLE, CB_ACCOUNT_LIST_LINE],
   date: 'on Mar 23',
   rewardModal: 'cashback-upcoming',
 }
@@ -330,7 +362,8 @@ export function buildDemoLinkedLoyaltyOrder(): OrderInPack {
 type CashbackOrderMode = 'upcoming' | 'credited'
 
 function buildCashbackOrders(
-  usdParts: number[],
+  legParts: number[],
+  currency: string,
   tradeDay: string,
   orderListDate: string,
   idPrefix: string,
@@ -340,24 +373,20 @@ function buildCashbackOrders(
 ): OrderInPack[] {
   const baseOrder = options?.orderBase ?? LEGACY_CASHBACK_ORDER_BASE
 
-  return usdParts.map((usdLeg, i) => {
+  return legParts.map((leg, i) => {
     const orderNum = String(baseOrder + i + 1)
-    const exdDebited = options?.exdDebitMatchesUsd
-      ? usdLeg
-      : Math.round((usdLeg / EXD_TO_USD_CASHBACK_RATE) * 100) / 100
+    const exdDebited = exdDebitedForCashbackLeg(leg, currency, options)
     const exdFormatted = formatExdDebit(exdDebited)
 
     const isUpcoming = mode === 'upcoming'
-    const meta = isUpcoming
-      ? [CB_LIST_SUBTITLE, accountMetaLine(account), `Order: ${orderNum}`]
-      : [CB_LIST_SUBTITLE, `Order: ${orderNum}`]
+    const meta = [CB_LIST_SUBTITLE, `Order: ${orderNum}`]
 
     return {
       id: `${idPrefix}-cb-${i + 1}`,
       listIcon: 'exchange' as const,
       title: 'EXD cashback',
-      amount: formatUsd(usdLeg),
-      cashbackUsdLeg: usdLeg,
+      amount: formatSignedMoney(leg, currency),
+      cashbackUsdLeg: leg,
       legMode: mode,
       meta,
       date: orderListDate,
@@ -367,41 +396,87 @@ function buildCashbackOrders(
           ? { text: 'Upcoming', tone: 'warning' }
           : { text: 'Credited', tone: 'success' },
         heroIcon: 'dollar',
-        amount: formatUsd(usdLeg),
+        amount: formatSignedMoney(leg, currency),
         details: isUpcoming
-          ? cashbackUpcomingOrderDetailRows(tradeDay, orderNum, exdFormatted)
-          : cashbackCreditedOrderDetailRows(tradeDay, orderNum, exdFormatted),
+          ? cashbackUpcomingOrderDetailRows(tradeDay, orderNum, exdFormatted, account)
+          : cashbackCreditedOrderDetailRows(tradeDay, orderNum, exdFormatted, account),
       },
     }
   })
 }
 
-export function buildCashbackPackFromUpcomingRow(row: LifecycleUpcomingItem): PackConfig {
-  const totalUsd = Math.max(0, parseSignedAmount(row.amount))
-  const tradeDay = extractTradingDay(row.lines)
-  const linkLoyaltyOrder = shouldLinkCashbackToTradingOrders(row.id)
-  const count = linkLoyaltyOrder ? 1 : inferCashbackOrderCount(totalUsd)
-  const usdParts = splitUsdTotal(totalUsd, count)
-  const orderListDate = tradeDayListDate(row.lines)
-  const account = extractAccountFromLines(row.lines)
+function buildCashbackPackFromMoney(
+  sourceId: string,
+  orderIdPrefix: string,
+  amountStr: string,
+  lines: string[],
+  mode: CashbackOrderMode,
+  packMeta: {
+    navTitle: string
+    chip: PackConfig['chip']
+    whenLabel: string
+    whenValue: string
+    dateCol?: string
+    previewDate?: string
+    groupDateLabel?: string
+    time?: string
+    dateIso?: string
+  },
+): PackConfig {
+  const { value: total, currency } = parseSignedMoney(amountStr)
+  const tradeDay = resolveCashbackTradeDay(
+    lines,
+    packMeta.dateIso,
+    packMeta.previewDate,
+  )
+  const linkTrading =
+    mode === 'upcoming'
+      ? shouldLinkCashbackToTradingOrders(sourceId)
+      : shouldLinkCashbackPreview(sourceId) || shouldLinkCashbackFeed(sourceId)
+  const count = resolveCashbackOrderCount(total, currency, linkTrading)
+  const legParts = splitMoneyTotal(total, count, currency)
+  const account = extractAccountFromLines(lines)
+  const accountOrderBase = cashbackOrderBaseForAccount(account, linkTrading)
+  const orderListDate =
+    packMeta.previewDate != null
+      ? formatListDateTimeLoose(packMeta.previewDate)
+      : packMeta.groupDateLabel && packMeta.time
+        ? formatListDateTimeLoose(
+            `${packMeta.groupDateLabel.replace(/,\s*$/, '')}, ${packMeta.time}`,
+          )
+        : tradeDayListDate(lines)
   const orders = buildCashbackOrders(
-    usdParts,
+    legParts,
+    currency,
     tradeDay,
     orderListDate,
-    row.id,
-    'upcoming',
+    orderIdPrefix,
+    mode,
     account,
-    cashbackOrderBuildOptions(linkLoyaltyOrder),
+    {
+      ...cashbackOrderBuildOptions(linkTrading),
+      ...(accountOrderBase != null ? { orderBase: accountOrderBase } : {}),
+    },
   )
 
   return {
-    navTitle: 'Upcoming cashback',
-    chip: { text: 'Upcoming', tone: 'warning' },
+    navTitle: packMeta.navTitle,
+    chip: packMeta.chip,
     heroIcon: 'dollar',
-    amount: formatUsd(totalUsd),
-    details: cashbackPackDetailRows('Credits on', creditsOn(row.date), tradeDay, account),
+    amount: formatSignedMoney(total, currency),
+    details: cashbackPackDetailRows(packMeta.whenLabel, packMeta.whenValue, tradeDay, account),
     orders,
   }
+}
+
+export function buildCashbackPackFromUpcomingRow(row: LifecycleUpcomingItem): PackConfig {
+  return buildCashbackPackFromMoney(row.id, row.id, row.amount, row.lines, 'upcoming', {
+    navTitle: 'Upcoming cashback',
+    chip: { text: 'Upcoming', tone: 'warning' },
+    whenLabel: 'Credits on',
+    whenValue: creditsOn(row.date),
+    dateCol: row.date,
+  })
 }
 
 export function buildCashbackPackFromFeedItem(
@@ -410,61 +485,34 @@ export function buildCashbackPackFromFeedItem(
   time: string,
   dateIso: string,
 ): PackConfig {
-  const totalUsd = Math.max(0, parseSignedAmount(item.amount))
-  const tradeDay = resolveCashbackTradeDay(item.lines, dateIso)
-  const linkTrading = shouldLinkCashbackFeed(item.id)
-  const count = linkTrading ? 1 : inferCashbackOrderCount(totalUsd)
-  const usdParts = splitUsdTotal(totalUsd, count)
   const creditedOn = formatModalDateTimeUtcFromDateAndTime(groupDateLabel, time)
-  const orderListDate = formatListDateTimeLoose(`${groupDateLabel.replace(/,\s*$/, '')}, ${time}`)
-  const account = extractAccountFromLines(item.lines)
-  const orders = buildCashbackOrders(
-    usdParts,
-    tradeDay,
-    orderListDate,
+  return buildCashbackPackFromMoney(
+    item.id,
     `sim-feed-${item.id}`,
+    item.amount,
+    item.lines,
     'credited',
-    account,
-    cashbackOrderBuildOptions(linkTrading),
-  )
-
-  return {
+    {
     navTitle: 'EXD cashback',
     chip: { text: 'Credited', tone: 'success' },
-    heroIcon: 'dollar',
-    amount: formatUsd(totalUsd),
-    details: cashbackPackDetailRows('Credited on', creditedOn, tradeDay, account),
-    orders,
-  }
+    whenLabel: 'Credited on',
+    whenValue: creditedOn,
+    groupDateLabel,
+    time,
+    dateIso,
+    },
+  )
 }
 
 export function buildCashbackPackFromActivityPreview(row: LifecycleActivityPreviewItem): PackConfig {
-  const totalUsd = Math.max(0, parseSignedAmount(row.amount))
-  const tradeDay = resolveCashbackTradeDay(row.lines, undefined, row.date)
-  const linkTrading = shouldLinkCashbackPreview(row.id)
-  const count = linkTrading ? 1 : inferCashbackOrderCount(totalUsd)
-  const usdParts = splitUsdTotal(totalUsd, count)
   const creditedOn = formatModalDateTimeUtcLoose(row.date)
-  const orderListDate = formatListDateTimeLoose(row.date)
-  const account = extractAccountFromLines(row.lines)
-  const orders = buildCashbackOrders(
-    usdParts,
-    tradeDay,
-    orderListDate,
-    `sim-${row.id}`,
-    'credited',
-    account,
-    cashbackOrderBuildOptions(linkTrading),
-  )
-
-  return {
+  return buildCashbackPackFromMoney(row.id, `sim-${row.id}`, row.amount, row.lines, 'credited', {
     navTitle: 'EXD cashback',
     chip: { text: 'Credited', tone: 'success' },
-    heroIcon: 'dollar',
-    amount: formatUsd(totalUsd),
-    details: cashbackPackDetailRows('Credited on', creditedOn, tradeDay, account),
-    orders,
-  }
+    whenLabel: 'Credited on',
+    whenValue: creditedOn,
+    previewDate: row.date,
+  })
 }
 
 function findUpcomingRow(
@@ -497,6 +545,10 @@ export function buildRewardModalPackOverride(
   }
   if (variant === 'loyalty-activated') {
     if (itemId) {
+      const previewById = step.activityPreview.find(
+        (p) => p.id === itemId && p.rewardModal === 'loyalty-activated',
+      )
+      if (previewById) return buildLoyaltyPackFromActivityPreview(previewById)
       for (const g of step.feedGroups) {
         const it = g.items.find((i) => i.id === itemId)
         if (it && it.title === 'Loyalty rewards') {
@@ -510,6 +562,10 @@ export function buildRewardModalPackOverride(
   }
   if (variant === 'cashback-activated') {
     if (itemId) {
+      const previewById = step.activityPreview.find(
+        (p) => p.id === itemId && p.rewardModal === 'cashback-activated',
+      )
+      if (previewById) return buildCashbackPackFromActivityPreview(previewById)
       for (const g of step.feedGroups) {
         const it = g.items.find((i) => i.id === itemId)
         if (it && it.title === 'EXD cashback') {

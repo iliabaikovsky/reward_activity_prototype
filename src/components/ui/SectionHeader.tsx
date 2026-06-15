@@ -6,9 +6,17 @@ type Props = {
   title: string
   showChevron?: boolean
   onClick?: () => void
+  ariaLabel?: string
+  className?: string
 }
 
-export function SectionHeader({ title, showChevron = true, onClick }: Props) {
+export function SectionHeader({
+  title,
+  showChevron = true,
+  onClick,
+  ariaLabel,
+  className,
+}: Props) {
   const inner = (
     <>
       <span className={`${appHeadingStyles.h3} ${styles.sectionTitle}`}>{title}</span>
@@ -20,11 +28,20 @@ export function SectionHeader({ title, showChevron = true, onClick }: Props) {
 
   if (showChevron) {
     return (
-      <button type="button" className={styles.sectionTitleRow} onClick={onClick}>
+      <button
+        type="button"
+        className={`${styles.sectionTitleRow} ${className ?? ''}`.trim()}
+        onClick={onClick}
+        aria-label={ariaLabel ?? title}
+      >
         {inner}
       </button>
     )
   }
 
-  return <div className={`${styles.sectionTitleRow} ${styles.sectionTitleRowStatic}`}>{inner}</div>
+  return (
+    <div className={`${styles.sectionTitleRow} ${styles.sectionTitleRowStatic} ${className ?? ''}`.trim()}>
+      {inner}
+    </div>
+  )
 }

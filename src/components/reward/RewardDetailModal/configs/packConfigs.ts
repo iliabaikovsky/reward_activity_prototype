@@ -28,7 +28,7 @@ export const PACK_CONFIG: Record<PackVariantKey, PackConfig> = {
           chip: { text: 'Upcoming', tone: 'warning' },
           heroIcon: 'crown',
           amount: '+15.27 EXD',
-          details: loyaltyOrderDetailRows('upcoming', 'Jan 25, 2026, by 12:00 UTC', '8829103'),
+          details: loyaltyOrderDetailRows('upcoming', 'Jan 25, 2026, 16:06 UTC', '8829103'),
         },
       },
       {
@@ -44,7 +44,7 @@ export const PACK_CONFIG: Record<PackVariantKey, PackConfig> = {
           chip: { text: 'Upcoming', tone: 'warning' },
           heroIcon: 'crown',
           amount: '+15.26 EXD',
-          details: loyaltyOrderDetailRows('upcoming', 'Jan 25, 2026, by 12:00 UTC', '8829104'),
+          details: loyaltyOrderDetailRows('upcoming', 'Jan 25, 2026, 16:06 UTC', '8829104'),
         },
       },
       {
@@ -60,7 +60,7 @@ export const PACK_CONFIG: Record<PackVariantKey, PackConfig> = {
           chip: { text: 'Upcoming', tone: 'warning' },
           heroIcon: 'crown',
           amount: '+15.25 EXD',
-          details: loyaltyOrderDetailRows('upcoming', 'Jan 25, 2026, by 12:00 UTC', '8829105'),
+          details: loyaltyOrderDetailRows('upcoming', 'Jan 25, 2026, 16:06 UTC', '8829105'),
         },
       },
     ],
@@ -125,7 +125,7 @@ export const PACK_CONFIG: Record<PackVariantKey, PackConfig> = {
         amount: '+1.23 USD',
         cashbackUsdLeg: 1.23,
         legMode: 'upcoming',
-        meta: [CB_LIST_SUBTITLE, 'Account: #12345678', 'Order: 9100821'],
+        meta: [CB_LIST_SUBTITLE, 'Order: 9100821'],
         date: 'Jan 15, 16:06',
         detail: {
           navTitle: 'Upcoming cashback',
@@ -142,7 +142,7 @@ export const PACK_CONFIG: Record<PackVariantKey, PackConfig> = {
         amount: '+1.23 USD',
         cashbackUsdLeg: 1.23,
         legMode: 'upcoming',
-        meta: [CB_LIST_SUBTITLE, 'Account: #12345678', 'Order: 9100822'],
+        meta: [CB_LIST_SUBTITLE, 'Order: 9100822'],
         date: 'Jan 15, 16:06',
         detail: {
           navTitle: 'Upcoming cashback',
@@ -159,7 +159,7 @@ export const PACK_CONFIG: Record<PackVariantKey, PackConfig> = {
         amount: '+1.24 USD',
         cashbackUsdLeg: 1.24,
         legMode: 'upcoming',
-        meta: [CB_LIST_SUBTITLE, 'Account: #12345678', 'Order: 9100823'],
+        meta: [CB_LIST_SUBTITLE, 'Order: 9100823'],
         date: 'Jan 15, 16:06',
         detail: {
           navTitle: 'Upcoming cashback',

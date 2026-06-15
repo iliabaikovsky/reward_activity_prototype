@@ -4,6 +4,7 @@ import {
   CASHBACK_RATE_LABEL,
   formatCashbackRateValue,
 } from './cashbackRateExplainer'
+import { PACK_DEFAULT_ACCOUNT } from './packDetailRows'
 
 /** Chip on every EXD → Cashback leg (pack Upcoming or Credited). */
 export const CASHBACK_LEG_CHIP: { text: string; tone: ChipTone } = {
@@ -11,15 +12,17 @@ export const CASHBACK_LEG_CHIP: { text: string; tone: ChipTone } = {
   tone: 'neutral',
 }
 
-/** Order detail — upcoming leg: EXD deducted → trade day → Order → rate. */
+/** Order detail — upcoming leg: EXD deducted → trade day → Account → Order → rate. */
 export function cashbackUpcomingOrderDetailRows(
   tradeDay: string,
   orderNum: string,
   exdDeductedFormatted: string,
+  account: string = PACK_DEFAULT_ACCOUNT,
 ): DetailRow[] {
   return [
     { label: EXD_DEDUCTED_LABEL, value: exdDeductedFormatted, infoIcon: true },
     { label: 'For trading with EXD on', value: tradeDay },
+    { label: 'Account', value: account },
     { label: 'Order', value: orderNum },
     {
       label: CASHBACK_RATE_LABEL,
@@ -34,10 +37,12 @@ export function cashbackCreditedOrderDetailRows(
   tradeDay: string,
   orderNum: string,
   exdDeductedFormatted: string,
+  account: string = PACK_DEFAULT_ACCOUNT,
 ): DetailRow[] {
   return [
     { label: EXD_DEDUCTED_LABEL, value: exdDeductedFormatted, infoIcon: true },
     { label: 'For trading with EXD on', value: tradeDay },
+    { label: 'Account', value: account },
     { label: 'Order', value: orderNum },
     {
       label: CASHBACK_RATE_LABEL,

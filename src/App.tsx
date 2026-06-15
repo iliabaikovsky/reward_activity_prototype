@@ -8,7 +8,11 @@ import { LIFECYCLE_STEPS } from './rewardLifecycle/lifecycleSteps'
 import { DeviceFrameProvider } from './context/DeviceFrameContext'
 import { releaseDeviceFrameScrollLock } from './components/ui/useBottomSheet'
 import { ActivityFeedScreen } from './screens/ActivityFeedScreen'
-import type { ActivityDatePreset, ActivityTypeFilter } from './screens/activityFeedTypes'
+import {
+  ALL_TIME_DATE_RANGE,
+  type ActivityTypeFilter,
+  type DateRangeFilter,
+} from './screens/activityFeedTypes'
 import { ExnessRewardsScreen } from './screens/ExnessRewardsScreen'
 import { OrderChartScreen } from './screens/OrderChartScreen'
 
@@ -29,7 +33,7 @@ function App() {
   const [rewardModal, setRewardModal] = useState<RewardModalState | null>(null)
   const [chartOrderNum, setChartOrderNum] = useState<string | null>(null)
   const [activityTypeFilter, setActivityTypeFilter] = useState<ActivityTypeFilter>('all')
-  const [activityDatePreset, setActivityDatePreset] = useState<ActivityDatePreset>('all')
+  const [activityDateRange, setActivityDateRange] = useState<DateRangeFilter>(ALL_TIME_DATE_RANGE)
   const [rewardsHomeResetKey, setRewardsHomeResetKey] = useState(0)
   const scrollRef = useRef<HTMLDivElement>(null)
 
@@ -41,9 +45,12 @@ function App() {
     scrollRef.current?.scrollTo(0, 0)
   }, [lifecycleStepIndex])
 
-  const openActivity = (opts?: { category?: ActivityTypeFilter; datePreset?: ActivityDatePreset }) => {
+  const openActivity = (opts?: {
+    category?: ActivityTypeFilter
+    dateRange?: DateRangeFilter
+  }) => {
     setActivityTypeFilter(opts?.category ?? 'all')
-    setActivityDatePreset(opts?.datePreset ?? 'all')
+    setActivityDateRange(opts?.dateRange ?? ALL_TIME_DATE_RANGE)
     setRoute('activity')
   }
 
@@ -135,8 +142,8 @@ function App() {
                 onOpenRewardModal={openRewardModal}
                 typeFilter={activityTypeFilter}
                 onTypeFilterChange={setActivityTypeFilter}
-                datePreset={activityDatePreset}
-                onDatePresetChange={setActivityDatePreset}
+                dateRange={activityDateRange}
+                onDateRangeChange={setActivityDateRange}
                 feedGroups={lifecycle.feedGroups}
                 demoTodayIso={lifecycle.simulatorTodayIso}
               />
