@@ -10,7 +10,7 @@ import {
 import { AppH1, AppH4, appHeadingStyles } from '../components/ui/AppHeading'
 import { SummaryHeroAmount } from '../components/ui/SummaryHeroAmount'
 import { RewardEventIcon } from '../components/ui/RewardEventIcon'
-import { MobileStatusBar, MobileTopNav } from '../components/ui/MobileScreenShell'
+import { MobileNavButton, MobileStatusBar, MobileTopNav } from '../components/ui/MobileScreenShell'
 import { HIDE_TRANSACTION_BADGES } from '../domain/reward/featureFlags'
 import {
   parseSignedMoney,
@@ -26,7 +26,7 @@ import type {
 } from '../rewardLifecycle/lifecycleSteps'
 import type { ActivityTypeFilter } from './activityFeedTypes'
 import { parseUpcomingPayoutDate, parseDemoToday } from '../rewardLifecycle/demoTimeline'
-import earnBannerArt from '../assets/earn-banner-art.png'
+import exdCoin from '../assets/earn-rewards/exd-coin.png'
 import heroBg from '../assets/hero-bg.png'
 import lifetimeCashbackCoin from '../assets/lifetime-cashback-coin.png'
 import styles from './ExnessRewardsScreen.module.css'
@@ -456,6 +456,8 @@ type ExnessRewardsScreenProps = {
   /** `category: 'cashback'` — с Lifetime cashback; без opts — с Activity feed */
   onOpenActivityFeed?: (opts?: { category?: ActivityTypeFilter }) => void
   onOpenRewardModal?: (variant: RewardModalVariant, itemId?: string) => void
+  onOpenPromo?: () => void
+  onOpenEarnRewards?: () => void
   availableRewardsExd: string
   tradingWalletLabel: string
   tradingWalletValue: string
@@ -474,6 +476,8 @@ export function ExnessRewardsScreen({
   rewardsHomeResetKey = 0,
   onOpenActivityFeed,
   onOpenRewardModal,
+  onOpenPromo,
+  onOpenEarnRewards,
   availableRewardsExd,
   tradingWalletLabel,
   tradingWalletValue,
@@ -568,6 +572,13 @@ export function ExnessRewardsScreen({
           navVariant="titleWithActions"
           title={drillNavTitle}
           onBack={() => setV2SummaryCurrencyPage(null)}
+          actions={
+            onOpenPromo ? (
+              <MobileNavButton theme="light" aria-label="Information" onClick={onOpenPromo}>
+                <IconInfoCircle size={24} stroke={2} aria-hidden />
+              </MobileNavButton>
+            ) : undefined
+          }
         />
         <div className={styles.flexDrillPageRoot}>
           <V2SummaryCurrencyDetailPage
@@ -598,7 +609,12 @@ export function ExnessRewardsScreen({
             <IconChevronLeft size={24} stroke={2} aria-hidden />
           </button>
           <AppH4 className={styles.navTitle}>Exness Rewards</AppH4>
-          <button type="button" className={styles.navBtn} aria-label="Information">
+          <button
+            type="button"
+            className={styles.navBtn}
+            aria-label="Information"
+            onClick={onOpenPromo}
+          >
             <IconInfoCircle size={24} stroke={2} aria-hidden />
           </button>
         </header>
@@ -685,8 +701,13 @@ export function ExnessRewardsScreen({
         </div>
 
         <section className={styles.sectionBlock} data-screenshot="rewards-earn-banner">
-          <SectionTitle title="How to earn rewards" />
-          <div className={styles.banner}>
+          <SectionTitle title="How to earn rewards" showChevron={false} />
+          <button
+            type="button"
+            className={styles.bannerBtn}
+            onClick={onOpenEarnRewards}
+            aria-label="Trade and level up — how to earn Exness Dollars"
+          >
             <div className={styles.bannerText}>
               <p className={styles.bannerTitle}>Trade and level up</p>
               <p className={styles.bannerDesc}>
@@ -694,13 +715,9 @@ export function ExnessRewardsScreen({
               </p>
             </div>
             <div className={styles.bannerArt} aria-hidden>
-              <img
-                className={styles.bannerArtImage}
-                src={earnBannerArt}
-                alt=""
-              />
+              <img className={styles.bannerArtImage} src={exdCoin} alt="" />
             </div>
-          </div>
+          </button>
         </section>
 
         {showUpcomingSection ? (

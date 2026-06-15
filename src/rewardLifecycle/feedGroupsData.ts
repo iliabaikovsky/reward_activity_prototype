@@ -12,7 +12,65 @@ import {
 
 const item = (x: ActivityFeedItem): ActivityFeedItem => x
 
-/** Первая активация: loyalty + adjustment в один день */
+/** Первая активация — только loyalty (UT / simplified lifecycle). */
+export const G_MAR18_LOYALTY_ONLY: ActivityFeedGroup = {
+  dateLabel: '18 Mar 2026',
+  dateIso: '2026-03-18',
+  summary: '+3.20 EXD',
+  items: [
+    item({
+      id: 'feed-loy-act-1',
+      title: 'Loyalty rewards',
+      amount: '+3.20 EXD',
+      amountTone: 'positive',
+      lines: [LOYALTY_TO_AVAILABLE_SUBTITLE, `For trading on ${LOY_PERIOD_PREV_LABEL}`],
+      time: '23:58',
+      icon: 'crown',
+      rewardModal: 'loyalty-activated',
+      category: 'rewards',
+    }),
+  ],
+}
+
+export const G_MAR21_TRANSFER_320: ActivityFeedGroup = {
+  dateLabel: '21 Mar 2026',
+  dateIso: '2026-03-21',
+  summary: '-3.20 EXD',
+  items: [
+    item({
+      id: 'feed-tr-1',
+      title: 'Transfer',
+      amount: '3.20 EXD',
+      amountTone: 'neutral',
+      lines: ['To account: #12345678'],
+      time: '09:30',
+      icon: 'transfer',
+      rewardModal: 'transfer-exd',
+      category: 'transfers',
+    }),
+  ],
+}
+
+export const G_MAR24_CASHBACK_300: ActivityFeedGroup = {
+  dateLabel: '24 Mar 2026',
+  dateIso: '2026-03-24',
+  summary: '+3.00 USD',
+  items: [
+    item({
+      id: 'feed-cb-1',
+      title: 'EXD cashback',
+      amount: '+3.00 USD',
+      amountTone: 'positive',
+      lines: [CB_LIST_SUBTITLE, 'Account: #12345678'],
+      time: '08:00',
+      icon: 'dollar',
+      rewardModal: 'cashback-activated',
+      category: 'cashback',
+    }),
+  ],
+}
+
+/** Первая активация: loyalty + adjustment в один день (legacy screenshots). */
 export const G_MAR18: ActivityFeedGroup = {
   dateLabel: '18 Mar 2026',
   dateIso: '2026-03-18',

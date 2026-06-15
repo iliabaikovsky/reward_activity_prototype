@@ -21,6 +21,7 @@
 - [`research/EARNING_RATE_EXPLAINER_UX.md`](research/EARNING_RATE_EXPLAINER_UX.md) — Earning rate sheet v1 (Mobbin + copy)
 - [`research/amplitude/README.md`](research/amplitude/README.md) — Amplitude research workspace (EXD events, segments, funnels)
 - [`research/REWARD_CALCULATION_UX.md`](research/REWARD_CALCULATION_UX.md) — How EXD were calculated (entry + breakdown sheet)
+- [`research/USABILITY_TEST_LIFECYCLE.md`](research/USABILITY_TEST_LIFECYCLE.md) — Unmoderated UserTesting script (7-chapter lifecycle)
 - [`architecture/ARCHITECTURE.md`](architecture/ARCHITECTURE.md) — модули и regression checklist
 - [`design/DESIGN.md`](design/DESIGN.md) — Figma node-id
 - [`design/SCREENSHOT_CATALOG.md`](design/SCREENSHOT_CATALOG.md) — реестр PNG для QA / Figma export (`npm run screenshots`)

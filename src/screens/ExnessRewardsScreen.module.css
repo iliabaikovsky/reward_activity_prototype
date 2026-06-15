@@ -472,13 +472,26 @@
   opacity: 0.45;
 }
 
-.banner {
+.bannerBtn {
   display: flex;
   align-items: stretch;
+  width: 100%;
   min-height: 100px;
+  margin: 0;
+  padding: 0;
+  border: none;
   border-radius: 8px;
   overflow: hidden;
   background: #d8e4f0;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.bannerBtn:focus-visible {
+  outline: 2px solid var(--reward-info-branded-content);
+  outline-offset: 2px;
 }
 
 .bannerText {
@@ -515,13 +528,11 @@
 }
 
 .bannerArtImage {
-  position: absolute;
-  top: -2.12%;
-  left: -12.21%;
-  width: 121.18%;
-  height: 104.53%;
-  max-width: none;
-  object-fit: cover;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
   pointer-events: none;
 }
 

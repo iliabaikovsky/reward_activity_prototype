@@ -15,6 +15,8 @@ import {
 } from './screens/activityFeedTypes'
 import { ExnessRewardsScreen } from './screens/ExnessRewardsScreen'
 import { OrderChartScreen } from './screens/OrderChartScreen'
+import { EarnRewardsModal } from './components/reward/EarnRewardsModal'
+import { ExnessRewardsPromoModal } from './components/reward/ExnessRewardsPromoModal'
 
 type Route = 'rewards' | 'activity' | 'chart'
 
@@ -35,6 +37,8 @@ function App() {
   const [activityTypeFilter, setActivityTypeFilter] = useState<ActivityTypeFilter>('all')
   const [activityDateRange, setActivityDateRange] = useState<DateRangeFilter>(ALL_TIME_DATE_RANGE)
   const [rewardsHomeResetKey, setRewardsHomeResetKey] = useState(0)
+  const [promoOpen, setPromoOpen] = useState(false)
+  const [earnRewardsOpen, setEarnRewardsOpen] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -126,6 +130,8 @@ function App() {
                 rewardsHomeResetKey={rewardsHomeResetKey}
                 onOpenActivityFeed={(opts) => openActivity(opts)}
                 onOpenRewardModal={openRewardModal}
+                onOpenPromo={() => setPromoOpen(true)}
+                onOpenEarnRewards={() => setEarnRewardsOpen(true)}
                 availableRewardsExd={lifecycle.availableRewardsExd}
                 tradingWalletLabel={lifecycle.tradingWalletLabel}
                 tradingWalletValue={lifecycle.tradingWalletValue}
@@ -156,6 +162,12 @@ function App() {
             ) : null}
           </div>
           <div className="device-home-indicator" aria-hidden />
+          {promoOpen ? (
+            <ExnessRewardsPromoModal open={promoOpen} onClose={() => setPromoOpen(false)} />
+          ) : null}
+          {earnRewardsOpen ? (
+            <EarnRewardsModal open={earnRewardsOpen} onClose={() => setEarnRewardsOpen(false)} />
+          ) : null}
           {rewardModal && route !== 'chart' ? (
             <RewardDetailModal
               variant={rewardModal.variant}

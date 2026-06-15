@@ -1,0 +1,483 @@
+.overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 70;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  pointer-events: auto;
+}
+
+.backdrop {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: var(--sheet-scrim);
+  cursor: pointer;
+}
+
+.panel {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-height: 100%;
+  min-height: 0;
+  background: var(--reward-paper);
+  border-radius: 10px 10px 0 0;
+  overflow: hidden;
+  animation: promoSlideUp 0.32s cubic-bezier(0.32, 0.72, 0, 1);
+  font-family: 'Poppins', var(--font-sans);
+}
+
+.panelClosing {
+  animation: promoSlideDown 0.32s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+
+.overlayClosing .backdrop {
+  opacity: 0;
+  transition: opacity 0.28s ease-out;
+}
+
+@keyframes promoSlideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes promoSlideDown {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(100%);
+  }
+}
+
+.statusBar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 44px;
+  padding: 0 25px;
+  background: #000;
+  color: #fff;
+}
+
+.statusTime {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.4px;
+}
+
+.header {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  height: 42px;
+  padding: 0 8px;
+  border-bottom: 1px solid var(--reward-border);
+}
+
+.closeBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--reward-text-primary);
+  cursor: pointer;
+}
+
+.closeBtn:focus-visible {
+  outline: 2px solid var(--reward-info-branded-content);
+  outline-offset: 2px;
+}
+
+.scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.content {
+  padding: 24px 16px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.sectionTitle {
+  margin: 0 0 24px;
+  font-family: inherit;
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 32px;
+  letter-spacing: -0.25px;
+  color: var(--reward-text-primary);
+}
+
+.sectionBlock {
+  margin-bottom: 48px;
+}
+
+.sectionBlock:last-child {
+  margin-bottom: 0;
+}
+
+.hero {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-height: 460px;
+  margin-bottom: 48px;
+  border: 1px solid rgba(237, 240, 242, 0.2);
+  border-radius: var(--radius-md);
+  background: #030306;
+  overflow: hidden;
+}
+
+.heroBlockImage {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  pointer-events: none;
+}
+
+.heroText {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+}
+
+.heroTitle {
+  margin: 0;
+  font-family: inherit;
+  font-size: 32px;
+  font-weight: 500;
+  line-height: 36px;
+  letter-spacing: -0.3px;
+  color: var(--reward-text-on-dark);
+}
+
+.heroSubtitle {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: 0.3px;
+  color: var(--reward-text-on-dark);
+}
+
+.stepList {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.stepCard {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+  border: 1px solid rgba(20, 29, 34, 0.12);
+  border-radius: var(--radius-md);
+}
+
+.stepNum {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 1000px;
+  background: var(--reward-neutral-ultralight);
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--reward-text-primary);
+}
+
+.stepTitle {
+  margin: 0;
+  font-family: inherit;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 24px;
+  letter-spacing: -0.2px;
+  color: var(--reward-text-primary);
+}
+
+.stepBody {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: 0.3px;
+  color: var(--reward-text-primary);
+}
+
+.stepLink {
+  color: var(--reward-info-branded-content);
+}
+
+.carouselWrap {
+  position: relative;
+}
+
+.carouselCard {
+  width: 100%;
+}
+
+.tierCard {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  padding: 24px;
+  border-radius: var(--radius-md);
+  background: #070a0c;
+  color: var(--reward-text-on-dark);
+  min-height: 320px;
+}
+
+.tierHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.tierName {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 24px;
+  letter-spacing: -0.2px;
+}
+
+.tierImage {
+  display: block;
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+  object-position: center;
+  flex-shrink: 0;
+}
+
+.tierBenefitsTitle {
+  margin: 0 0 12px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  letter-spacing: 0.3px;
+}
+
+.tierBenefitRow {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 20px;
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: 0.3px;
+}
+
+.tierBenefitIncluded {
+  color: var(--reward-text-on-dark);
+}
+
+.tierBenefitExcluded {
+  color: var(--reward-text-secondary-dark);
+}
+
+.benefitCard {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-height: 360px;
+  padding: 24px;
+  border: 1px solid rgba(20, 29, 34, 0.12);
+  border-radius: var(--radius-md);
+  background: var(--reward-paper);
+}
+
+.benefitImageWrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 160px;
+}
+
+.benefitImage {
+  display: block;
+  width: 160px;
+  height: 160px;
+  object-fit: contain;
+}
+
+.carouselNav {
+  position: absolute;
+  top: 50%;
+  left: -8px;
+  right: -8px;
+  display: flex;
+  justify-content: space-between;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.carouselNavBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid rgba(20, 29, 34, 0.12);
+  border-radius: 50%;
+  background: var(--reward-paper);
+  color: var(--reward-text-primary);
+  box-shadow: var(--shadow-segment);
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.carouselNavBtn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: none;
+  padding: 0;
+  background: rgba(20, 29, 34, 0.2);
+  cursor: pointer;
+}
+
+.dotActive {
+  background: var(--reward-text-primary);
+}
+
+.ctaCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+  border: 1px solid rgba(237, 240, 242, 0.2);
+  border-radius: var(--radius-md);
+  background: #05060c;
+  overflow: hidden;
+  color: var(--reward-text-on-dark);
+}
+
+.ctaPhoto {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 305px;
+  object-fit: cover;
+  object-position: center bottom;
+  pointer-events: none;
+}
+
+.ctaContent {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.ctaTitle {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 28px;
+  letter-spacing: -0.25px;
+}
+
+.ctaBody {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: 0.3px;
+}
+
+.ctaBody p {
+  margin: 0 0 12px;
+}
+
+.ctaBody p:last-child {
+  margin-bottom: 0;
+}
+
+.ctaBtn {
+  align-self: flex-start;
+  min-width: 80px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  background: var(--reward-exness-yellow);
+  color: var(--reward-exness-contrast);
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 400;
+  cursor: pointer;
+}
+
+.ctaSpacer {
+  height: 190px;
+}
+
+.terms {
+  margin-top: 40px;
+  padding-top: 24px;
+  font-size: 16px;
+  line-height: 24px;
+  letter-spacing: 0.3px;
+}
+
+.termsLink {
+  color: var(--reward-info-branded-content);
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+}
+
+.termsPlain {
+  color: var(--reward-text-primary);
+}

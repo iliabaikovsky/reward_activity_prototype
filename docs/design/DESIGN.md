@@ -27,6 +27,7 @@
 - **Иконки:** в макете — библиотека **Tabler** в связке с iOS-компонентами; в коде подключён `@tabler/icons-react` (stroke 2 / 1.75 как в UI-kit).
 - **Кошельки:** горизонтальный скролл, карточки 327px, gap 8px; вертикальные отступы у ленты, чтобы **Shadow/MD** не обрезалась; у второй карточки тень с отрицательным spread (как в Figma).
 - **Tier Linear:** дорожка 4px + заливка ~1% (Maintain Ultimate / Earn EXD).
+- **Rewards home — `How to earn rewards`:** заголовок секции **без** chevron (`SectionTitle` + `showChevron={false}`); баннер «Trade and level up» — клик → `EarnRewardsModal` (`43730:1106`); не путать с **Lifetime cashback** / **Activity feed** (chevron + drill).
 - **Upcoming:** в макете заголовок **без** chevron «провалиться» — в прототипе `showChevron={false}`.
 - **Вьюпорт:** рамка **375×812** (`device-frame`), скролл контента внутри, home indicator снизу рамки.
 
@@ -41,6 +42,8 @@
 | `42104:17588` | `RewardDetailModal` — `loyalty-activated` | После activation |
 | `42104:17168` | `RewardDetailModal` — `cashback-upcoming` | Cashback pending |
 | `42104:17387` | `RewardDetailModal` — `cashback-activated` | Cashback credited |
+| `43728:21233` | `ExnessRewardsPromoModal` | Promo landing (Info on Rewards) · Figma CE-3142 |
+| `43730:1106` | `EarnRewardsModal` | How to earn — banner «Trade and level up» on Rewards home |
 | `42579:350` | `Exness Rewards / Loyalty rewards -- Upcoming` | **Cursor figma** · pack modal (step 2 drill) · [`FIGMA_NAMING.md`](FIGMA_NAMING.md) |
 | `42507:155` | `Exness Rewards / Loyalty rewards / Loyalty reward -- Upcoming` | **Cursor figma** · order detail nested route |
 | `42450:9311` | `Exness Rewards / Transaction detail / Summary` | **🧩 Components** — primary block (icon + amount + chip) |
