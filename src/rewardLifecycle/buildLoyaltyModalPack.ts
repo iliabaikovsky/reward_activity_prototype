@@ -338,7 +338,7 @@ const DEMO_LINKED_CASHBACK_UPCOMING: LifecycleUpcomingItem = {
   id: 'up-cb-pend',
   icon: 'dollar',
   title: 'EXD cashback',
-  amount: '+5.00 USD',
+  amount: '+3.00 USD',
   lines: [CB_LIST_SUBTITLE, CB_ACCOUNT_LIST_LINE],
   date: 'on Mar 23',
   rewardModal: 'cashback-upcoming',

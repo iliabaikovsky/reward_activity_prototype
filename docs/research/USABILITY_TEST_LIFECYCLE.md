@@ -2,7 +2,9 @@
 
 Сценарий **unmoderated** теста на UserTesting.com: провести опытного трейдера через упрощённый lifecycle наград, собрать понимание **Upcoming**, drill-in, деталей cashback/loyalty и навигации **Rewards ↔ Activity feed**.
 
-**Статус:** draft — прототип и UT-инфраструктура **ещё не готовы** (см. §2–3). Код не меняем до согласования этого документа.
+**Статус:** implemented — `?ut=1&step=1…7`, упрощённый lifecycle в коде, временная панель `UsabilityTestPanel`.
+
+**Редактируемый copy вопросов:** [`USABILITY_TEST_QUESTIONS.md`](USABILITY_TEST_QUESTIONS.md) — по главам; после правок синхронизируем в `usabilityTestChapters.ts`.
 
 ### Связанные документы
 
@@ -74,28 +76,26 @@
 
 ---
 
-## 2. UserTesting unmoderated — как провести (design only)
+## 2. UserTesting unmoderated — как провести
 
-Сейчас прототип: один URL, шаг переключает **glass rail** (`LifecycleSimulatorPanel`). Для UT это **не подходит** — участник не должен видеть rail и не должен сам переключать шаги.
-
-### Рекомендуемый подход (реализовать перед записью)
-
-**Option B — deep link на chapter (recommended)**
+**Реализовано в прототипе:**
 
 ```
-https://<ut-host>/?step=1   → chapter 1 (empty)
-https://<ut-host>/?step=2   → chapter 2 (upcoming)
+https://<host>/?ut=1&step=1   → Chapter 1 (empty) + question panel
+https://<host>/?ut=1&step=2   → Chapter 2 (upcoming)
 …
-https://<ut-host>/?step=7   → chapter 7 (mature)
+https://<host>/?ut=1&step=7   → Chapter 7 (mature)
 ```
 
-| Требование | Зачем |
-|------------|--------|
-| `?step=N` читает начальный индекс, **без** возможности сменить шаг в UI | Каждая UT Task = новая ссылка |
-| Скрыть `LifecycleSimulatorPanel` на UT-деплое (`?ut=1` или env) | Не ломать immersion |
-| Optional: `?ut=1` блокирует rail даже на desktop | Consistency |
+Локально: `npm run dev` → `http://localhost:5173/?ut=1&step=1`
 
-**Структура study в UserTesting**
+| Параметр | Поведение |
+|----------|-----------|
+| `?ut=1` | Скрыт glass rail; справа **UsabilityTestPanel** (временно, для self-test) |
+| `?step=N` | N = 1…7, фиксирует lifecycle (в UT mode шаг не переключается) |
+| Без `ut` | Обычный dev: glass rail; `?step=N` только задаёт **стартовый** шаг |
+
+### Структура study в UserTesting
 
 1. **Screener:** trades FX/CFDs regularly; uses mobile apps.
 2. **Tasks 1–7:** каждая начинается с «Open this link» + scenario framing + questions (§4).
@@ -115,12 +115,11 @@ https://<ut-host>/?step=7   → chapter 7 (mature)
 
 ## 3. Pre-test checklist (команда)
 
-- [ ] Commit до упрощения lifecycle
-- [ ] Lifecycle 7 шагов (без adjustment, gift, дубля upcoming)
-- [ ] `?step=N` + hide rail на UT URL
-- [ ] Promo modal (ⓘ) стабилен на mobile 390px
-- [ ] Smoke: каждая ссылка `?step=1…7` открывает нужное состояние
+- [x] Commit до упрощения lifecycle
+- [x] Lifecycle 7 шагов (без adjustment, gift, дубля upcoming)
+- [x] `?step=N` + `?ut=1` hide rail + question panel
 - [ ] Pilot: 1 internal run ~40 min
+- [ ] После pilot: удалить `UsabilityTestPanel` + `usabilityTestChapters.ts`
 
 ---
 

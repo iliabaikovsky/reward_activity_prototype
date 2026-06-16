@@ -8,50 +8,45 @@ import {
 
 const DRILL_LISTS = [
   { step: 1, currency: 'exd', file: 'step-02-drill-exd' },
+  { step: 4, currency: 'usd', file: 'step-05-drill-usd' },
+  { step: 4, currency: 'exd', file: 'step-05-drill-exd' },
   { step: 6, currency: 'usd', file: 'step-07-drill-usd' },
   { step: 6, currency: 'exd', file: 'step-07-drill-exd' },
-  { step: 8, currency: 'usd', file: 'step-09-drill-usd' },
-  { step: 8, currency: 'exd', file: 'step-09-drill-exd' },
 ]
 
 const DRILL_ROWS = [
-  { step: 1, currency: 'exd', upcomingId: 'up-loy-1', file: '02-row-loyalty-upcoming' },
-  { step: 2, currency: 'exd', upcomingId: 'up-loy-1-more', file: '03-row-loyalty-badge4' },
-  { step: 6, currency: 'usd', upcomingId: 'up-cb-pend', file: '07-row-cashback-upcoming' },
-  { step: 6, currency: 'exd', upcomingId: 'up-loy-2', file: '07-row-loyalty-upcoming' },
-  { step: 8, currency: 'usd', upcomingId: 'up-cb-mature-thb', file: '09-row-cashback-upcoming' },
-  { step: 8, currency: 'exd', upcomingId: 'up-loy-mature', file: '09-row-loyalty-upcoming' },
+  { step: 1, currency: 'exd', upcomingId: 'up-loy-1-more', file: '02-row-loyalty-upcoming' },
+  { step: 4, currency: 'usd', upcomingId: 'up-cb-pend', file: '05-row-cashback-upcoming' },
+  { step: 4, currency: 'exd', upcomingId: 'up-loy-2', file: '05-row-loyalty-upcoming' },
+  { step: 6, currency: 'usd', upcomingId: 'up-cb-mature-thb', file: '07-row-cashback-upcoming' },
+  { step: 6, currency: 'exd', upcomingId: 'up-loy-mature', file: '07-row-loyalty-upcoming' },
 ]
 
 const SIMPLE_MODALS = [
   { file: 'loyalty-upcoming', step: 1, run: async (ctx) => {
     await ctx.openUpcomingDrill('exd')
-    await ctx.openUpcomingRow('up-loy-1')
+    await ctx.openUpcomingRow('up-loy-1-more')
   }},
-  { file: 'loyalty-activated', step: 3, run: (ctx) => ctx.openModalFromPreview('Loyalty rewards') },
-  { file: 'cashback-upcoming', step: 6, run: async (ctx) => {
+  { file: 'loyalty-activated', step: 2, run: (ctx) => ctx.openModalFromPreview('Loyalty rewards') },
+  { file: 'cashback-upcoming', step: 4, run: async (ctx) => {
     await ctx.openUpcomingDrill('usd')
     await ctx.openUpcomingRow('up-cb-pend')
   }},
-  { file: 'cashback-activated', step: 7, run: (ctx) => ctx.openModalFromPreview('EXD cashback') },
-  { file: 'transfer-exd', step: 5, run: (ctx) => ctx.openModalFromPreview('Transfer') },
-  { file: 'promo-gift', step: 4, run: (ctx) => ctx.openModalFromPreview('Birthday gift') },
-  { file: 'exd-adjustment', step: 3, run: (ctx) => ctx.openModalFromPreview('EXD adjustment') },
+  { file: 'cashback-activated', step: 5, run: (ctx) => ctx.openModalFromPreview('EXD cashback') },
+  { file: 'transfer-exd', step: 3, run: (ctx) => ctx.openModalFromPreview('Transfer') },
 ]
 
 const FEED_MODALS = [
-  { id: 'feed-adj-1', step: 3, file: 'feed-exd-adjustment' },
-  { id: 'feed-loy-act-1', step: 3, file: 'feed-loyalty-activated-mar18' },
-  { id: 'feed-gift-1', step: 4, file: 'feed-promo-gift' },
-  { id: 'feed-tr-1', step: 5, file: 'feed-transfer-exd' },
-  { id: 'feed-cb-apr20-thb', step: 8, file: 'feed-cashback-apr20' },
-  { id: 'feed-cb-apr19-jpy', step: 8, file: 'feed-cashback-apr19' },
-  { id: 'feed-cb-apr18-inr', step: 8, file: 'feed-cashback-apr18' },
-  { id: 'feed-loy-act-2', step: 8, file: 'feed-loyalty-apr1' },
-  { id: 'feed-cb-mar25', step: 8, file: 'feed-cashback-mar26' },
-  { id: 'feed-loy-act-open', step: 8, file: 'feed-loyalty-mar25' },
-  { id: 'feed-cb-mar24', step: 8, file: 'feed-cashback-mar25' },
-  { id: 'feed-cb-1', step: 8, file: 'feed-cashback-mar24' },
+  { id: 'feed-loy-act-1', step: 2, file: 'feed-loyalty-activated-mar18' },
+  { id: 'feed-tr-1', step: 3, file: 'feed-transfer-exd' },
+  { id: 'feed-cb-apr20-thb', step: 6, file: 'feed-cashback-apr20' },
+  { id: 'feed-cb-apr19-jpy', step: 6, file: 'feed-cashback-apr19' },
+  { id: 'feed-cb-apr18-inr', step: 6, file: 'feed-cashback-apr18' },
+  { id: 'feed-loy-act-2', step: 6, file: 'feed-loyalty-apr1' },
+  { id: 'feed-cb-mar25', step: 6, file: 'feed-cashback-mar26' },
+  { id: 'feed-loy-act-open', step: 6, file: 'feed-loyalty-mar25' },
+  { id: 'feed-cb-mar24', step: 6, file: 'feed-cashback-mar25' },
+  { id: 'feed-cb-1', step: 6, file: 'feed-cashback-mar24' },
 ]
 
 function shot(id, file, subdir, sets, step, run) {
@@ -143,9 +138,9 @@ export function buildShots(setName) {
       'step-09-all-types',
       'activity',
       ['minimal', 'full'],
-      8,
+      6,
       async (ctx) => {
-        await ctx.goToStep(8)
+        await ctx.goToStep(6)
         await ctx.openActivityFeed()
         await ctx.screenshot('activity', 'step-09-all-types')
       },
@@ -155,9 +150,9 @@ export function buildShots(setName) {
       'step-09-type-sheet-open',
       'activity',
       ['minimal', 'full'],
-      8,
+      6,
       async (ctx) => {
-        await ctx.goToStep(8)
+        await ctx.goToStep(6)
         await ctx.openActivityFeed()
         await ctx.openTypeSheet()
         await ctx.screenshot('activity', 'step-09-type-sheet-open')
@@ -169,9 +164,9 @@ export function buildShots(setName) {
       'step-09-filter-cashback',
       'activity',
       ['minimal', 'full'],
-      8,
+      6,
       async (ctx) => {
-        await ctx.goToStep(8)
+        await ctx.goToStep(6)
         await ctx.openActivityFeed()
         await ctx.setActivityFilters('cashback', 'all')
         await ctx.screenshot('activity', 'step-09-filter-cashback')
@@ -194,9 +189,9 @@ export function buildShots(setName) {
       'step-09-via-lifetime-cashback',
       'activity',
       ['full'],
-      8,
+      6,
       async (ctx) => {
-        await ctx.goToStep(8)
+        await ctx.goToStep(6)
         await ctx.openActivityViaLifetimeCashback()
         await ctx.screenshot('activity', 'step-09-via-lifetime-cashback')
       },
@@ -206,9 +201,9 @@ export function buildShots(setName) {
       'step-09-no-matches',
       'activity',
       ['full'],
-      8,
+      6,
       async (ctx) => {
-        await ctx.goToStep(8)
+        await ctx.goToStep(6)
         await ctx.openActivityFeed()
         await ctx.setActivityFilters('others', 'all')
         await ctx.screenshot('activity', 'step-09-no-matches')
@@ -219,9 +214,9 @@ export function buildShots(setName) {
       'step-09-date-sheet-open',
       'activity',
       ['full'],
-      8,
+      6,
       async (ctx) => {
-        await ctx.goToStep(8)
+        await ctx.goToStep(6)
         await ctx.openActivityFeed()
         await ctx.openDateSheet()
         await ctx.screenshot('activity', 'step-09-date-sheet-open')
@@ -239,9 +234,9 @@ export function buildShots(setName) {
           `step-09-filter-${typeKey}-${dateKey}`,
           'activity',
           ['full'],
-          8,
+          6,
           async (ctx) => {
-            await ctx.goToStep(8)
+            await ctx.goToStep(6)
             await ctx.openActivityFeed()
             await ctx.setActivityFilters(typeKey, dateKey)
             await ctx.screenshot('activity', `step-09-filter-${typeKey}-${dateKey}`)

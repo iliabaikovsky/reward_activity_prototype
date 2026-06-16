@@ -4,7 +4,9 @@ import type { RewardModalVariant } from './components/reward/rewardModalTypes'
 import { buildRewardModalPackOverride } from './rewardLifecycle/buildLoyaltyModalPack'
 import { buildTradingOrderRegistryForStep, buildCompanionAggregatesForStep, applyLinkedTradeDemoFallback } from './rewardLifecycle/buildTradingOrderRegistry'
 import { LifecycleSimulatorPanel } from './rewardLifecycle/LifecycleSimulatorPanel'
+import { parsePrototypeSearchParams } from './rewardLifecycle/parsePrototypeSearchParams'
 import { LIFECYCLE_STEPS } from './rewardLifecycle/lifecycleSteps'
+import { UsabilityTestPanel } from './rewardLifecycle/UsabilityTestPanel'
 import { DeviceFrameProvider } from './context/DeviceFrameContext'
 import { releaseDeviceFrameScrollLock } from './components/ui/useBottomSheet'
 import { ActivityFeedScreen } from './screens/ActivityFeedScreen'
@@ -28,7 +30,8 @@ type RewardModalState = {
 }
 
 function App() {
-  const [lifecycleStepIndex, setLifecycleStepIndex] = useState(0)
+  const prototypeParams = useMemo(() => parsePrototypeSearchParams(), [])
+  const [lifecycleStepIndex, setLifecycleStepIndex] = useState(prototypeParams.initialStepIndex)
   const lifecycle = LIFECYCLE_STEPS[lifecycleStepIndex]
 
   const [route, setRoute] = useState<Route>('rewards')
@@ -119,8 +122,20 @@ function App() {
     queueMicrotask(releaseDeviceFrameScrollLock)
   }, [])
 
+  const sidePanel = prototypeParams.utMode ? (
+    <UsabilityTestPanel chapterIndex={lifecycleStepIndex} />
+  ) : (
+    <LifecycleSimulatorPanel
+      steps={LIFECYCLE_STEPS}
+      stepIndex={lifecycleStepIndex}
+      onStepIndexChange={setLifecycleStepIndex}
+    />
+  )
+
   return (
-    <main className="app-shell app-shell--device">
+    <main
+      className={`app-shell app-shell--device${prototypeParams.utMode ? ' app-shell--ut' : ''}`}
+    >
       <div className="demo-workbench">
         <DeviceFrameProvider>
           <div className="device-frame-scroll" ref={scrollRef}>
@@ -181,13 +196,7 @@ function App() {
             />
           ) : null}
         </DeviceFrameProvider>
-        <div className="demo-workbench-simulator">
-          <LifecycleSimulatorPanel
-            steps={LIFECYCLE_STEPS}
-            stepIndex={lifecycleStepIndex}
-            onStepIndexChange={setLifecycleStepIndex}
-          />
-        </div>
+        <div className="demo-workbench-simulator">{sidePanel}</div>
       </div>
     </main>
   )

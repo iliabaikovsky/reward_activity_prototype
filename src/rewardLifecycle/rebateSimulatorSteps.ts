@@ -2,7 +2,8 @@ import type { LifecycleStep } from './lifecycleSteps'
 import { LIFECYCLE_STEPS } from './lifecycleSteps'
 
 const EMPTY_LIFE: LifecycleStep = LIFECYCLE_STEPS[0]
-const TRADE_DEMO_LIFE: LifecycleStep = LIFECYCLE_STEPS[6]
+const TRADE_DEMO_LIFE: LifecycleStep =
+  LIFECYCLE_STEPS.find((s) => s.id === 'mature_trader_tuesday') ?? LIFECYCLE_STEPS[LIFECYCLE_STEPS.length - 1]
 
 function cloneLife(overrides: Partial<LifecycleStep>): LifecycleStep {
   const base = TRADE_DEMO_LIFE

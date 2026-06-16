@@ -6,17 +6,15 @@ export const BASE_URL = process.env.SCREENSHOT_BASE_URL ?? 'http://localhost:517
 export const STEP_SLUGS = [
   'step-01-empty',
   'step-02-upcoming-loyalty',
-  'step-03-upcoming-more',
-  'step-04-activation',
-  'step-05-gift',
-  'step-06-transfer',
-  'step-07-trade-rebate',
-  'step-08-cashback-settled',
-  'step-09-mature-trader',
+  'step-03-activation',
+  'step-04-transfer',
+  'step-05-trade-rebate',
+  'step-06-cashback-settled',
+  'step-07-mature-trader',
 ]
 
 /** 0-based indices with Upcoming block visible. */
-export const UPCOMING_STEP_INDICES = new Set([1, 2, 6, 7, 8])
+export const UPCOMING_STEP_INDICES = new Set([1, 4, 5, 6])
 
 export const TYPE_LABELS = {
   all: 'All types',
@@ -26,7 +24,7 @@ export const TYPE_LABELS = {
   others: 'Others',
 }
 
-/** Step 9 demo today: 2026-04-20 — ranges for screenshot matrix. */
+/** Step 7 demo today: 2026-04-20 — ranges for screenshot matrix. */
 export const DATE_RANGES = {
   all: null,
   last7: { start: '2026-04-14', end: '2026-04-20' },
@@ -51,21 +49,8 @@ export function createContext(page, outDir) {
     outDir,
 
     async goToStep(targetIndex) {
-      const max = 24
-      for (let i = 0; i < max; i++) {
-        const current = await getStepIndex(page)
-        if (current === targetIndex) {
-          await page.waitForTimeout(200)
-          return
-        }
-        if (current < targetIndex) {
-          await page.getByRole('button', { name: 'Следующий шаг' }).click()
-        } else {
-          await page.getByRole('button', { name: 'Предыдущий шаг' }).click()
-        }
-        await page.waitForTimeout(250)
-      }
-      throw new Error(`Failed to reach step ${targetIndex + 1}`)
+      await page.goto(`${BASE_URL}/?step=${targetIndex + 1}`)
+      await page.waitForTimeout(300)
     },
 
     async resetUi() {
@@ -252,6 +237,9 @@ export function createContext(page, outDir) {
 }
 
 async function getStepIndex(page) {
+  const url = page.url()
+  const fromUrl = url.match(/[?&]step=(\d+)/)
+  if (fromUrl) return parseInt(fromUrl[1], 10) - 1
   const text = await page.getByRole('complementary', { name: 'Lifecycle simulator' }).innerText()
   const match = text.match(/^\s*(\d+)\./m)
   const n = match ? parseInt(match[1], 10) : 1
