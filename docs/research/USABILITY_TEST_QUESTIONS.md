@@ -1,56 +1,59 @@
-# Usability test — participant questions (editable)
+# Usability test — UserTesting paste guide
 
-**Language:** English (for UserTesting.com)  
-**Chapters:** 7 — matches lifecycle `?ut=1&step=1` … `step=7`
-
-Edit this file in a separate window. When done, send it back — we sync into `src/rewardLifecycle/usabilityTestChapters.ts` and the on-screen `UsabilityTestPanel`.
+**Language:** English · **Host:** `https://reward-activity.vercel.app`  
+**Chapters:** 7 · `?ut=1&step=1` … `step=7` (fixed lifecycle, no dev rail)
 
 **Full study design:** [`USABILITY_TEST_LIFECYCLE.md`](USABILITY_TEST_LIFECYCLE.md)
 
-**Prototype links (replace `<host>`):**
+---
 
-| Chapter | URL |
-|---------|-----|
-| 1 | `https://<host>/?ut=1&step=1` |
-| 2 | `https://<host>/?ut=1&step=2` |
-| 3 | `https://<host>/?ut=1&step=3` |
-| 4 | `https://<host>/?ut=1&step=4` |
-| 5 | `https://<host>/?ut=1&step=5` |
-| 6 | `https://<host>/?ut=1&step=6` |
-| 7 | `https://<host>/?ut=1&step=7` |
+## How to build in UserTesting
+
+Use this order for each chapter (after study **Instructions**):
+
+
+| UT block            | What to paste                                              |
+| ------------------- | ---------------------------------------------------------- |
+| **Navigation task** | Start URL + short **Taskbar** + **Description** (scenario) |
+| **Verbal response** | Questions below — **copy verbatim**, do not rephrase       |
+
+
+**Tips (UserTesting):**
+
+- **Taskbar** — max ~3 lines; reminder only (“open link, explore, think aloud”).
+- **Description page** — context + scenario (≤500 chars if possible).
+- **Verbal response** — numbered list OK in one block; remind: *think aloud*.
+- Preview + **1 pilot** before full launch.
 
 ---
 
-## Intro (once, before Chapter 1)
+## Study Instructions (add once — block 1)
 
-**Context**
+Paste into **Instructions**:
 
-You are testing an early **mobile prototype** of **Exness Rewards** — a loyalty area inside the Exness trading app. This is not live trading; balances and transactions are **sample data** for design research only.
-
-You are an **experienced trader** (you know orders, accounts, and P/L). You may **not** know how Exness Dollars (EXD) or reward cashback work yet — that is what we are studying.
-
-**Rules**
-
-- Think aloud: say what you are looking at and what you expect.
-- There are no wrong answers.
-- Tap anything that looks tappable.
-- If something looks broken, say so — it may be a prototype limitation.
-
-**Short intro (overlay / optional)**
-
-You are testing an early mobile prototype of Exness Rewards. Balances are sample data. Think aloud — there are no wrong answers. Tap anything that looks tappable.
+> You are testing an early **mobile prototype** of **Exness Rewards** (loyalty in the Exness trading app). Data is **sample only** — not real trading.
+>
+> You are an **experienced trader**. 
+>
+> **Think aloud** the whole time. No wrong answers. Tap anything that looks tappable. Say if something looks broken.
 
 ---
 
 ## Chapter 1 — First visit
 
-**Lifecycle id:** `empty` · **Link:** `?ut=1&step=1`
+**Lifecycle:** `empty`
 
-### Scenario
+### Navigation task
 
-You opened the Exness app and navigated to **Exness Rewards** for the first time. You have **not** earned any rewards yet.
 
-### Tasks & questions
+| Field           | Paste                                                                                                                                                                                                                                     |
+| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Start URL**   | `https://reward-activity.vercel.app/?ut=1&step=1`                                                                                                                                                                                         |
+| **Taskbar**     | Open the link. If the browser asks for a login: **user** / **password**. First visit to Exness Rewards — explore and **think aloud**.                                                                                                     |
+| **Description** | Before the prototype loads, your browser may ask for a login — **Username:** `user`, **Password:** `password`. You opened the Exness app and navigated to **Exness Rewards** for the first time. You have **not** earned any rewards yet. |
+
+
+### Verbal response
 
 1. Look around the screen. **What do you see?** What do you think this area is for?
 2. In your own words, **how do you understand the different sections** on this page?
@@ -62,13 +65,19 @@ You opened the Exness app and navigated to **Exness Rewards** for the first time
 
 ## Chapter 2 — After trading this week
 
-**Lifecycle id:** `upcoming_loyalty` · **Link:** `?ut=1&step=2`
+**Lifecycle:** `upcoming_loyalty`
 
-### Scenario
+### Navigation task
 
-A few days passed. You **traded** over the past few days. Open the link — this is what Rewards looks like **now**.
 
-### Tasks & questions
+| Field           | Paste                                                                                              |
+| --------------- | -------------------------------------------------------------------------------------------------- |
+| **Start URL**   | `https://reward-activity.vercel.app/?ut=1&step=2`                                                  |
+| **Taskbar**     | Open the link. A few days passed since Chapter 1. Explore and **think aloud**.                     |
+| **Description** | A few days passed. You **traded** over the past few days. This is what Rewards looks like **now**. |
+
+
+### Verbal response
 
 1. **What changed** compared to before? What is new on the screen?
 2. Find **Upcoming**. **What do you think these items mean?** When will you get the money?
@@ -80,13 +89,19 @@ A few days passed. You **traded** over the past few days. Open the link — this
 
 ## Chapter 3 — Week closed, reward activated
 
-**Lifecycle id:** `activation_1` · **Link:** `?ut=1&step=3`
+**Lifecycle:** `activation_1`
 
-### Scenario
+### Navigation task
 
-The **week ended** (your loyalty reward should have activated). Open the link.
 
-### Tasks & questions
+| Field           | Paste                                                           |
+| --------------- | --------------------------------------------------------------- |
+| **Start URL**   | `https://reward-activity.vercel.app/?ut=1&step=3`               |
+| **Taskbar**     | Open the link. The week ended. Explore and **think aloud**.     |
+| **Description** | The **week ended** (your loyalty reward should have activated). |
+
+
+### Verbal response
 
 1. **What changed** since you last looked? What happened to **Upcoming**?
 2. Check **Available rewards** and **Activity feed** (preview or **See all**). How do these relate to what you saw in Upcoming before?
@@ -97,13 +112,19 @@ The **week ended** (your loyalty reward should have activated). Open the link.
 
 ## Chapter 4 — Transfer to trading account
 
-**Lifecycle id:** `transfer` · **Link:** `?ut=1&step=4`
+**Lifecycle:** `transfer`
 
-### Scenario
+### Navigation task
 
-You **transferred** EXD from Available rewards to your **trading account**. Open the link.
 
-### Tasks & questions
+| Field           | Paste                                                                                    |
+| --------------- | ---------------------------------------------------------------------------------------- |
+| **Start URL**   | `https://reward-activity.vercel.app/?ut=1&step=4`                                        |
+| **Taskbar**     | Open the link. You transferred EXD to your trading account. Explore and **think aloud**. |
+| **Description** | You **transferred** EXD from Available rewards to your **trading account**.              |
+
+
+### Verbal response
 
 1. **What changed** on the wallets / balances?
 2. **What changed** in the Activity feed?
@@ -113,13 +134,19 @@ You **transferred** EXD from Available rewards to your **trading account**. Open
 
 ## Chapter 5 — Traded again using EXD
 
-**Lifecycle id:** `trade_exd_rebate` · **Link:** `?ut=1&step=5`
+**Lifecycle:** `trade_exd_rebate`
 
-### Scenario
+### Navigation task
 
-You **traded again** on the account that has **EXD**. Open the link.
 
-### Tasks & questions
+| Field           | Paste                                                                                |
+| --------------- | ------------------------------------------------------------------------------------ |
+| **Start URL**   | `https://reward-activity.vercel.app/?ut=1&step=5`                                    |
+| **Taskbar**     | Open the link. You traded again on an account with EXD. Explore and **think aloud**. |
+| **Description** | You **traded again** on the account that has **EXD**.                                |
+
+
+### Verbal response
 
 1. **What is new in Upcoming?** Explain it in your own words.
 2. Open **EXD cashback** in Upcoming. **What do you see?** Explain how you understand it.
@@ -131,13 +158,19 @@ You **traded again** on the account that has **EXD**. Open the link.
 
 ## Chapter 6 — Next day, cashback credited
 
-**Lifecycle id:** `cashback_settled` · **Link:** `?ut=1&step=6`
+**Lifecycle:** `cashback_settled`
 
-### Scenario
+### Navigation task
 
-**One day passed.** Open the link.
 
-### Tasks & questions
+| Field           | Paste                                                       |
+| --------------- | ----------------------------------------------------------- |
+| **Start URL**   | `https://reward-activity.vercel.app/?ut=1&step=6`           |
+| **Taskbar**     | Open the link. One day passed. Explore and **think aloud**. |
+| **Description** | **One day passed.**                                         |
+
+
+### Verbal response
 
 1. **What changed** on the page?
 2. Find the **credited cashback**. Open it. **What details explain the amount?**
@@ -148,21 +181,62 @@ You **traded again** on the account that has **EXD**. Open the link.
 
 ## Chapter 7 — Multi-account (~one month later)
 
-**Lifecycle id:** `mature_trader_tuesday` · **Link:** `?ut=1&step=7`
+**Lifecycle:** `mature_trader_tuesday`
 
-### Scenario
+### Navigation task
 
-About **a month later**. You trade from **several accounts** in **different currencies**. Open the link.
 
-### Tasks & questions
+| Field           | Paste                                                                                     |
+| --------------- | ----------------------------------------------------------------------------------------- |
+| **Start URL**   | `https://reward-activity.vercel.app/?ut=1&step=7`                                         |
+| **Taskbar**     | Open the link. About a month later, several accounts. Explore and **think aloud**.        |
+| **Description** | About **a month later**. You trade from **several accounts** in **different currencies**. |
+
+
+### Verbal response
 
 1. Look at **Upcoming** and **Activity feed**. **How many cashback items** do you see? **Why more than one?**
 
 ---
 
-## Post-study survey (after Chapter 7)
+## Post-study (after Chapter 7)
 
-1. How easy was it to understand **Upcoming rewards**? (1–5)
-2. How easy was it to understand **cashback vs loyalty rewards**? (1–5)
-3. What was the **most confusing** moment?
-4. If a friend asked “what is Exness Rewards?”, what would you say in **two sentences**?
+Add as **Rating** (1–5) + **Verbal response** blocks, or one **Verbal response**:
+
+**Ratings (1–5):**
+
+1. How easy was it to understand **Upcoming rewards**?
+2. How easy was it to understand **cashback vs loyalty rewards**?
+
+**Verbal:**
+
+1. What was the **most confusing** moment?
+2. If a friend asked “what is Exness Rewards?”, what would you say in **two sentences**?
+
+---
+
+## Full task list (study builder checklist)
+
+
+| #     | UT type         | Label                       |
+| ----- | --------------- | --------------------------- |
+| 1     | Instructions    | Study intro                 |
+| 2     | Navigation      | Chapter 1                   |
+| 3     | Verbal response | Chapter 1 questions         |
+| 4     | Navigation      | Chapter 2                   |
+| 5     | Verbal response | Chapter 2 questions         |
+| 6     | Navigation      | Chapter 3                   |
+| 7     | Verbal response | Chapter 3 questions         |
+| 8     | Navigation      | Chapter 4                   |
+| 9     | Verbal response | Chapter 4 questions         |
+| 10    | Navigation      | Chapter 5                   |
+| 11    | Verbal response | Chapter 5 questions         |
+| 12    | Navigation      | Chapter 6                   |
+| 13    | Verbal response | Chapter 6 questions         |
+| 14    | Navigation      | Chapter 7                   |
+| 15    | Verbal response | Chapter 7 questions         |
+| 16–17 | Rating          | Post-study (optional split) |
+| 18    | Verbal response | Post-study open             |
+
+
+**Estimated length:** ~25–35 min (pilot to confirm).

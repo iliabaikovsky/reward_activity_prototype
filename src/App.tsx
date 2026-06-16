@@ -6,7 +6,6 @@ import { buildTradingOrderRegistryForStep, buildCompanionAggregatesForStep, appl
 import { LifecycleSimulatorPanel } from './rewardLifecycle/LifecycleSimulatorPanel'
 import { parsePrototypeSearchParams } from './rewardLifecycle/parsePrototypeSearchParams'
 import { LIFECYCLE_STEPS } from './rewardLifecycle/lifecycleSteps'
-import { UsabilityTestPanel } from './rewardLifecycle/UsabilityTestPanel'
 import { DeviceFrameProvider } from './context/DeviceFrameContext'
 import { releaseDeviceFrameScrollLock } from './components/ui/useBottomSheet'
 import { ActivityFeedScreen } from './screens/ActivityFeedScreen'
@@ -122,9 +121,7 @@ function App() {
     queueMicrotask(releaseDeviceFrameScrollLock)
   }, [])
 
-  const sidePanel = prototypeParams.utMode ? (
-    <UsabilityTestPanel chapterIndex={lifecycleStepIndex} />
-  ) : (
+  const sidePanel = (
     <LifecycleSimulatorPanel
       steps={LIFECYCLE_STEPS}
       stepIndex={lifecycleStepIndex}
@@ -196,7 +193,9 @@ function App() {
             />
           ) : null}
         </DeviceFrameProvider>
-        <div className="demo-workbench-simulator">{sidePanel}</div>
+        {prototypeParams.utMode ? null : (
+          <div className="demo-workbench-simulator">{sidePanel}</div>
+        )}
       </div>
     </main>
   )

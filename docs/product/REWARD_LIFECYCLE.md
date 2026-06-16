@@ -7,7 +7,7 @@
 
 ### Прототип: симулятор шагов
 
-Справа от рамки телефона — **glass rail** (`LifecycleSimulatorPanel`, данные `LIFECYCLE_STEPS` в [`lifecycleSteps.ts`](../../src/rewardLifecycle/lifecycleSteps.ts)). **7 шагов**, старт с **шага 1** — пустое состояние (§0); стрелки **← / →** переключают сценарий (dev). **UserTesting:** `?ut=1&step=N` — фиксированный шаг, rail скрыт, справа панель с вопросами (`UsabilityTestPanel`, временно).
+Справа от рамки телефона — **glass rail** (`LifecycleSimulatorPanel`, данные `LIFECYCLE_STEPS` в [`lifecycleSteps.ts`](../../src/rewardLifecycle/lifecycleSteps.ts)). **7 шагов**, старт с **шага 1** — пустое состояние (§0); стрелки **← / →** переключают сценарий (dev). **UserTesting:** `?ut=1&step=N` — фиксированный шаг, rail скрыт.
 
 На широком экране под rail — раскрываемый блок **«Что видим»**: дата **«сегодня» для текущего шага** (`simulatorTodayIso`) и короткое описание шага (`simulatorBlurb` в `lifecycleSteps.ts`). Переключение только стрелками.
 

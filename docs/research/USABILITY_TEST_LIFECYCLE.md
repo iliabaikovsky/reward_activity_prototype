@@ -2,9 +2,9 @@
 
 Сценарий **unmoderated** теста на UserTesting.com: провести опытного трейдера через упрощённый lifecycle наград, собрать понимание **Upcoming**, drill-in, деталей cashback/loyalty и навигации **Rewards ↔ Activity feed**.
 
-**Статус:** implemented — `?ut=1&step=1…7`, упрощённый lifecycle в коде, временная панель `UsabilityTestPanel`.
+**Статус:** ready for UT — `?ut=1&step=1…7`, упрощённый lifecycle, dev rail скрыт, без overlay-панели.
 
-**Редактируемый copy вопросов:** [`USABILITY_TEST_QUESTIONS.md`](USABILITY_TEST_QUESTIONS.md) — по главам; после правок синхронизируем в `usabilityTestChapters.ts`.
+**Редактируемый copy вопросов:** [`USABILITY_TEST_QUESTIONS.md`](USABILITY_TEST_QUESTIONS.md) — paste в UserTesting.
 
 ### Связанные документы
 
@@ -81,7 +81,7 @@
 **Реализовано в прототипе:**
 
 ```
-https://<host>/?ut=1&step=1   → Chapter 1 (empty) + question panel
+https://<host>/?ut=1&step=1   → Chapter 1 (empty)
 https://<host>/?ut=1&step=2   → Chapter 2 (upcoming)
 …
 https://<host>/?ut=1&step=7   → Chapter 7 (mature)
@@ -91,8 +91,8 @@ https://<host>/?ut=1&step=7   → Chapter 7 (mature)
 
 | Параметр | Поведение |
 |----------|-----------|
-| `?ut=1` | Скрыт glass rail; справа **UsabilityTestPanel** (временно, для self-test) |
-| `?step=N` | N = 1…7, фиксирует lifecycle (в UT mode шаг не переключается) |
+| `?ut=1` | Скрыт glass rail; только телефон по центру |
+| `?step=N` | N = 1…7, фиксирует lifecycle на загрузке |
 | Без `ut` | Обычный dev: glass rail; `?step=N` только задаёт **стартовый** шаг |
 
 ### Структура study в UserTesting
@@ -117,9 +117,8 @@ https://<host>/?ut=1&step=7   → Chapter 7 (mature)
 
 - [x] Commit до упрощения lifecycle
 - [x] Lifecycle 7 шагов (без adjustment, gift, дубля upcoming)
-- [x] `?step=N` + `?ut=1` hide rail + question panel
+- [x] `?step=N` + `?ut=1` hide rail (no preview panel)
 - [ ] Pilot: 1 internal run ~40 min
-- [ ] После pilot: удалить `UsabilityTestPanel` + `usabilityTestChapters.ts`
 
 ---
 

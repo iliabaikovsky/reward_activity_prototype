@@ -1,12 +1,10 @@
 import { LIFECYCLE_STEPS } from './lifecycleSteps'
 
 export type PrototypeSearchParams = {
-  /** UserTesting: hide lifecycle rail, show question panel. */
+  /** UserTesting: hide lifecycle rail. */
   utMode: boolean
   /** 0-based step from `?step=` (URL is 1-based). */
   initialStepIndex: number
-  /** UT mode — step fixed; no glass rail. */
-  lockStep: boolean
 }
 
 export function parsePrototypeSearchParams(
@@ -27,13 +25,5 @@ export function parsePrototypeSearchParams(
   return {
     utMode,
     initialStepIndex,
-    lockStep: utMode,
   }
-}
-
-/** 1-based chapter URL for UserTesting tasks. */
-export function usabilityTestChapterUrl(chapterIndex: number, origin = window.location.origin): string {
-  const step = chapterIndex + 1
-  const path = window.location.pathname.replace(/\/$/, '') || '/'
-  return `${origin}${path}?ut=1&step=${step}`
 }
