@@ -49,8 +49,8 @@ Paste into **Instructions**:
 | Field           | Paste                                                                                                                                                                                                                                     |
 | --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Start URL**   | `https://reward-activity.vercel.app/?ut=1&step=1`                                                                                                                                                                                         |
-| **Taskbar**     | Open the link. If the browser asks for a login: **user** / **password**. First visit to Exness Rewards — explore and **think aloud**.                                                                                                     |
-| **Description** | Before the prototype loads, your browser may ask for a login — **Username:** `user`, **Password:** `password`. You opened the Exness app and navigated to **Exness Rewards** for the first time. You have **not** earned any rewards yet. |
+| **Taskbar**     | Open the link. First visit to Exness Rewards — explore and **think aloud**.                                                                                                                                                               |
+| **Description** | You opened the Exness app and navigated to **Exness Rewards** for the first time. You have **not** earned any rewards yet.                                                                                                                |
 
 
 ### Verbal response

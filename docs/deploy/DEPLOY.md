@@ -15,15 +15,11 @@ npm run deploy
 
 `vercel.json` уже задаёт `framework: vite`, `outputDirectory: dist` и SPA-fallback на `index.html`.
 
-## Пароль на проде (Basic Auth)
+## Пароль на проде (Basic Auth) — отключено
 
-В корне репозитория **`middleware.ts`**: если задана переменная **`PROTOTYPE_PASSWORD`**, весь сайт на Vercel закрыт **HTTP Basic Auth** (окно браузера: логин любой, например `prototype`, пароль — значение переменной). Локально **`npm run dev`** без пароля, пока переменная не задана.
+Для **UserTesting** Basic Auth снят: `middleware.ts` удалён, прототип открывается без логина.
 
-1. Vercel → проект → **Settings** → **Environment Variables**
-2. Добавь **`PROTOTYPE_PASSWORD`** = надёжная строка (Production / Preview / Development — как нужно)
-3. **Redeploy** (или следующий push подтянет env)
-
-Секрет хранится только в Vercel, в репозиторий не коммить. См. **`.env.example`**.
+Чтобы снова закрыть паролем: вернуть `middleware.ts` из git history, зависимость `@vercel/functions`, в Vercel → **Environment Variables** → **`PROTOTYPE_PASSWORD`**, redeploy. Локально без env пароль не включается.
 
 ## Через сайт Vercel
 
