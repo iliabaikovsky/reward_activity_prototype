@@ -17,10 +17,10 @@ export const DEMO_TODAY_ISO = '2026-06-17'
 export const LIFECYCLE_STEP_TODAY_ISO = [
   '2026-06-17',
   '2026-06-17',
-  '2026-06-17',
-  '2026-06-18',
-  '2026-06-19',
-  '2026-06-21',
+  '2026-06-24',
+  '2026-06-25',
+  '2026-06-26',
+  '2026-06-28',
   '2026-07-18',
 ] as const
 
@@ -41,7 +41,7 @@ export const LOY_PERIOD_MATURE_LABEL = 'Jul 13–19'
 export const LOY_ACTIVATION_MATURE_SHORT = 'Jul 22'
 
 /** День сделки для cashback (модалка `For trading on`, моки). */
-export const CB_PENDING_TRADE_DAY_SHORT = 'Jun 19'
+export const CB_PENDING_TRADE_DAY_SHORT = 'Jun 26'
 
 /** Subtitle в list row для cashback (Upcoming / feed / preview). */
 export const CB_LIST_SUBTITLE = 'For trading with EXD'

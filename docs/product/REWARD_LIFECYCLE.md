@@ -16,11 +16,11 @@
 | # | id | simulatorTodayIso | Обоснование |
 |---|-----|-------------------|-------------|
 | 1 | `empty` | 2026-06-17 | §0, новый пользователь |
-| 2 | `upcoming_loyalty` | 2026-06-17 | торговля Jun 15–21, badge 4, +4.20 EXD |
-| 3 | `activation_1` | 2026-06-17 | активация +3.20 EXD (без adjustment) |
-| 4 | `transfer` | 2026-06-18 | transfer 3.20 EXD |
-| 5 | `trade_exd_rebate` | 2026-06-19 | EXD spend → pending +3 USD cashback |
-| 6 | `cashback_settled` | 2026-06-21 | cashback credited, Lifetime 3 USD |
+| 2 | `upcoming_loyalty` | 2026-06-17 | торговля Jun 15–21, badge 3, +3.20 EXD |
+| 3 | `activation_1` | 2026-06-24 | активация +3.20 EXD (Jun 15–21, без adjustment) |
+| 4 | `transfer` | 2026-06-25 | transfer 3.20 EXD (Available 0 после transfer) |
+| 5 | `trade_exd_rebate` | 2026-06-26 | EXD spend → pending +3 USD cashback |
+| 6 | `cashback_settled` | 2026-06-28 | cashback credited, Lifetime 3 USD |
 | 7 | `mature_trader_tuesday` | 2026-07-18 | ~месяц после старта, multi-account |
 
 **Упрощение (UT lifecycle):** убраны `upcoming_loyalty_more`, `gift`, `exd adjustment`; см. [`USABILITY_TEST_LIFECYCLE.md`](../research/USABILITY_TEST_LIFECYCLE.md).

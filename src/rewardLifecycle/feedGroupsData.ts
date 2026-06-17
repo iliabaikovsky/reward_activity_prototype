@@ -15,8 +15,8 @@ const item = (x: ActivityFeedItem): ActivityFeedItem => x
 
 /** Первая активация — только loyalty (UT / simplified lifecycle). */
 export const G_MAR18_LOYALTY_ONLY: ActivityFeedGroup = {
-  dateLabel: '17 Jun 2026',
-  dateIso: '2026-06-17',
+  dateLabel: '24 Jun 2026',
+  dateIso: '2026-06-24',
   summary: '+3.20 EXD',
   items: [
     item({
@@ -24,7 +24,7 @@ export const G_MAR18_LOYALTY_ONLY: ActivityFeedGroup = {
       title: 'Loyalty rewards',
       amount: '+3.20 EXD',
       amountTone: 'positive',
-      lines: [LOYALTY_TO_AVAILABLE_SUBTITLE, `For trading on ${LOY_PERIOD_PREV_LABEL}`],
+      lines: [LOYALTY_TO_AVAILABLE_SUBTITLE, `For trading on ${LOY_PERIOD_OPEN_LABEL}`],
       time: '23:58',
       icon: 'crown',
       rewardModal: 'loyalty-activated',
@@ -34,8 +34,8 @@ export const G_MAR18_LOYALTY_ONLY: ActivityFeedGroup = {
 }
 
 export const G_MAR21_TRANSFER_320: ActivityFeedGroup = {
-  dateLabel: '18 Jun 2026',
-  dateIso: '2026-06-18',
+  dateLabel: '25 Jun 2026',
+  dateIso: '2026-06-25',
   summary: '-3.20 EXD',
   items: [
     item({
@@ -53,8 +53,8 @@ export const G_MAR21_TRANSFER_320: ActivityFeedGroup = {
 }
 
 export const G_MAR24_CASHBACK_300: ActivityFeedGroup = {
-  dateLabel: '21 Jun 2026',
-  dateIso: '2026-06-21',
+  dateLabel: '28 Jun 2026',
+  dateIso: '2026-06-28',
   summary: '+3.00 USD',
   items: [
     item({

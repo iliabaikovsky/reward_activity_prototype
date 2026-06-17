@@ -12,7 +12,7 @@ export const SIMPLE_CONFIG: Record<SimpleVariantKey, SimpleConfig> = {
     heroIcon: 'transfer',
     amount: '30.00 EXD',
     details: [
-      { label: 'Completed on', value: 'Jun 18, 2026, 09:30 UTC' },
+      { label: 'Completed on', value: 'Jun 25, 2026, 09:30 UTC' },
       { label: FROM_WALLET_LABEL, value: AVAILABLE_REWARDS_WALLET },
       { label: 'To account', value: '#12345678' },
     ],
