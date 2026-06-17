@@ -18,17 +18,16 @@ import {
   CB_ACCOUNT_JPY_LINE,
   CB_ACCOUNT_LIST_LINE,
   CB_ACCOUNT_THB_LINE,
+  LIFECYCLE_STEP_TODAY_ISO,
+  LOY_ACTIVATION_MATURE_SHORT,
   LOY_ACTIVATION_OPEN_SHORT,
   LOY_ACTIVATION_PREV_SHORT,
   LOYALTY_TO_AVAILABLE_SUBTITLE,
+  LOY_PERIOD_MATURE_LABEL,
   LOY_PERIOD_OPEN_LABEL,
   LOY_PERIOD_PREV_LABEL,
   upcomingLoyaltyDate,
 } from './demoTimeline'
-
-/** Период loyalty для шага 7 (~Apr 20, месяц после старта Mar 20). */
-const LOY_PERIOD_MATURE_LABEL = 'Apr 13–19'
-const LOY_ACTIVATION_MATURE_SHORT = 'Apr 22'
 
 export type LifecycleUpcomingItem = {
   id: string
@@ -93,8 +92,8 @@ export const LIFECYCLE_STEPS: LifecycleStep[] = [
   {
     id: 'empty',
     label: 'Новый пользователь',
-    docRef: '§0 · 20 Mar 2026 (симулятор)',
-    simulatorTodayIso: '2026-03-20',
+    docRef: '§0 · 17 Jun 2026 (симулятор)',
+    simulatorTodayIso: LIFECYCLE_STEP_TODAY_ISO[0],
     simulatorBlurb: {
       lead: 'Ещё не торговал — пустой экран.',
       bullets: ['Кошельки и Upcoming — нули', 'Activity feed пустая'],
@@ -113,7 +112,7 @@ export const LIFECYCLE_STEPS: LifecycleStep[] = [
     id: 'upcoming_loyalty',
     label: 'Торговля → pending loyalty',
     docRef: `§2 · ${LOY_PERIOD_OPEN_LABEL}, badge 4 · → ${upcomingLoyaltyDate(LOY_ACTIVATION_OPEN_SHORT)}`,
-    simulatorTodayIso: '2026-03-20',
+    simulatorTodayIso: LIFECYCLE_STEP_TODAY_ISO[1],
     simulatorBlurb: {
       lead: `Поторговал на этой неделе (${LOY_PERIOD_OPEN_LABEL}).`,
       bullets: [
@@ -146,7 +145,7 @@ export const LIFECYCLE_STEPS: LifecycleStep[] = [
     id: 'activation_1',
     label: 'Активация loyalty',
     docRef: `§3 · ${LOY_ACTIVATION_PREV_SHORT}: loyalty +3.20 EXD → Available`,
-    simulatorTodayIso: '2026-03-18',
+    simulatorTodayIso: LIFECYCLE_STEP_TODAY_ISO[2],
     simulatorBlurb: {
       lead: `Неделя закрылась, loyalty активировалась (${LOY_ACTIVATION_PREV_SHORT}).`,
       bullets: [
@@ -179,10 +178,10 @@ export const LIFECYCLE_STEPS: LifecycleStep[] = [
   {
     id: 'transfer',
     label: 'Transfer на счёт',
-    docRef: '§6 · 21 Mar · 3.20 EXD',
-    simulatorTodayIso: '2026-03-21',
+    docRef: '§6 · 18 Jun · 3.20 EXD',
+    simulatorTodayIso: LIFECYCLE_STEP_TODAY_ISO[3],
     simulatorBlurb: {
-      lead: 'Перевёл EXD на торговый счёт (21 Mar).',
+      lead: 'Перевёл EXD на торговый счёт (18 Jun).',
       bullets: ['Available 0 EXD', '3.20 EXD на счёте #12345678', 'В ленте — Transfer'],
     },
     availableRewardsExd: '0.00 EXD',
@@ -199,7 +198,7 @@ export const LIFECYCLE_STEPS: LifecycleStep[] = [
         title: 'Transfer',
         amount: '3.20 EXD',
         lines: ['To account: #12345678'],
-        date: 'Mar 21, 09:30',
+        date: 'Jun 18, 09:30',
         rewardModal: 'transfer-exd',
       },
       {
@@ -217,10 +216,10 @@ export const LIFECYCLE_STEPS: LifecycleStep[] = [
   {
     id: 'trade_exd_rebate',
     label: 'Сделка: cashback pending + loyalty',
-    docRef: '§7–8 · 22 Mar · spent 3.20 EXD',
-    simulatorTodayIso: '2026-03-22',
+    docRef: '§7–8 · 19 Jun · spent 3.20 EXD',
+    simulatorTodayIso: LIFECYCLE_STEP_TODAY_ISO[4],
     simulatorBlurb: {
-      lead: 'Сделка со списанием EXD под cashback (22 Mar).',
+      lead: 'Сделка со списанием EXD под cashback (19 Jun).',
       bullets: [
         'На счёте 0 EXD (потратили 3.20)',
         'Upcoming: +3 USD cashback и +1 EXD loyalty',
@@ -240,7 +239,7 @@ export const LIFECYCLE_STEPS: LifecycleStep[] = [
         title: 'EXD cashback',
         amount: '+3.00 USD',
         lines: [CB_LIST_SUBTITLE, CB_ACCOUNT_LIST_LINE],
-        date: 'on Mar 23',
+        date: 'on Jun 20',
         rewardModal: 'cashback-upcoming',
       },
       {
@@ -260,7 +259,7 @@ export const LIFECYCLE_STEPS: LifecycleStep[] = [
         title: 'Transfer',
         amount: '3.20 EXD',
         lines: ['To account: #12345678'],
-        date: 'Mar 21, 09:30',
+        date: 'Jun 18, 09:30',
         rewardModal: 'transfer-exd',
       },
       {
@@ -278,10 +277,10 @@ export const LIFECYCLE_STEPS: LifecycleStep[] = [
   {
     id: 'cashback_settled',
     label: 'Cashback зачислен',
-    docRef: '§8–9 · 24 Mar · +3 USD',
-    simulatorTodayIso: '2026-03-24',
+    docRef: '§8–9 · 21 Jun · +3 USD',
+    simulatorTodayIso: LIFECYCLE_STEP_TODAY_ISO[5],
     simulatorBlurb: {
-      lead: 'Cashback пришёл на счёт (24 Mar).',
+      lead: 'Cashback пришёл на счёт (21 Jun).',
       bullets: [
         '+3 USD ушли из Upcoming → Lifetime cashback 3 USD',
         `Loyalty +1 EXD всё ещё в Upcoming до ${LOY_ACTIVATION_OPEN_SHORT}`,
@@ -311,7 +310,7 @@ export const LIFECYCLE_STEPS: LifecycleStep[] = [
         title: 'EXD cashback',
         amount: '+3.00 USD',
         lines: [CB_LIST_SUBTITLE, 'Account: #12345678'],
-        date: 'Mar 24, 08:00',
+        date: 'Jun 21, 08:00',
         rewardModal: 'cashback-activated',
       },
       {
@@ -320,7 +319,7 @@ export const LIFECYCLE_STEPS: LifecycleStep[] = [
         title: 'Transfer',
         amount: '3.20 EXD',
         lines: ['To account: #12345678'],
-        date: 'Mar 21, 09:30',
+        date: 'Jun 18, 09:30',
         rewardModal: 'transfer-exd',
       },
     ],
@@ -329,10 +328,10 @@ export const LIFECYCLE_STEPS: LifecycleStep[] = [
   {
     id: 'mature_trader_tuesday',
     label: 'Месяц торговли',
-    docRef: '§10 · 20 Apr — ~месяц после старта (20 Mar)',
-    simulatorTodayIso: '2026-04-20',
+    docRef: '§10 · 18 Jul — ~месяц после старта (17 Jun)',
+    simulatorTodayIso: LIFECYCLE_STEP_TODAY_ISO[6],
     simulatorBlurb: {
-      lead: 'Прошёл ~месяц с первых шагов (20 Mar → 20 Apr).',
+      lead: 'Прошёл ~месяц с первых шагов (17 Jun → 18 Jul).',
       bullets: [
         'Lifetime cashback ~38 USD',
         'На счёте 62.40 EXD',
@@ -362,7 +361,7 @@ export const LIFECYCLE_STEPS: LifecycleStep[] = [
         title: 'EXD cashback',
         amount: '+148.50 THB',
         lines: [CB_LIST_SUBTITLE, CB_ACCOUNT_THB_LINE],
-        date: 'on Apr 21',
+        date: 'on Jul 19',
         rewardModal: 'cashback-upcoming',
       },
       {
@@ -371,7 +370,7 @@ export const LIFECYCLE_STEPS: LifecycleStep[] = [
         title: 'EXD cashback',
         amount: '+672 JPY',
         lines: [CB_LIST_SUBTITLE, CB_ACCOUNT_JPY_LINE],
-        date: 'on Apr 21',
+        date: 'on Jul 19',
         rewardModal: 'cashback-upcoming',
       },
       {
@@ -380,7 +379,7 @@ export const LIFECYCLE_STEPS: LifecycleStep[] = [
         title: 'EXD cashback',
         amount: '+385.00 INR',
         lines: [CB_LIST_SUBTITLE, CB_ACCOUNT_INR_LINE],
-        date: 'on Apr 21',
+        date: 'on Jul 19',
         rewardModal: 'cashback-upcoming',
       },
     ],
@@ -391,7 +390,7 @@ export const LIFECYCLE_STEPS: LifecycleStep[] = [
         title: 'EXD cashback',
         amount: '+152.00 THB',
         lines: [CB_LIST_SUBTITLE, CB_ACCOUNT_THB_LINE],
-        date: 'Apr 20, 08:00',
+        date: 'Jul 18, 08:00',
         rewardModal: 'cashback-activated',
       },
       {
@@ -400,7 +399,7 @@ export const LIFECYCLE_STEPS: LifecycleStep[] = [
         title: 'EXD cashback',
         amount: '+698 JPY',
         lines: [CB_LIST_SUBTITLE, CB_ACCOUNT_JPY_LINE],
-        date: 'Apr 19, 08:00',
+        date: 'Jul 17, 08:00',
         rewardModal: 'cashback-activated',
       },
       {
@@ -409,7 +408,7 @@ export const LIFECYCLE_STEPS: LifecycleStep[] = [
         title: 'EXD cashback',
         amount: '+392.00 INR',
         lines: [CB_LIST_SUBTITLE, CB_ACCOUNT_INR_LINE],
-        date: 'Apr 18, 08:00',
+        date: 'Jul 16, 08:00',
         rewardModal: 'cashback-activated',
       },
       {
@@ -418,7 +417,7 @@ export const LIFECYCLE_STEPS: LifecycleStep[] = [
         title: 'Transfer',
         amount: '3.20 EXD',
         lines: ['To account: #12345678'],
-        date: 'Mar 21, 09:30',
+        date: 'Jun 18, 09:30',
         rewardModal: 'transfer-exd',
       },
     ],

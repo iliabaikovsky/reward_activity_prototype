@@ -70,7 +70,7 @@ export const PACK_CONFIG: Record<PackVariantKey, PackConfig> = {
     chip: { text: 'Activated', tone: 'success' },
     heroIcon: 'crown',
     amount: '+89.23 EXD',
-    details: loyaltyPackDetailRows('Activated on', 'Jan 15, 2026, 16:15 UTC', 'Mar 9–15'),
+    details: loyaltyPackDetailRows('Activated on', 'Jan 15, 2026, 16:15 UTC', 'Jun 8–14'),
     orders: [
       {
         id: 'ly-a-1',
@@ -114,7 +114,7 @@ export const PACK_CONFIG: Record<PackVariantKey, PackConfig> = {
     details: cashbackPackDetailRows(
       'Credits on',
       'Jan 14, 2026, by 12:00 UTC',
-      'Mar 22',
+      'Jun 19',
       '#12345678',
     ),
     orders: [
@@ -132,7 +132,7 @@ export const PACK_CONFIG: Record<PackVariantKey, PackConfig> = {
           chip: { text: 'Upcoming', tone: 'warning' },
           heroIcon: 'dollar',
           amount: '+1.23 USD',
-          details: cashbackUpcomingOrderDetailRows('Mar 22', '9100821', '-1.04 EXD'),
+          details: cashbackUpcomingOrderDetailRows('Jun 19', '9100821', '-1.04 EXD'),
         },
       },
       {
@@ -149,7 +149,7 @@ export const PACK_CONFIG: Record<PackVariantKey, PackConfig> = {
           chip: { text: 'Upcoming', tone: 'warning' },
           heroIcon: 'dollar',
           amount: '+1.23 USD',
-          details: cashbackUpcomingOrderDetailRows('Mar 22', '9100822', '-1.04 EXD'),
+          details: cashbackUpcomingOrderDetailRows('Jun 19', '9100822', '-1.04 EXD'),
         },
       },
       {
@@ -166,7 +166,7 @@ export const PACK_CONFIG: Record<PackVariantKey, PackConfig> = {
           chip: { text: 'Upcoming', tone: 'warning' },
           heroIcon: 'dollar',
           amount: '+1.24 USD',
-          details: cashbackUpcomingOrderDetailRows('Mar 22', '9100823', '-1.04 EXD'),
+          details: cashbackUpcomingOrderDetailRows('Jun 19', '9100823', '-1.04 EXD'),
         },
       },
     ],

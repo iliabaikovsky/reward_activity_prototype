@@ -4,29 +4,44 @@
  * **Loyalty rewards (Upcoming):** агрегат pending EXD за **календарную неделю пн–вс**;
  * зачисление в Available rewards — в **среду после** этой недели (первая среда за воскресеньем периода).
  *
- * Якорь «сегодня» для UI и фильтров Activity feed — **20 Mar 2026** (пятница),
- * внутри открытого периода Mar 16–22 → зачисление `on Mar 25`.
+ * Якорь «сегодня» шага 1 — **17 Jun 2026** (среда),
+ * внутри открытого периода Jun 15–21 → зачисление `on Jun 24`.
  *
  * **Накладка:** в понедельник–вторник недели активации прошлого периода в Upcoming
  * могут быть **две** строки Loyalty: прошлая неделя (зачисление в эту среду) и текущая
  * (с понедельника недели открытия периода → зачисление в следующую среду).
  */
-export const DEMO_TODAY_ISO = '2026-03-20'
+export const DEMO_TODAY_ISO = '2026-06-17'
+
+/** `simulatorTodayIso` по шагам 1…7 (от якоря шага 1). */
+export const LIFECYCLE_STEP_TODAY_ISO = [
+  '2026-06-17',
+  '2026-06-17',
+  '2026-06-17',
+  '2026-06-18',
+  '2026-06-19',
+  '2026-06-21',
+  '2026-07-18',
+] as const
 
 /** Предыдущий закрытый период (пн–вс) → активация в среду */
-export const LOY_PERIOD_PREV_LABEL = 'Mar 9–15'
-export const LOY_ACTIVATION_PREV_SHORT = 'Mar 18'
+export const LOY_PERIOD_PREV_LABEL = 'Jun 8–14'
+export const LOY_ACTIVATION_PREV_SHORT = 'Jun 17'
 
-/** Текущий открытый период при «сегодня» 20 Mar (пн–вс) */
-export const LOY_PERIOD_OPEN_LABEL = 'Mar 16–22'
-export const LOY_ACTIVATION_OPEN_SHORT = 'Mar 25'
+/** Текущий открытый период при «сегодня» 17 Jun (пн–вс) */
+export const LOY_PERIOD_OPEN_LABEL = 'Jun 15–21'
+export const LOY_ACTIVATION_OPEN_SHORT = 'Jun 24'
 
 /** Следующий период после активации открытой недели */
-export const LOY_PERIOD_NEXT_LABEL = 'Mar 24–29'
-export const LOY_ACTIVATION_NEXT_SHORT = 'Apr 1'
+export const LOY_PERIOD_NEXT_LABEL = 'Jun 22–28'
+export const LOY_ACTIVATION_NEXT_SHORT = 'Jul 1'
+
+/** Шаг 7 — открытый период при «сегодня» 18 Jul */
+export const LOY_PERIOD_MATURE_LABEL = 'Jul 13–19'
+export const LOY_ACTIVATION_MATURE_SHORT = 'Jul 22'
 
 /** День сделки для cashback (модалка `For trading on`, моки). */
-export const CB_PENDING_TRADE_DAY_SHORT = 'Mar 22'
+export const CB_PENDING_TRADE_DAY_SHORT = 'Jun 19'
 
 /** Subtitle в list row для cashback (Upcoming / feed / preview). */
 export const CB_LIST_SUBTITLE = 'For trading with EXD'
@@ -45,17 +60,18 @@ export const ADJUSTMENT_LIST_SUBTITLE = 'Available rewards adjusted'
 /** Subtitle в list row для loyalty activated (первая строка lines[]). */
 export const LOYALTY_TO_AVAILABLE_SUBTITLE = 'To available'
 
-/** Дата в колонке справа у Upcoming loyalty: `on Mar 25` */
+/** Дата в колонке справа у Upcoming loyalty: `on Jun 24` */
 export const upcomingLoyaltyDate = (activationShort: string) => `on ${activationShort}`
 
 /** Поле «Available on» в деталке пачки (Upcoming) */
 export const UPCOMING_ACTIVATION_DATETIME: Record<string, string> = {
-  'on Mar 18': '18 Mar 2026, 18:43',
-  'on Mar 25': '25 Mar 2026, 18:43',
-  'on Apr 1': '1 Apr 2026, 18:43',
+  'on Jun 17': '17 Jun 2026, 18:43',
+  'on Jun 24': '24 Jun 2026, 18:43',
+  'on Jul 1': '1 Jul 2026, 18:43',
+  'on Jul 22': '22 Jul 2026, 18:43',
 }
 
-/** Короткая подпись якорной даты прототипа для UI, напр. «20 Mar 2026». */
+/** Короткая подпись якорной даты прототипа для UI, напр. «17 Jun 2026». */
 export function formatDemoTodayLabel(iso = DEMO_TODAY_ISO): string {
   return parseDemoToday(iso).toLocaleDateString('en-GB', {
     day: 'numeric',
@@ -64,7 +80,7 @@ export function formatDemoTodayLabel(iso = DEMO_TODAY_ISO): string {
   })
 }
 
-/** Парсит колонку даты Upcoming вида `on Mar 25` в локальную полночь. */
+/** Парсит колонку даты Upcoming вида `on Jun 24` в локальную полночь. */
 export function parseUpcomingPayoutDate(dateCol: string, year = 2026): Date | null {
   const trimmed = dateCol.replace(/^on\s+/i, '').trim()
   const parsed = new Date(`${trimmed}, ${year}`)

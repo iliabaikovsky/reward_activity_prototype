@@ -24,12 +24,12 @@ export const TYPE_LABELS = {
   others: 'Others',
 }
 
-/** Step 7 demo today: 2026-04-20 — ranges for screenshot matrix. */
+/** Step 7 demo today: 2026-07-18 — ranges for screenshot matrix. */
 export const DATE_RANGES = {
   all: null,
-  last7: { start: '2026-04-14', end: '2026-04-20' },
-  last30: { start: '2026-03-22', end: '2026-04-20' },
-  thisMonth: { start: '2026-04-01', end: '2026-04-30' },
+  last7: { start: '2026-07-12', end: '2026-07-18' },
+  last30: { start: '2026-06-19', end: '2026-07-18' },
+  thisMonth: { start: '2026-07-01', end: '2026-07-31' },
 }
 
 export const REWARDS_SECTIONS = [

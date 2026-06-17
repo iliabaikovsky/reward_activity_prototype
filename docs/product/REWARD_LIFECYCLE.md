@@ -11,27 +11,27 @@
 
 На широком экране под rail — раскрываемый блок **«Что видим»**: дата **«сегодня» для текущего шага** (`simulatorTodayIso`) и короткое описание шага (`simulatorBlurb` в `lifecycleSteps.ts`). Переключение только стрелками.
 
-**Календарь в коде:** дефолтный якорь **20 Mar 2026** (`DEMO_TODAY_ISO` в [`demoTimeline.ts`](../../src/rewardLifecycle/demoTimeline.ts)); на каждом шаге симулятора своя **`simulatorTodayIso`** — «когда пользователь смотрит экран». Пресет ленты **This month** и **Last 7 / 30** считаются относительно даты шага. **Loyalty в Upcoming:** одна строка = **агрегат pending EXD** за **календарную неделю пн–вс**; в подписи `For trading on {пн–вс}`; дата справа **`on {среда}`** — зачисление в Available (среда **после** недели заработка). Пример при «сегодня» 20 Mar: открытая пачка **Mar 16–22** → **`on Mar 25`**.
+**Календарь в коде:** дефолтный якорь **17 Jun 2026** (`DEMO_TODAY_ISO` в [`demoTimeline.ts`](../../src/rewardLifecycle/demoTimeline.ts)); на каждом шаге симулятора своя **`simulatorTodayIso`** — «когда пользователь смотрит экран». Пресет ленты **This month** и **Last 7 / 30** считаются относительно даты шага. **Loyalty в Upcoming:** одна строка = **агрегат pending EXD** за **календарную неделю пн–вс**; в подписи `For trading on {пн–вс}`; дата справа **`on {среда}`** — зачисление в Available (среда **после** недели заработка). Пример при «сегодня» 17 Jun: открытая пачка **Jun 15–21** → **`on Jun 24`**.
 
 | # | id | simulatorTodayIso | Обоснование |
 |---|-----|-------------------|-------------|
-| 1 | `empty` | 2026-03-20 | §0, новый пользователь |
-| 2 | `upcoming_loyalty` | 2026-03-20 | торговля Mar 16–22, badge 4, +4.20 EXD |
-| 3 | `activation_1` | 2026-03-18 | активация +3.20 EXD (без adjustment) |
-| 4 | `transfer` | 2026-03-21 | transfer 3.20 EXD |
-| 5 | `trade_exd_rebate` | 2026-03-22 | EXD spend → pending +3 USD cashback |
-| 6 | `cashback_settled` | 2026-03-24 | cashback credited, Lifetime 3 USD |
-| 7 | `mature_trader_tuesday` | 2026-04-20 | ~месяц после старта, multi-account |
+| 1 | `empty` | 2026-06-17 | §0, новый пользователь |
+| 2 | `upcoming_loyalty` | 2026-06-17 | торговля Jun 15–21, badge 4, +4.20 EXD |
+| 3 | `activation_1` | 2026-06-17 | активация +3.20 EXD (без adjustment) |
+| 4 | `transfer` | 2026-06-18 | transfer 3.20 EXD |
+| 5 | `trade_exd_rebate` | 2026-06-19 | EXD spend → pending +3 USD cashback |
+| 6 | `cashback_settled` | 2026-06-21 | cashback credited, Lifetime 3 USD |
+| 7 | `mature_trader_tuesday` | 2026-07-18 | ~месяц после старта, multi-account |
 
 **Упрощение (UT lifecycle):** убраны `upcoming_loyalty_more`, `gift`, `exd adjustment`; см. [`USABILITY_TEST_LIFECYCLE.md`](../research/USABILITY_TEST_LIFECYCLE.md).
 
 **Деталка Loyalty (bottom sheet):** для вариантов `loyalty-upcoming` и `loyalty-activated` данные пачки собираются из шага симулятора (`buildLoyaltyModalPack.ts`): те же **сумма**, **Available on** + **For trading on** (value = период пн–вс), что на списке; **ордера** — несколько строк, в сумме дающих агрегат (без раздувания до 200). Из ленты открытие передаёт `feedItemId`, чтобы совпадала конкретная транзакция.
 
-**Шаг 7 (`mature_trader_tuesday`, 20 Apr):** тот же пользователь **~месяц спустя** после якоря 20 Mar — **Lifetime cashback ~38 USD**, на счёте **62.40 EXD**, в Upcoming loyalty **Apr 13–19 → Apr 22** и **3 EXD cashback** (THB / JPY / INR на счетах `#88112233`, `#99223344`, `#77334455`, зачисление `on Apr 21`); в ленте — credited cashback 20 / 19 / 18 Apr в тех же валютах + хвост марта.
+**Шаг 7 (`mature_trader_tuesday`, 18 Jul):** тот же пользователь **~месяц спустя** после якоря 17 Jun — **Lifetime cashback ~38 USD**, на счёте **62.40 EXD**, в Upcoming loyalty **Jul 13–19 → Jul 22** и **3 EXD cashback** (THB / JPY / INR на счетах `#88112233`, `#99223344`, `#77334455`, зачисление `on Jul 19`); в ленте — credited cashback 18 / 17 / 16 Jul в тех же валютах + хвост июня.
 
-Шаги **1–6** — первые дни/недели пути (март); шаг **7** — **перемотка на ~31 день** для зрелого состояния.
+Шаги **1–6** — первые дни/недели пути (июнь); шаг **7** — **перемотка на ~31 день** для зрелого состояния.
 
-**Накладка двух loyalty** (Mon–Tue **16–17 Mar**): обе пачки Mar 9–15 → Mar 18 и Mar 16–22 → Mar 25 одновременно в Upcoming — см. `getLoyaltyUpcomingSlots()` в `demoTimeline.ts`; отдельный шаг симулятора не выделен.
+**Накладка двух loyalty** (Mon–Tue **15–16 Jun**): обе пачки Jun 8–14 → Jun 17 и Jun 15–21 → Jun 24 одновременно в Upcoming — см. `getLoyaltyUpcomingSlots()` в `demoTimeline.ts`; отдельный шаг симулятора не выделен.
 
 ---
 

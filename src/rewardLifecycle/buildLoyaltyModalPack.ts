@@ -28,18 +28,18 @@ import {
   parseModalDateTimeLoose,
 } from '../domain/reward/formatModalDateTimeUtc'
 import type { ActivityFeedItem } from './activityFeedModel'
-import { CB_LIST_SUBTITLE, CB_ACCOUNT_LIST_LINE, CB_PENDING_TRADE_DAY_SHORT } from './demoTimeline'
+import { CB_LIST_SUBTITLE, CB_ACCOUNT_LIST_LINE, CB_PENDING_TRADE_DAY_SHORT, LOY_PERIOD_MATURE_LABEL, LOY_PERIOD_NEXT_LABEL, LOY_PERIOD_OPEN_LABEL, LOY_PERIOD_PREV_LABEL } from './demoTimeline'
 import type { LifecycleActivityPreviewItem, LifecycleStep, LifecycleUpcomingItem } from './lifecycleSteps'
 import { EXD_TO_USD_CASHBACK_RATE } from '../domain/reward/tradingOrder'
 
-/** Текущий открытый период (Mar 16–22) — связываем с cashback на шаге trade_exd_rebate. */
+/** Текущий открытый период (Jun 15–21) — связываем с cashback на шаге trade_exd_rebate. */
 const TRADING_ORDER_BASE = 9100820
-/** Предыдущий закрытый период (Mar 9–15) — активация на шаге 4. */
+/** Предыдущий закрытый период (Jun 8–14) — активация на шаге activation_1. */
 const TRADING_ORDER_BASE_PREV = 9088800
 const LEGACY_CASHBACK_ORDER_BASE = 12345680
 
 function resolveTradingOrderBase(periodLabel: string): number {
-  if (periodLabel.includes('Mar 9') && periodLabel.includes('15')) {
+  if (periodLabel.includes(LOY_PERIOD_PREV_LABEL)) {
     return TRADING_ORDER_BASE_PREV
   }
   return TRADING_ORDER_BASE
@@ -51,7 +51,7 @@ const CASHBACK_LINKED_UPCOMING_IDS = new Set(['up-cb-pend'])
 /** Credited cashback preview tied to trade_exd_rebate order #9100821 (step 8 registry). */
 const CASHBACK_LINKED_PREVIEW_IDS = new Set(['prev-cb'])
 
-/** Feed row for Mar 24 credit of the same trade (step 8+). */
+/** Feed row for Jun 21 credit of the same trade (step 6+). */
 const CASHBACK_LINKED_FEED_IDS = new Set(['feed-cb-1'])
 
 /** Step 9 — order # base per trading account (nested orders in pack). */
@@ -215,11 +215,11 @@ function extractActivatedPeriodFromLines(lines: string[]): string {
 }
 
 function periodEndRaw(periodLabel: string): string {
-  if (periodLabel.includes('Mar 16') && periodLabel.includes('22')) return 'Mar 22, 16:06'
-  if (periodLabel.includes('Mar 9') && periodLabel.includes('15')) return 'Mar 15, 16:06'
-  if (periodLabel.includes('Mar 24') && periodLabel.includes('29')) return 'Mar 29, 16:06'
-  if (periodLabel.includes('Apr 13') && periodLabel.includes('19')) return 'Apr 19, 16:06'
-  return 'Mar 22, 16:06'
+  if (periodLabel.includes(LOY_PERIOD_OPEN_LABEL)) return 'Jun 20, 16:06'
+  if (periodLabel.includes(LOY_PERIOD_PREV_LABEL)) return 'Jun 14, 16:06'
+  if (periodLabel.includes(LOY_PERIOD_NEXT_LABEL)) return 'Jun 28, 16:06'
+  if (periodLabel.includes(LOY_PERIOD_MATURE_LABEL)) return 'Jul 19, 16:06'
+  return 'Jun 20, 16:06'
 }
 
 function periodEndListDate(periodLabel: string): string {
@@ -232,7 +232,7 @@ function periodEndModalDateTime(periodLabel: string): string {
 
 function tradeDayRaw(lines: string[]): string {
   const day = extractTradingDay(lines)
-  return /^\w{3}\s+\d{1,2}$/.test(day) ? `${day}, 16:06` : 'Mar 22, 16:06'
+  return /^\w{3}\s+\d{1,2}$/.test(day) ? `${day}, 16:06` : 'Jun 20, 16:06'
 }
 
 function tradeDayListDate(lines: string[]): string {
@@ -329,8 +329,8 @@ const DEMO_LINKED_LOYALTY_UPCOMING: LifecycleUpcomingItem = {
   icon: 'crown',
   title: 'Loyalty rewards',
   amount: '+1.00 EXD',
-  lines: ['For trading on Mar 16–22'],
-  date: 'on Mar 25',
+  lines: [`For trading on ${LOY_PERIOD_OPEN_LABEL}`],
+  date: 'on Jun 24',
   rewardModal: 'loyalty-upcoming',
 }
 
@@ -340,7 +340,7 @@ const DEMO_LINKED_CASHBACK_UPCOMING: LifecycleUpcomingItem = {
   title: 'EXD cashback',
   amount: '+3.00 USD',
   lines: [CB_LIST_SUBTITLE, CB_ACCOUNT_LIST_LINE],
-  date: 'on Mar 23',
+  date: 'on Jun 20',
   rewardModal: 'cashback-upcoming',
 }
 

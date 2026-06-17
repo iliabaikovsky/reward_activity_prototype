@@ -7,6 +7,7 @@ import {
   CB_LIST_SUBTITLE,
   LOYALTY_TO_AVAILABLE_SUBTITLE,
   LOY_PERIOD_NEXT_LABEL,
+  LOY_PERIOD_OPEN_LABEL,
   LOY_PERIOD_PREV_LABEL,
 } from './demoTimeline'
 
@@ -14,8 +15,8 @@ const item = (x: ActivityFeedItem): ActivityFeedItem => x
 
 /** Первая активация — только loyalty (UT / simplified lifecycle). */
 export const G_MAR18_LOYALTY_ONLY: ActivityFeedGroup = {
-  dateLabel: '18 Mar 2026',
-  dateIso: '2026-03-18',
+  dateLabel: '17 Jun 2026',
+  dateIso: '2026-06-17',
   summary: '+3.20 EXD',
   items: [
     item({
@@ -33,8 +34,8 @@ export const G_MAR18_LOYALTY_ONLY: ActivityFeedGroup = {
 }
 
 export const G_MAR21_TRANSFER_320: ActivityFeedGroup = {
-  dateLabel: '21 Mar 2026',
-  dateIso: '2026-03-21',
+  dateLabel: '18 Jun 2026',
+  dateIso: '2026-06-18',
   summary: '-3.20 EXD',
   items: [
     item({
@@ -52,8 +53,8 @@ export const G_MAR21_TRANSFER_320: ActivityFeedGroup = {
 }
 
 export const G_MAR24_CASHBACK_300: ActivityFeedGroup = {
-  dateLabel: '24 Mar 2026',
-  dateIso: '2026-03-24',
+  dateLabel: '21 Jun 2026',
+  dateIso: '2026-06-21',
   summary: '+3.00 USD',
   items: [
     item({
@@ -72,8 +73,8 @@ export const G_MAR24_CASHBACK_300: ActivityFeedGroup = {
 
 /** Первая активация: loyalty + adjustment в один день (legacy screenshots). */
 export const G_MAR18: ActivityFeedGroup = {
-  dateLabel: '18 Mar 2026',
-  dateIso: '2026-03-18',
+  dateLabel: '17 Jun 2026',
+  dateIso: '2026-06-17',
   summary: '+2.80 EXD',
   items: [
     item({
@@ -102,8 +103,8 @@ export const G_MAR18: ActivityFeedGroup = {
 }
 
 export const G_MAR19: ActivityFeedGroup = {
-  dateLabel: '19 Mar 2026',
-  dateIso: '2026-03-19',
+  dateLabel: '18 Jun 2026',
+  dateIso: '2026-06-18',
   summary: '+50.00 EXD',
   items: [
     item({
@@ -121,8 +122,8 @@ export const G_MAR19: ActivityFeedGroup = {
 }
 
 export const G_MAR21: ActivityFeedGroup = {
-  dateLabel: '21 Mar 2026',
-  dateIso: '2026-03-21',
+  dateLabel: '19 Jun 2026',
+  dateIso: '2026-06-19',
   summary: '-52.80 EXD',
   items: [
     item({
@@ -140,8 +141,8 @@ export const G_MAR21: ActivityFeedGroup = {
 }
 
 export const G_MAR24: ActivityFeedGroup = {
-  dateLabel: '24 Mar 2026',
-  dateIso: '2026-03-24',
+  dateLabel: '22 Jun 2026',
+  dateIso: '2026-06-22',
   summary: '+5.00 USD',
   items: [
     item({
@@ -159,8 +160,8 @@ export const G_MAR24: ActivityFeedGroup = {
 }
 
 export const G_MAR16: ActivityFeedGroup = {
-  dateLabel: '16 Mar 2026',
-  dateIso: '2026-03-16',
+  dateLabel: '14 Jun 2026',
+  dateIso: '2026-06-14',
   summary: '+4.50 USD',
   items: [
     item({
@@ -178,8 +179,8 @@ export const G_MAR16: ActivityFeedGroup = {
 }
 
 export const G_MAR15: ActivityFeedGroup = {
-  dateLabel: '15 Mar 2026',
-  dateIso: '2026-03-15',
+  dateLabel: '13 Jun 2026',
+  dateIso: '2026-06-13',
   summary: '+3.80 USD',
   items: [
     item({
@@ -197,8 +198,8 @@ export const G_MAR15: ActivityFeedGroup = {
 }
 
 export const G_MAR14: ActivityFeedGroup = {
-  dateLabel: '14 Mar 2026',
-  dateIso: '2026-03-14',
+  dateLabel: '12 Jun 2026',
+  dateIso: '2026-06-12',
   summary: '+5.20 USD',
   items: [
     item({
@@ -216,8 +217,8 @@ export const G_MAR14: ActivityFeedGroup = {
 }
 
 export const G_MAR25: ActivityFeedGroup = {
-  dateLabel: '25 Mar 2026',
-  dateIso: '2026-03-25',
+  dateLabel: '24 Jun 2026',
+  dateIso: '2026-06-24',
   summary: '+2.80 EXD',
   items: [
     item({
@@ -225,7 +226,7 @@ export const G_MAR25: ActivityFeedGroup = {
       title: 'Loyalty rewards',
       amount: '+2.80 EXD',
       amountTone: 'positive',
-      lines: [LOYALTY_TO_AVAILABLE_SUBTITLE, 'For trading on Mar 16–22'],
+      lines: [LOYALTY_TO_AVAILABLE_SUBTITLE, `For trading on ${LOY_PERIOD_OPEN_LABEL}`],
       time: '23:58',
       icon: 'crown',
       rewardModal: 'loyalty-activated',
@@ -246,8 +247,8 @@ export const G_MAR25: ActivityFeedGroup = {
 }
 
 export const G_MAR26: ActivityFeedGroup = {
-  dateLabel: '26 Mar 2026',
-  dateIso: '2026-03-26',
+  dateLabel: '25 Jun 2026',
+  dateIso: '2026-06-25',
   summary: '+4.20 USD',
   items: [
     item({
@@ -265,8 +266,8 @@ export const G_MAR26: ActivityFeedGroup = {
 }
 
 export const G_APR19: ActivityFeedGroup = {
-  dateLabel: '19 Apr 2026',
-  dateIso: '2026-04-19',
+  dateLabel: '17 Jul 2026',
+  dateIso: '2026-07-17',
   summary: '+698 JPY',
   items: [
     item({
@@ -284,8 +285,8 @@ export const G_APR19: ActivityFeedGroup = {
 }
 
 export const G_APR20: ActivityFeedGroup = {
-  dateLabel: '20 Apr 2026',
-  dateIso: '2026-04-20',
+  dateLabel: '18 Jul 2026',
+  dateIso: '2026-07-18',
   summary: '+152.00 THB',
   items: [
     item({
@@ -303,8 +304,8 @@ export const G_APR20: ActivityFeedGroup = {
 }
 
 export const G_APR18: ActivityFeedGroup = {
-  dateLabel: '18 Apr 2026',
-  dateIso: '2026-04-18',
+  dateLabel: '16 Jul 2026',
+  dateIso: '2026-07-16',
   summary: '+392.00 INR',
   items: [
     item({
@@ -322,8 +323,8 @@ export const G_APR18: ActivityFeedGroup = {
 }
 
 export const G_APR1: ActivityFeedGroup = {
-  dateLabel: '1 Apr 2026',
-  dateIso: '2026-04-01',
+  dateLabel: '1 Jul 2026',
+  dateIso: '2026-07-01',
   summary: '+2.00 EXD',
   items: [
     item({
