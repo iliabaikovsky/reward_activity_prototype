@@ -13,30 +13,18 @@ type Props = {
 }
 
 export function OrdersListView({ allOrders, onSelectOrder }: Props) {
-  const [query, setQuery] = useState('')
   const [dateRange, setDateRange] = useState<DateRangeFilter>(ALL_TIME_DATE_RANGE)
   const [dateSheetOpen, setDateSheetOpen] = useState(false)
 
   const filteredOrders = useMemo(
-    () => filterOrders(allOrders, { query, dateRange }),
-    [allOrders, query, dateRange],
+    () => filterOrders(allOrders, dateRange),
+    [allOrders, dateRange],
   )
 
   const groups = useMemo(() => groupOrdersByMonth(filteredOrders), [filteredOrders])
 
   return (
     <div className={styles.root}>
-      <div className={styles.searchWrap}>
-        <input
-          type="search"
-          className={styles.searchInput}
-          placeholder="Search orders"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          aria-label="Search orders"
-        />
-      </div>
-
       <div className={styles.filterWrap}>
         <DateRangeFilterChip
           value={dateRange}
@@ -47,7 +35,7 @@ export function OrdersListView({ allOrders, onSelectOrder }: Props) {
 
       <div className={styles.listScroll}>
         {groups.length === 0 ? (
-          <p className={styles.emptyState}>No orders match your search.</p>
+          <p className={styles.emptyState}>No orders in this period.</p>
         ) : (
           groups.map((group) => (
             <section key={group.monthId} aria-label={group.monthLabel}>

@@ -44,7 +44,7 @@ export function OrdersSection({
   previewOrders,
   onOpenFullList,
   onSelectOrder,
-  sectionTitle = 'Rewards',
+  sectionTitle = 'Rewards by orders',
 }: {
   previewOrders: OrderInPack[]
   onOpenFullList: () => void

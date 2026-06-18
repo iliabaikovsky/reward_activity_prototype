@@ -10,7 +10,7 @@ import {
 import { AppH1, AppH4, appHeadingStyles } from '../components/ui/AppHeading'
 import { SummaryHeroAmount } from '../components/ui/SummaryHeroAmount'
 import { RewardEventIcon } from '../components/ui/RewardEventIcon'
-import { MobileNavButton, MobileStatusBar, MobileTopNav } from '../components/ui/MobileScreenShell'
+import { MobileStatusBar, MobileTopNav } from '../components/ui/MobileScreenShell'
 import { HIDE_TRANSACTION_BADGES } from '../domain/reward/featureFlags'
 import {
   parseSignedMoney,
@@ -572,13 +572,6 @@ export function ExnessRewardsScreen({
           navVariant="titleWithActions"
           title={drillNavTitle}
           onBack={() => setV2SummaryCurrencyPage(null)}
-          actions={
-            onOpenPromo ? (
-              <MobileNavButton theme="light" aria-label="Information" onClick={onOpenPromo}>
-                <IconInfoCircle size={24} stroke={2} aria-hidden />
-              </MobileNavButton>
-            ) : undefined
-          }
         />
         <div className={styles.flexDrillPageRoot}>
           <V2SummaryCurrencyDetailPage

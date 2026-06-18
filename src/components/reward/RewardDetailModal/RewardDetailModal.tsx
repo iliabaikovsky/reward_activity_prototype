@@ -378,7 +378,9 @@ export function RewardDetailModal({
                     previewOrders={previewOrders}
                     onOpenFullList={openOrders}
                     onSelectOrder={openOrderFromPack}
-                    sectionTitle={displayPack.heroIcon === 'dollar' ? 'Cashback' : 'Rewards'}
+                    sectionTitle={
+                      displayPack.heroIcon === 'dollar' ? 'Cashback by orders' : 'Rewards by orders'
+                    }
                   />
                 ) : null}
               </div>

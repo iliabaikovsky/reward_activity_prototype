@@ -71,22 +71,10 @@ export function monthLabelFromDate(d: Date): string {
   return `${MONTH_LABELS[d.getMonth()]} ${d.getFullYear()}`
 }
 
-export function filterOrders(
-  orders: OrderInPack[],
-  opts: { query: string; dateRange: DateRangeFilter },
-): OrderInPack[] {
-  const q = opts.query.trim().toLowerCase()
-
-  return orders.filter((order) => {
-    if (!isOrderDateInRange(parseOrderListDate(order.date), opts.dateRange)) {
-      return false
-    }
-
-    if (!q) return true
-
-    const haystack = [order.title, order.amount, order.date, ...order.meta].join(' ').toLowerCase()
-    return haystack.includes(q)
-  })
+export function filterOrders(orders: OrderInPack[], dateRange: DateRangeFilter): OrderInPack[] {
+  return orders.filter((order) =>
+    isOrderDateInRange(parseOrderListDate(order.date), dateRange),
+  )
 }
 
 export function groupOrdersByMonth(orders: OrderInPack[]): OrderMonthGroup[] {
