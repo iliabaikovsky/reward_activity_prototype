@@ -299,9 +299,12 @@ export function RewardDetailModal({
   )
   const titleId = 'reward-detail-modal-title'
 
+  const ordersListTitle =
+    displayPack?.heroIcon === 'dollar' ? 'Cashback by orders' : 'Rewards by orders'
+
   const navTitle =
     route.screen === 'orders'
-      ? 'Orders'
+      ? ordersListTitle
       : route.screen === 'orderDetail' && selectedOrder
         ? selectedOrder.detail.navTitle
         : displayPack
@@ -378,9 +381,7 @@ export function RewardDetailModal({
                     previewOrders={previewOrders}
                     onOpenFullList={openOrders}
                     onSelectOrder={openOrderFromPack}
-                    sectionTitle={
-                      displayPack.heroIcon === 'dollar' ? 'Cashback by orders' : 'Rewards by orders'
-                    }
+                    sectionTitle={ordersListTitle}
                   />
                 ) : null}
               </div>
